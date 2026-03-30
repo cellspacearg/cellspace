@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Cell Space Argentina</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&display=swap" rel="stylesheet">
 
 <style>
+
 body{
 margin:0;
 font-family:'Montserrat',sans-serif;
@@ -16,18 +16,46 @@ background:#0A0A0A;
 color:white;
 }
 
+/* NAVBAR */
+.nav{
+position:fixed;
+top:0;
+width:100%;
+display:flex;
+justify-content:space-between;
+padding:15px 30px;
+background:rgba(0,0,0,0.8);
+backdrop-filter:blur(10px);
+z-index:999;
+}
+
+.nav a{
+color:white;
+text-decoration:none;
+margin-left:20px;
+font-weight:500;
+}
+
 /* HERO */
 .hero{
 height:100vh;
-background:url('https://images.unsplash.com/photo-1518779578993-ec3579fee39f') center/cover;
+background:
+linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)),
+url('https://i.imgur.com/8Km9tLL.jpg') center/cover;
 display:flex;
 align-items:center;
 justify-content:center;
 text-align:center;
+padding-top:80px;
 }
 
 .hero h1{
 font-size:50px;
+animation:fade 1.5s ease;
+}
+
+.hero h2{
+color:#FF6A00;
 }
 
 .btn{
@@ -38,6 +66,13 @@ color:white;
 text-decoration:none;
 display:inline-block;
 margin-top:20px;
+transition:0.3s;
+}
+
+.btn:hover{
+background:#ff8c3a;
+transform:scale(1.1);
+box-shadow:0 0 20px #FF6A00;
 }
 
 /* SERVICIOS */
@@ -46,26 +81,27 @@ display:flex;
 flex-wrap:wrap;
 justify-content:center;
 gap:20px;
-padding:50px;
+padding:60px 20px;
 }
 
 .card{
 background:#111;
-padding:20px;
+padding:25px;
 width:250px;
 border-radius:15px;
 transition:0.3s;
+text-align:center;
 }
 
 .card:hover{
 transform:translateY(-10px);
-box-shadow:0 0 20px #FF6A00;
+box-shadow:0 0 25px #FF6A00;
 }
 
 /* TIENDA */
 .shop{
 text-align:center;
-padding:50px;
+padding:60px 20px;
 }
 
 .product{
@@ -74,6 +110,11 @@ background:#111;
 padding:20px;
 margin:10px;
 border-radius:10px;
+transition:0.3s;
+}
+
+.product:hover{
+box-shadow:0 0 20px #FF6A00;
 }
 
 /* FOOTER */
@@ -95,23 +136,42 @@ text-decoration:none;
 color:white;
 font-size:20px;
 }
-</style>
 
+/* ANIMACIÓN */
+@keyframes fade{
+from{opacity:0;transform:translateY(20px);}
+to{opacity:1;transform:translateY(0);}
+}
+
+</style>
 </head>
 
 <body>
 
+<!-- NAV -->
+<div class="nav">
+<div><b style="color:#FF6A00;">CELL SPACE</b></div>
+<div>
+<a href="#">Inicio</a>
+<a href="#">Servicios</a>
+<a href="#">Tienda</a>
+<a href="#">Contacto</a>
+</div>
+</div>
+
+<!-- HERO -->
 <div class="hero">
 <div>
-<h1>SERVICIO TÉCNICO PRO</h1>
-<h2 style="color:#FF6A00;">CELULARES • PC • CONSOLAS</h2>
+<h1>SERVICIO TÉCNICO ESPECIALIZADO</h1>
+<h2>CELULARES • PC • CONSOLAS</h2>
 
 <a href="https://wa.me/5493782437674" class="btn">
-CONTACTAR
+CONTACTAR POR WHATSAPP
 </a>
 </div>
 </div>
 
+<!-- SERVICIOS -->
 <div class="services">
 
 <div class="card">
@@ -136,6 +196,7 @@ CONTACTAR
 
 </div>
 
+<!-- TIENDA -->
 <div class="shop">
 <h2>TIENDA</h2>
 
@@ -156,11 +217,14 @@ CONTACTAR
 
 </div>
 
+<!-- FOOTER -->
 <div class="footer">
 <p>📍 Saladas, Corrientes</p>
-<p>🕒 9:00 a 20:00</p>
+<p>🕒 Lunes a Sábados 9:00 - 20:00</p>
+<p>© Cell Space Argentina</p>
 </div>
 
+<!-- WHATSAPP -->
 <a href="https://wa.me/5493782437674" class="whatsapp">💬</a>
 
 </body>
