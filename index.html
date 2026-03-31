@@ -22,21 +22,23 @@ width:100%;
 display:flex;
 justify-content:space-between;
 align-items:center;
-padding:15px 30px;
-background:rgba(0,0,0,0.9);
+padding:15px 50px;
+background:rgba(0,0,0,0.95);
 backdrop-filter:blur(10px);
 z-index:999;
 border-bottom:2px solid #FF6A00;
+box-sizing:border-box;
 }
 
 .nav-left{
 display:flex;
 align-items:center;
 gap:15px;
+flex-shrink:0;
 }
 
 .nav-logo{
-height:60px;
+height:65px;
 width:auto;
 transition:0.3s;
 }
@@ -45,23 +47,50 @@ transition:0.3s;
 transform:scale(1.1);
 }
 
+.nav-brand-container{
+display:flex;
+flex-direction:column;
+align-items:flex-start;
+gap:2px;
+}
+
 .nav-brand{
 color:#FF6A00;
-font-size:24px;
+font-size:28px;
 font-weight:700;
-letter-spacing:1px;
+letter-spacing:2px;
+line-height:1;
 }
 
-.nav a{
+.nav-subtitle{
+color:white;
+font-size:28px;
+font-weight:500;
+letter-spacing:4px;
+margin-top:2px;
+}
+
+.nav-right{
+display:flex;
+gap:30px;
+align-items:center;
+margin-left:auto;
+}
+
+.nav-right a{
 color:white;
 text-decoration:none;
-margin-left:25px;
 font-weight:500;
 transition:0.3s;
+font-size:14px;
+text-transform:uppercase;
+letter-spacing:1px;
+white-space:nowrap;
 }
 
-.nav a:hover{
+.nav-right a:hover{
 color:#FF6A00;
+transform:translateY(-2px);
 }
 
 /* HERO */
@@ -97,7 +126,6 @@ font-size:28px;
 margin-bottom:30px;
 }
 
-/* LOGO EN HERO */
 .hero-logo-container{
 position:absolute;
 right:80px;
@@ -255,23 +283,58 @@ to{opacity:1;transform:translateY(0);}
 }
 
 /* RESPONSIVE */
+@media(max-width:992px){
+.nav{
+padding:15px 30px;
+}
+
+.nav-right{
+gap:20px;
+}
+
+.nav-right a{
+font-size:13px;
+}
+}
+
 @media(max-width:768px){
+.nav{
+padding:10px 20px;
+flex-direction:column;
+gap:15px;
+}
+
+.nav-right{
+gap:20px;
+flex-wrap:wrap;
+justify-content:center;
+}
+
 .hero-logo-container{
 width:150px;
 height:150px;
 right:20px;
 }
+
 .hero h1{
 font-size:32px;
 }
+
 .hero h2{
 font-size:20px;
 }
-.nav-brand{
-font-size:18px;
-}
+
 .nav-logo{
-height:45px;
+height:50px;
+}
+
+.nav-brand{
+font-size:24px;
+}
+
+.nav-subtitle{
+font-size:24px;
+letter-spacing:3px;
 }
 }
 </style>
@@ -281,73 +344,76 @@ height:45px;
 
 <!-- NAV -->
 <div class="nav">
-<div class="nav-left">
-<img src="logo.png" alt="Cell Space Argentina" class="nav-logo">
-<span class="nav-brand">CELL SPACE</span>
-</div>
-<div>
-<a href="#inicio">Inicio</a>
-<a href="#servicios">Servicios</a>
-<a href="#tienda">Tienda</a>
-<a href="#contacto">Contacto</a>
-</div>
+    <div class="nav-left">
+        <img src="logo.png" alt="Cell Space Argentina" class="nav-logo">
+        <div class="nav-brand-container">
+            <span class="nav-brand">CELL SPACE</span>
+            <span class="nav-subtitle">ARGENTINA</span>
+        </div>
+    </div>
+    <div class="nav-right">
+        <a href="#inicio">Inicio</a>
+        <a href="#servicios">Servicios</a>
+        <a href="#tienda">Tienda</a>
+        <a href="#contacto">Contacto</a>
+    </div>
 </div>
 
 <!-- HERO -->
 <div class="hero" id="inicio">
-<div class="hero-content">
-<h1>SERVICIO TÉCNICO ESPECIALIZADO</h1>
-<h2>CELULARES • PC • CONSOLAS</h2>
-<a href="https://wa.me/5493782437674" class="btn">CONTACTAR POR WHATSAPP</a>
-</div>
-<div class="hero-logo-container">
-<img src="logo.png" alt="Cell Space Argentina Logo" class="hero-logo">
-</div>
+    <div class="hero-content">
+        <h1>SERVICIO TÉCNICO ESPECIALIZADO</h1>
+        <h2>CELULARES • PC • CONSOLAS</h2>
+        <a href="https://wa.me/5493782437674" class="btn">CONTACTAR POR WHATSAPP</a>
+    </div>
+    <div class="hero-logo-container">
+        <img src="logo.png" alt="Cell Space Argentina Logo" class="hero-logo">
+    </div>
 </div>
 
 <!-- SERVICIOS -->
 <div class="services" id="servicios">
-<div class="card">
-<h3>📱 Celulares</h3>
-<p>Pantallas, baterías, placas</p>
-</div>
-<div class="card">
-<h3>🤖 Software GSM</h3>
-<p>FRP, desbloqueo, flasheo</p>
-</div>
-<div class="card">
-<h3>💻 PC / Laptop</h3>
-<p>Formateo, limpieza</p>
-</div>
-<div class="card">
-<h3>🎮 Consolas</h3>
-<p>HDMI, mantenimiento</p>
-</div>
+    <div class="card">
+        <h3>📱 Celulares</h3>
+        <p>Pantallas, baterías, placas</p>
+    </div>
+    <div class="card">
+        <h3>🤖 Software GSM</h3>
+        <p>FRP, desbloqueo, flasheo</p>
+    </div>
+    <div class="card">
+        <h3>💻 PC / Laptop</h3>
+        <p>Formateo, limpieza</p>
+    </div>
+    <div class="card">
+        <h3>🎮 Consolas</h3>
+        <p>HDMI, mantenimiento</p>
+    </div>
 </div>
 
 <!-- TIENDA -->
 <div class="shop" id="tienda">
-<h2>TIENDA</h2>
-<div class="product">
-<h3>iPhone 13</h3>
-<p style="color:#FF6A00; font-weight:bold;">$600.000</p>
-</div>
-<div class="product">
-<h3>Templados</h3>
-<p style="color:#FF6A00; font-weight:bold;">$2.500</p>
-</div>
-<div class="product">
-<h3>Auriculares</h3>
-<p style="color:#FF6A00; font-weight:bold;">$9.900</p>
-</div>
+    <h2>TIENDA</h2>
+    <div class="product">
+        <h3>iPhone 13</h3>
+        <p style="color:#FF6A00; font-weight:bold;">$600.000</p>
+    </div>
+    <div class="product">
+        <h3>Templados</h3>
+        <p style="color:#FF6A00; font-weight:bold;">$2.500</p>
+    </div>
+    <div class="product">
+        <h3>Auriculares</h3>
+        <p style="color:#FF6A00; font-weight:bold;">$9.900</p>
+    </div>
 </div>
 
 <!-- FOOTER -->
 <div class="footer" id="contacto">
-<p>📍 Saladas, Corrientes</p>
-<p>🕒 Lunes a Sábados 9:00 - 20:00</p>
-<p>📱 WhatsApp: 15-437674</p>
-<p>© 2026 Cell Space Argentina - Todos los derechos reservados</p>
+    <p>📍 Saladas, Corrientes</p>
+    <p>🕒 Lunes a Sábados 9:00 - 20:00</p>
+    <p>📱 WhatsApp: 3782-437674</p>
+    <p>© 2026 Cell Space Argentina - Todos los derechos reservados</p>
 </div>
 
 <!-- WHATSAPP -->
