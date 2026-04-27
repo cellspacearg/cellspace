@@ -6,418 +6,264 @@
 <title>Cell Space Argentina</title>
 <link rel="icon" type="image/png" href="logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&display=swap" rel="stylesheet">
+
+<!-- FIREBASE SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+
+<script>
+// 🔑 REEMPLAZA CON TU CONFIGURACIÓN DE FIREBASE
+const firebaseConfig = {
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_PROYECTO.firebaseapp.com",
+  projectId: "TU_PROYECTO",
+  storageBucket: "TU_PROYECTO.appspot.com",
+  messagingSenderId: "TU_SENDER_ID",
+  appId: "TU_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+</script>
+
 <style>
-body{
-margin:0;
-font-family:'Montserrat',sans-serif;
-background:#0A0A0A;
-color:white;
-}
+/* TUS ESTILOS ORIGINALES (se mantienen intactos) */
+body{margin:0;font-family:'Montserrat',sans-serif;background:#0A0A0A;color:white;overflow-x:hidden;}
+.nav{position:fixed;top:0;width:100%;display:flex;justify-content:space-between;align-items:center;padding:15px 50px;background:rgba(0,0,0,0.95);backdrop-filter:blur(10px);z-index:999;border-bottom:2px solid #FF6A00;box-sizing:border-box;}
+.nav-left{display:flex;align-items:center;gap:15px;flex-shrink:0;}
+.nav-logo{height:65px;width:auto;transition:0.3s;}
+.nav-logo:hover{transform:scale(1.1);}
+.nav-brand-container{display:flex;flex-direction:column;align-items:flex-start;gap:2px;}
+.nav-brand{color:#FF6A00;font-size:28px;font-weight:700;letter-spacing:2px;line-height:1;}
+.nav-subtitle{color:white;font-size:28px;font-weight:500;letter-spacing:4px;margin-top:2px;}
+.nav-right{display:flex;gap:30px;align-items:center;margin-left:auto;}
+.nav-right a{color:white;text-decoration:none;font-weight:500;transition:0.3s;font-size:14px;text-transform:uppercase;letter-spacing:1px;white-space:nowrap;cursor:pointer;}
+.nav-right a:hover{color:#FF6A00;transform:translateY(-2px);}
+.hero{height:100vh;background:linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url('https://i.imgur.com/8Km9tLL.jpg') center/cover;display:flex;align-items:center;justify-content:center;text-align:center;padding-top:80px;position:relative;}
+.hero-content{z-index:2;max-width:800px;padding:0 20px;}
+.hero h1{font-size:50px;animation:fade 1.5s ease;margin-bottom:10px;text-transform:uppercase;}
+.hero h2{color:#FF6A00;font-size:28px;margin-bottom:30px;}
+.hero-logo-container{position:absolute;right:80px;top:50%;transform:translateY(-50%);width:300px;height:300px;animation:float 3s ease-in-out infinite;}
+.hero-logo{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 30px rgba(255,106,0,0.5));}
+@keyframes float{0%, 100%{transform:translateY(-50%) translateY(0px);}50%{transform:translateY(-50%) translateY(-20px);}}
+.btn{background:#FF6A00;padding:15px 40px;border-radius:30px;color:white;text-decoration:none;display:inline-block;margin-top:20px;transition:0.3s;font-weight:700;text-transform:uppercase;border:2px solid #FF6A00;cursor:pointer;}
+.btn:hover{background:transparent;color:#FF6A00;transform:scale(1.1);box-shadow:0 0 30px #FF6A00;}
+.services{display:flex;flex-wrap:wrap;justify-content:center;gap:20px;padding:60px 20px;background:#0f0f0f;}
+.card{background:#1a1a1a;padding:30px 25px;width:250px;border-radius:15px;transition:0.3s;text-align:center;border:2px solid transparent;}
+.card:hover{transform:translateY(-10px);box-shadow:0 0 30px #FF6A00;border-color:#FF6A00;}
+.card h3{color:#FF6A00;margin-bottom:10px;font-size:22px;}
+.card p{color:#ccc;line-height:1.6;}
+.shop{text-align:center;padding:60px 20px;background:#0A0A0A;}
+.shop h2{color:#FF6A00;font-size:36px;margin-bottom:40px;text-transform:uppercase;}
+.product{display:inline-block;background:#1a1a1a;padding:25px;margin:15px;border-radius:15px;transition:0.3s;min-width:200px;border:2px solid transparent;}
+.product:hover{box-shadow:0 0 25px #FF6A00;border-color:#FF6A00;transform:scale(1.05);}
+.product h3{margin-bottom:10px;color:white;}
+.footer{background:#000;text-align:center;padding:40px 20px;border-top:3px solid #FF6A00;}
+.footer p{margin:10px 0;color:#888;}
+.whatsapp{position:fixed;bottom:25px;right:25px;background:#25D366;padding:18px;border-radius:50%;text-decoration:none;color:white;font-size:28px;box-shadow:0 5px 20px rgba(37,211,102,0.4);transition:0.3s;z-index:999;}
+.whatsapp:hover{transform:scale(1.1);box-shadow:0 8px 30px rgba(37,211,102,0.6);}
+@keyframes fade{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 
-/* NAVBAR */
-.nav{
-position:fixed;
-top:0;
-width:100%;
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:15px 50px;
-background:rgba(0,0,0,0.95);
-backdrop-filter:blur(10px);
-z-index:999;
-border-bottom:2px solid #FF6A00;
-box-sizing:border-box;
+/* 🌐 ESTILOS AUTH (PANTALLA DE ACCESO) */
+#authOverlay{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:#0A0A0A;z-index:10000;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;box-sizing:border-box;
 }
+.auth-box{
+  background:#111;border:2px solid #FF6A00;border-radius:20px;
+  padding:30px;width:100%;max-width:420px;text-align:center;
+  box-shadow:0 0 40px rgba(255,106,0,0.2);animation:fade 0.5s ease;
+}
+.auth-tabs{display:flex;margin-bottom:20px;border-bottom:1px solid #333;}
+.auth-tab{
+  flex:1;padding:12px;background:none;border:none;color:#888;
+  font-weight:600;cursor:pointer;transition:0.3s;border-bottom:3px solid transparent;
+}
+.auth-tab.active{color:#FF6A00;border-bottom-color:#FF6A00;}
+.auth-form input{
+  width:100%;padding:12px 15px;margin:8px 0;background:#1a1a1a;
+  border:1px solid #333;border-radius:10px;color:white;font-family:inherit;box-sizing:border-box;
+}
+.auth-form input:focus{outline:none;border-color:#FF6A00;}
+.auth-msg{margin-top:15px;padding:10px;border-radius:8px;font-size:14px;text-align:center;}
+.auth-msg.error{background:rgba(255,80,80,0.15);color:#ff9999;}
+.auth-msg.success{background:rgba(40,200,100,0.15);color:#80ffb3;}
+.btn-logout{
+  background:#333;border:none;color:white;padding:8px 16px;border-radius:20px;
+  cursor:pointer;font-size:13px;font-weight:500;transition:0.3s;margin-left:10px;
+}
+.btn-logout:hover{background:#FF6A00;}
+#mainContent{opacity:0;pointer-events:none;transition:opacity 0.5s ease;}
+#mainContent.visible{opacity:1;pointer-events:all;}
 
-.nav-left{
-display:flex;
-align-items:center;
-gap:15px;
-flex-shrink:0;
-}
-
-.nav-logo{
-height:65px;
-width:auto;
-transition:0.3s;
-}
-
-.nav-logo:hover{
-transform:scale(1.1);
-}
-
-.nav-brand-container{
-display:flex;
-flex-direction:column;
-align-items:flex-start;
-gap:2px;
-}
-
-.nav-brand{
-color:#FF6A00;
-font-size:28px;
-font-weight:700;
-letter-spacing:2px;
-line-height:1;
-}
-
-.nav-subtitle{
-color:white;
-font-size:28px;
-font-weight:500;
-letter-spacing:4px;
-margin-top:2px;
-}
-
-.nav-right{
-display:flex;
-gap:30px;
-align-items:center;
-margin-left:auto;
-}
-
-.nav-right a{
-color:white;
-text-decoration:none;
-font-weight:500;
-transition:0.3s;
-font-size:14px;
-text-transform:uppercase;
-letter-spacing:1px;
-white-space:nowrap;
-}
-
-.nav-right a:hover{
-color:#FF6A00;
-transform:translateY(-2px);
-}
-
-/* HERO */
-.hero{
-height:100vh;
-background:
-linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)),
-url('https://i.imgur.com/8Km9tLL.jpg') center/cover;
-display:flex;
-align-items:center;
-justify-content:center;
-text-align:center;
-padding-top:80px;
-position:relative;
-}
-
-.hero-content{
-z-index:2;
-max-width:800px;
-padding:0 20px;
-}
-
-.hero h1{
-font-size:50px;
-animation:fade 1.5s ease;
-margin-bottom:10px;
-text-transform:uppercase;
-}
-
-.hero h2{
-color:#FF6A00;
-font-size:28px;
-margin-bottom:30px;
-}
-
-.hero-logo-container{
-position:absolute;
-right:80px;
-top:50%;
-transform:translateY(-50%);
-width:300px;
-height:300px;
-animation:float 3s ease-in-out infinite;
-}
-
-.hero-logo{
-width:100%;
-height:100%;
-object-fit:contain;
-filter:drop-shadow(0 0 30px rgba(255,106,0,0.5));
-}
-
-@keyframes float{
-0%, 100%{transform:translateY(-50%) translateY(0px);}
-50%{transform:translateY(-50%) translateY(-20px);}
-}
-
-.btn{
-background:#FF6A00;
-padding:15px 40px;
-border-radius:30px;
-color:white;
-text-decoration:none;
-display:inline-block;
-margin-top:20px;
-transition:0.3s;
-font-weight:700;
-text-transform:uppercase;
-border:2px solid #FF6A00;
-}
-
-.btn:hover{
-background:transparent;
-color:#FF6A00;
-transform:scale(1.1);
-box-shadow:0 0 30px #FF6A00;
-}
-
-/* SERVICIOS */
-.services{
-display:flex;
-flex-wrap:wrap;
-justify-content:center;
-gap:20px;
-padding:60px 20px;
-background:#0f0f0f;
-}
-
-.card{
-background:#1a1a1a;
-padding:30px 25px;
-width:250px;
-border-radius:15px;
-transition:0.3s;
-text-align:center;
-border:2px solid transparent;
-}
-
-.card:hover{
-transform:translateY(-10px);
-box-shadow:0 0 30px #FF6A00;
-border-color:#FF6A00;
-}
-
-.card h3{
-color:#FF6A00;
-margin-bottom:10px;
-font-size:22px;
-}
-
-.card p{
-color:#ccc;
-line-height:1.6;
-}
-
-/* TIENDA */
-.shop{
-text-align:center;
-padding:60px 20px;
-background:#0A0A0A;
-}
-
-.shop h2{
-color:#FF6A00;
-font-size:36px;
-margin-bottom:40px;
-text-transform:uppercase;
-}
-
-.product{
-display:inline-block;
-background:#1a1a1a;
-padding:25px;
-margin:15px;
-border-radius:15px;
-transition:0.3s;
-min-width:200px;
-border:2px solid transparent;
-}
-
-.product:hover{
-box-shadow:0 0 25px #FF6A00;
-border-color:#FF6A00;
-transform:scale(1.05);
-}
-
-.product h3{
-margin-bottom:10px;
-color:white;
-}
-
-/* FOOTER */
-.footer{
-background:#000;
-text-align:center;
-padding:40px 20px;
-border-top:3px solid #FF6A00;
-}
-
-.footer p{
-margin:10px 0;
-color:#888;
-}
-
-/* WHATSAPP */
-.whatsapp{
-position:fixed;
-bottom:25px;
-right:25px;
-background:#25D366;
-padding:18px;
-border-radius:50%;
-text-decoration:none;
-color:white;
-font-size:28px;
-box-shadow:0 5px 20px rgba(37,211,102,0.4);
-transition:0.3s;
-z-index:999;
-}
-
-.whatsapp:hover{
-transform:scale(1.1);
-box-shadow:0 8px 30px rgba(37,211,102,0.6);
-}
-
-/* ANIMACIÓN */
-@keyframes fade{
-from{opacity:0;transform:translateY(20px);}
-to{opacity:1;transform:translateY(0);}
-}
-
-/* RESPONSIVE */
-@media(max-width:992px){
-.nav{
-padding:15px 30px;
-}
-
-.nav-right{
-gap:20px;
-}
-
-.nav-right a{
-font-size:13px;
-}
-}
-
+/* RESPONSIVE AUTH */
 @media(max-width:768px){
-.nav{
-padding:10px 20px;
-flex-direction:column;
-gap:15px;
-}
-
-.nav-right{
-gap:20px;
-flex-wrap:wrap;
-justify-content:center;
-}
-
-.hero-logo-container{
-width:150px;
-height:150px;
-right:20px;
-}
-
-.hero h1{
-font-size:32px;
-}
-
-.hero h2{
-font-size:20px;
-}
-
-.nav-logo{
-height:50px;
-}
-
-.nav-brand{
-font-size:24px;
-}
-
-.nav-subtitle{
-font-size:24px;
-letter-spacing:3px;
-}
+  .nav{flex-direction:column;padding:15px 20px;gap:15px;}
+  .nav-right{gap:15px;flex-wrap:wrap;justify-content:center;}
+  .hero h1{font-size:32px;} .hero h2{font-size:20px;}
+  .hero-logo-container{width:150px;height:150px;right:20px;}
+  .auth-box{padding:20px;}
 }
 </style>
 </head>
 
 <body>
 
-<!-- NAV -->
-<div class="nav">
+<!-- 🔒 PANTALLA DE LOGIN/REGISTRO -->
+<div id="authOverlay">
+  <div class="auth-box">
+    <img src="logo.png" alt="Logo" style="height:80px;margin-bottom:15px;">
+    <h3 style="margin:0 0 20px 0;color:#FF6A00;">CELL SPACE ARGENTINA</h3>
+    
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Ingresar</button>
+      <button class="auth-tab" onclick="switchTab('register')">Crear cuenta</button>
+    </div>
+    
+    <form id="loginForm" class="auth-form">
+      <input type="email" id="loginEmail" placeholder="Email" required>
+      <input type="password" id="loginPass" placeholder="Contraseña" required>
+      <button type="submit" class="btn" style="width:100%;margin-top:15px;">Ingresar</button>
+    </form>
+    
+    <form id="registerForm" class="auth-form" style="display:none;">
+      <input type="text" id="regName" placeholder="Nombre completo" required>
+      <input type="email" id="regEmail" placeholder="Email" required>
+      <input type="password" id="regPass" placeholder="Contraseña (mín. 6)" minlength="6" required>
+      <button type="submit" class="btn" style="width:100%;margin-top:15px;">Registrarme</button>
+    </form>
+    
+    <div id="authMsg" class="auth-msg"></div>
+  </div>
+</div>
+
+<!-- 📦 CONTENIDO PRINCIPAL (OCULTO HASTA LOGIN) -->
+<div id="mainContent">
+  
+  <!-- NAV -->
+  <div class="nav">
     <div class="nav-left">
-        <img src="logo.png" alt="Cell Space Argentina" class="nav-logo">
-        <div class="nav-brand-container">
-            <span class="nav-brand">CELL SPACE</span>
-            <span class="nav-subtitle">ARGENTINA</span>
-        </div>
+      <img src="logo.png" alt="Cell Space Argentina" class="nav-logo">
+      <div class="nav-brand-container">
+        <span class="nav-brand">CELL SPACE</span>
+        <span class="nav-subtitle">ARGENTINA</span>
+      </div>
     </div>
     <div class="nav-right">
-        <a href="#inicio">Inicio</a>
-        <a href="#servicios">Servicios</a>
-        <a href="#tienda">Tienda</a>
-        <a href="#contacto">Contacto</a>
+      <a href="#inicio">Inicio</a>
+      <a href="#servicios">Servicios</a>
+      <a href="#tienda">Tienda</a>
+      <a href="#contacto">Contacto</a>
+      <span id="userEmail" style="color:#888;font-size:13px;"></span>
+      <button class="btn-logout" onclick="logout()">Salir</button>
     </div>
-</div>
+  </div>
 
-<!-- HERO -->
-<div class="hero" id="inicio">
+  <!-- HERO -->
+  <div class="hero" id="inicio">
     <div class="hero-content">
-        <h1>SERVICIO TÉCNICO ESPECIALIZADO</h1>
-        <h2>CELULARES • PC • CONSOLAS</h2>
-        <a href="https://wa.me/5493782437674" class="btn">CONTACTAR POR WHATSAPP</a>
+      <h1>SERVICIO TÉCNICO ESPECIALIZADO</h1>
+      <h2>CELULARES • PC • CONSOLAS</h2>
+      <a href="https://wa.me/5493782437674" class="btn">CONTACTAR POR WHATSAPP</a>
     </div>
     <div class="hero-logo-container">
-        <img src="logo.png" alt="Cell Space Argentina Logo" class="hero-logo">
+      <img src="logo.png" alt="Cell Space Argentina Logo" class="hero-logo">
     </div>
-</div>
+  </div>
 
-<!-- SERVICIOS -->
-<div class="services" id="servicios">
-    <div class="card">
-        <h3>📱 Celulares</h3>
-        <p>Pantallas, baterías, placas</p>
-    </div>
-    <div class="card">
-        <h3>🤖 Software GSM</h3>
-        <p>FRP, desbloqueo, flasheo</p>
-    </div>
-    <div class="card">
-        <h3>💻 PC / Laptop</h3>
-        <p>Formateo, limpieza</p>
-    </div>
-    <div class="card">
-        <h3>🎮 Consolas</h3>
-        <p>HDMI, mantenimiento</p>
-    </div>
-</div>
+  <!-- SERVICIOS -->
+  <div class="services" id="servicios">
+    <div class="card"><h3>📱 Celulares</h3><p>Pantallas, baterías, placas</p></div>
+    <div class="card"><h3>🤖 Software GSM</h3><p>FRP, desbloqueo, flasheo</p></div>
+    <div class="card"><h3>💻 PC / Laptop</h3><p>Formateo, limpieza</p></div>
+    <div class="card"><h3>🎮 Consolas</h3><p>HDMI, mantenimiento</p></div>
+  </div>
 
-<!-- TIENDA -->
-<div class="shop" id="tienda">
+  <!-- TIENDA -->
+  <div class="shop" id="tienda">
     <h2>TIENDA</h2>
-    <div class="product">
-        <h3>iPhone 13</h3>
-        <p style="color:#FF6A00; font-weight:bold;">$600.000</p>
-    </div>
-    <div class="product">
-        <h3>Templados</h3>
-        <p style="color:#FF6A00; font-weight:bold;">$2.500</p>
-    </div>
-    <div class="product">
-        <h3>Auriculares</h3>
-        <p style="color:#FF6A00; font-weight:bold;">$9.900</p>
-    </div>
-</div>
+    <div class="product"><h3>iPhone 13</h3><p style="color:#FF6A00; font-weight:bold;">$600.000</p></div>
+    <div class="product"><h3>Templados</h3><p style="color:#FF6A00; font-weight:bold;">$2.500</p></div>
+    <div class="product"><h3>Auriculares</h3><p style="color:#FF6A00; font-weight:bold;">$9.900</p></div>
+  </div>
 
-<!-- FOOTER -->
-<div class="footer" id="contacto">
+  <!-- FOOTER -->
+  <div class="footer" id="contacto">
     <p>📍 Saladas, Corrientes</p>
     <p>🕒 Lunes a Sábados 9:00 - 20:00</p>
     <p>📱 WhatsApp: 3782-437674</p>
     <p>© 2026 Cell Space Argentina - Todos los derechos reservados</p>
+  </div>
+
+  <!-- WHATSAPP -->
+  <a href="https://wa.me/5493782437674" class="whatsapp" title="Contactar por WhatsApp">💬</a>
 </div>
 
-<!-- WHATSAPP -->
-<a href="https://wa.me/5493782437674" class="whatsapp" title="Contactar por WhatsApp">💬</a>
+<!-- 🔑 LÓGICA DE AUTENTICACIÓN -->
+<script>
+// Cambiar pestañas
+function switchTab(tab){
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('loginForm').style.display = tab==='login'?'block':'none';
+  document.getElementById('registerForm').style.display = tab==='register'?'block':'none';
+  showMsg('');
+}
+
+function showMsg(msg, type='error'){
+  const el = document.getElementById('authMsg');
+  el.textContent = msg;
+  el.className = `auth-msg ${type}`;
+}
+
+// LOGIN
+document.getElementById('loginForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value;
+  const pass = document.getElementById('loginPass').value;
+  try{
+    await auth.signInWithEmailAndPassword(email, pass);
+  }catch(err){ showMsg('❌ ' + (err.code==='auth/user-not-found'?'Email no registrado':'Credenciales incorrectas')); }
+});
+
+// REGISTRO
+document.getElementById('registerForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const name = document.getElementById('regName').value;
+  const email = document.getElementById('regEmail').value;
+  const pass = document.getElementById('regPass').value;
+  try{
+    await auth.createUserWithEmailAndPassword(email, pass);
+    showMsg('✅ Cuenta creada. Redirigiendo...', 'success');
+  }catch(err){ 
+    const msg = err.code==='auth/email-already-in-use'?'Email ya registrado':err.message;
+    showMsg('❌ '+msg); 
+  }
+});
+
+// CERRAR SESIÓN
+function logout(){ auth.signOut(); }
+
+// CONTROL DE VISUALIZACIÓN
+auth.onAuthStateChanged(user => {
+  const overlay = document.getElementById('authOverlay');
+  const content = document.getElementById('mainContent');
+  const emailSpan = document.getElementById('userEmail');
+  
+  if(user){
+    overlay.style.display = 'none';
+    content.classList.add('visible');
+    emailSpan.textContent = user.email;
+    document.body.style.overflow = 'auto';
+  } else {
+    overlay.style.display = 'flex';
+    content.classList.remove('visible');
+    emailSpan.textContent = '';
+    document.body.style.overflow = 'hidden';
+  }
+});
+</script>
 
 </body>
 </html>
