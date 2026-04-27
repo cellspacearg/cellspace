@@ -10,6 +10,7 @@
 <!-- FIREBASE SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 
 <script>
 const firebaseConfig = {
@@ -22,13 +23,13 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+const db = firebase.firestore();
 
 // 👑 CAMBIA ESTE EMAIL POR EL TUYO
 const ADMIN_EMAIL = "nahuel0123encinas@gmail.com";
 </script>
 
 <style>
-/* TUS ESTILOS ORIGINALES (INTACTOS) */
 body{margin:0;font-family:'Montserrat',sans-serif;background:#0A0A0A;color:white;overflow-x:hidden;}
 .nav{position:fixed;top:0;width:100%;display:flex;justify-content:space-between;align-items:center;padding:15px 50px;background:rgba(0,0,0,0.95);backdrop-filter:blur(10px);z-index:999;border-bottom:2px solid #FF6A00;box-sizing:border-box;}
 .nav-left{display:flex;align-items:center;gap:15px;flex-shrink:0;}
@@ -65,7 +66,7 @@ body{margin:0;font-family:'Montserrat',sans-serif;background:#0A0A0A;color:white
 .whatsapp:hover{transform:scale(1.1);box-shadow:0 8px 30px rgba(37,211,102,0.6);}
 @keyframes fade{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 
-/* AUTH MODAL */
+/* AUTH */
 #authOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#0A0A0A;z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;}
 .auth-box{background:#111;border:2px solid #FF6A00;border-radius:20px;padding:30px;width:100%;max-width:420px;text-align:center;box-shadow:0 0 40px rgba(255,106,0,0.2);animation:fade 0.5s ease;}
 .auth-tabs{display:flex;margin-bottom:20px;border-bottom:1px solid #333;}
@@ -81,26 +82,14 @@ body{margin:0;font-family:'Montserrat',sans-serif;background:#0A0A0A;color:white
 #mainContent{opacity:0;pointer-events:none;transition:opacity 0.5s ease;}
 #mainContent.visible{opacity:1;pointer-events:all;}
 
-/* 🛠️ PANEL ADMINISTRADOR PROFESIONAL */
-#adminDashboard{
-  position:fixed;top:0;left:0;width:100%;height:100%;
-  background:#0A0A0A;z-index:10001;display:none;
-  grid-template-columns:250px 1fr;
-  animation:fade 0.3s ease;
-}
-.admin-sidebar{
-  background:#111;border-right:1px solid #222;padding:20px;
-  display:flex;flex-direction:column;gap:10px;
-}
+/* ADMIN DASHBOARD */
+#adminDashboard{position:fixed;top:0;left:0;width:100%;height:100%;background:#0A0A0A;z-index:10001;display:none;grid-template-columns:250px 1fr;animation:fade 0.3s ease;}
+.admin-sidebar{background:#111;border-right:1px solid #222;padding:20px;display:flex;flex-direction:column;gap:10px;}
 .admin-sidebar h2{color:#FF6A00;font-size:20px;margin:0 0 30px 0;text-align:center;}
-.admin-nav-btn{
-  background:none;border:1px solid #333;color:#ccc;padding:12px;border-radius:8px;
-  cursor:pointer;text-align:left;transition:0.3s;font-size:14px;
-}
+.admin-nav-btn{background:none;border:1px solid #333;color:#ccc;padding:12px;border-radius:8px;cursor:pointer;text-align:left;transition:0.3s;font-size:14px;}
 .admin-nav-btn:hover, .admin-nav-btn.active{background:#FF6A00;border-color:#FF6A00;color:white;}
 .admin-close{margin-top:auto;background:#333;border:none;color:white;padding:12px;border-radius:8px;cursor:pointer;font-weight:500;transition:0.3s;}
 .admin-close:hover{background:#ff4444;}
-
 .admin-content{padding:30px;overflow-y:auto;}
 .admin-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;padding-bottom:20px;border-bottom:1px solid #222;}
 .admin-header h1{margin:0;font-size:24px;color:white;}
@@ -108,15 +97,17 @@ body{margin:0;font-family:'Montserrat',sans-serif;background:#0A0A0A;color:white
 .stat-card{background:#151515;padding:20px;border-radius:12px;border:1px solid #222;}
 .stat-card h3{margin:0 0 10px 0;font-size:14px;color:#888;font-weight:500;}
 .stat-card p{margin:0;font-size:28px;color:#FF6A00;font-weight:700;}
-.admin-table{width:100%;border-collapse:collapse;background:#151515;border-radius:12px;overflow:hidden;}
+.admin-table{width:100%;border-collapse:collapse;background:#151515;border-radius:12px;overflow:hidden;margin-top:20px;}
 .admin-table th,.admin-table td{padding:15px;text-align:left;border-bottom:1px solid #222;}
 .admin-table th{background:#1a1a1a;color:#888;font-weight:500;font-size:13px;text-transform:uppercase;}
 .admin-table td{color:#ddd;font-size:14px;}
 .admin-table tr:hover{background:#1a1a1a;}
 .admin-section{display:none;}
 .admin-section.active{display:block;}
+.loading{text-align:center;padding:40px;color:#888;}
+.refresh-btn{background:#FF6A00;border:none;color:white;padding:8px 15px;border-radius:6px;cursor:pointer;font-size:13px;margin-left:10px;}
+.refresh-btn:hover{background:#ff8533;}
 
-/* RESPONSIVE */
 @media(max-width:900px){
   #adminDashboard{grid-template-columns:1fr;}
   .admin-sidebar{position:fixed;top:0;left:0;height:100%;width:250px;transform:translateX(-100%);transition:0.3s;z-index:10002;}
@@ -131,7 +122,7 @@ body{margin:0;font-family:'Montserrat',sans-serif;background:#0A0A0A;color:white
 
 <body>
 
-<!-- 🔒 LOGIN/REGISTRO -->
+<!-- 🔒 LOGIN -->
 <div id="authOverlay">
   <div class="auth-box">
     <img src="logo.png" alt="Logo" style="height:80px;margin-bottom:15px;">
@@ -211,7 +202,7 @@ body{margin:0;font-family:'Montserrat',sans-serif;background:#0A0A0A;color:white
   <a href="https://wa.me/5493782437674" class="whatsapp" title="Contactar por WhatsApp">💬</a>
 </div>
 
-<!-- 🛠️ PANEL ADMINISTRADOR -->
+<!-- 🛠️ PANEL ADMIN -->
 <div id="adminDashboard">
   <aside class="admin-sidebar" id="adminSidebar">
     <h2>👑 Admin Panel</h2>
@@ -232,38 +223,33 @@ body{margin:0;font-family:'Montserrat',sans-serif;background:#0A0A0A;color:white
     <!-- DASHBOARD -->
     <div id="section-dashboard" class="admin-section active">
       <div class="admin-stats">
-        <div class="stat-card"><h3>Usuarios Registrados</h3><p id="statUsers">0</p></div>
+        <div class="stat-card"><h3>Usuarios Registrados</h3><p id="statUsers">Cargando...</p></div>
         <div class="stat-card"><h3>Productos Activos</h3><p>3</p></div>
-        <div class="stat-card"><h3>Sorteos Activos</h3><p>0</p></div>
-        <div class="stat-card"><h3>Consultas Hoy</h3><p>12</p></div>
+        <div class="stat-card"><h3>Sorteos Activos</h3><p id="statRaffles">0</p></div>
+        <div class="stat-card"><h3>Último Registro</h3><p id="lastUser">-</p></div>
       </div>
       <h3 style="color:#888;margin:30px 0 15px;">📈 Actividad Reciente</h3>
       <table class="admin-table">
         <thead><tr><th>Acción</th><th>Usuario</th><th>Fecha</th></tr></thead>
-        <tbody id="activityTable">
-          <tr><td>Registro nuevo</td><td>cliente@email.com</td><td>Hace 2 horas</td></tr>
-          <tr><td>Consulta WhatsApp</td><td>+54 3782 43XXXX</td><td>Hace 5 horas</td></tr>
-        </tbody>
+        <tbody id="activityTable"><tr><td colspan="3" class="loading">Cargando...</td></tr></tbody>
       </table>
     </div>
 
     <!-- USUARIOS -->
     <div id="section-users" class="admin-section">
-      <h3 style="color:#FF6A00;margin-bottom:20px;">👥 Usuarios Registrados</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <h3 style="color:#FF6A00;margin:0;">👥 Usuarios Registrados</h3>
+        <button class="refresh-btn" onclick="loadUsers()">🔄 Actualizar</button>
+      </div>
       <table class="admin-table">
-        <thead><tr><th>Email</th><th>Fecha de Registro</th><th>Estado</th></tr></thead>
-        <tbody id="usersTable">
-          <tr><td>cliente1@gmail.com</td><td>28/04/2026</td><td style="color:#4CAF50;">Activo</td></tr>
-          <tr><td>cliente2@hotmail.com</td><td>27/04/2026</td><td style="color:#4CAF50;">Activo</td></tr>
-        </tbody>
+        <thead><tr><th>Nombre</th><th>Email</th><th>Fecha de Registro</th><th>Estado</th></tr></thead>
+        <tbody id="usersTable"><tr><td colspan="4" class="loading">Cargando usuarios...</td></tr></tbody>
       </table>
-      <p style="color:#666;margin-top:15px;font-size:13px;">💡 Para ver usuarios reales en tiempo real, activaremos Firestore en el próximo paso.</p>
     </div>
 
     <!-- PRODUCTOS -->
     <div id="section-products" class="admin-section">
-      <h3 style="color:#FF6A00;margin-bottom:20px;">📦 Gestión de Productos</h3>
-      <p style="color:#aaa;margin-bottom:20px;">Actualmente los productos se cargan estáticamente. Próximamente podrás agregarlos desde aquí.</p>
+      <h3 style="color:#FF6A00;margin-bottom:20px;">📦 Productos Actuales</h3>
       <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(250px, 1fr));gap:15px;">
         <div style="background:#151515;padding:15px;border-radius:10px;border:1px solid #222;"><h4 style="margin:0 0 10px;">iPhone 13</h4><p style="color:#FF6A00;font-weight:bold;margin:0;">$600.000</p></div>
         <div style="background:#151515;padding:15px;border-radius:10px;border:1px solid #222;"><h4 style="margin:0 0 10px;">Templados</h4><p style="color:#FF6A00;font-weight:bold;margin:0;">$2.500</p></div>
@@ -274,13 +260,14 @@ body{margin:0;font-family:'Montserrat',sans-serif;background:#0A0A0A;color:white
     <!-- SORTEOS -->
     <div id="section-raffles" class="admin-section">
       <h3 style="color:#FF6A00;margin-bottom:20px;">🎁 Sorteos</h3>
-      <p style="color:#aaa;">No hay sorteos activos. Próximamente podrás crearlos desde este panel.</p>
+      <p style="color:#aaa;">No hay sorteos activos.</p>
     </div>
   </main>
 </div>
 
 <!-- 🔑 LÓGICA -->
 <script>
+// AUTH FUNCTIONS
 function switchTab(tab){
   document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
   event.target.classList.add('active');
@@ -293,21 +280,39 @@ function showMsg(msg, type='error'){
   el.textContent = msg;
   el.className = `auth-msg ${type}`;
 }
+
+// LOGIN
 document.getElementById('loginForm').addEventListener('submit', async e=>{
   e.preventDefault();
   try{
     await auth.signInWithEmailAndPassword(document.getElementById('loginEmail').value, document.getElementById('loginPass').value);
   }catch(err){ showMsg('❌ ' + (err.code==='auth/user-not-found'?'Email no registrado':'Credenciales incorrectas')); }
 });
+
+// REGISTRO (CON FIRESTORE)
 document.getElementById('registerForm').addEventListener('submit', async e=>{
   e.preventDefault();
+  const name = document.getElementById('regName').value;
+  const email = document.getElementById('regEmail').value;
+  const pass = document.getElementById('regPass').value;
   try{
-    await auth.createUserWithEmailAndPassword(document.getElementById('regEmail').value, document.getElementById('regPass').value);
-    showMsg('✅ Cuenta creada.', 'success');
-  }catch(err){ showMsg('❌ ' + (err.code==='auth/email-already-in-use'?'Email ya registrado':err.message)); }
+    const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
+    // Guardar en Firestore
+    await db.collection('users').doc(userCredential.user.uid).set({
+      name: name,
+      email: email,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      role: 'client'
+    });
+    showMsg('✅ Cuenta creada. Redirigiendo...', 'success');
+  }catch(err){ 
+    showMsg('❌ ' + (err.code==='auth/email-already-in-use'?'Email ya registrado':err.message)); 
+  }
 });
+
 function logout(){ auth.signOut(); }
 
+// ADMIN PANEL
 function toggleAdmin(){
   const dashboard = document.getElementById('adminDashboard');
   const main = document.getElementById('mainContent');
@@ -315,6 +320,7 @@ function toggleAdmin(){
   dashboard.style.display = isOpen ? 'none' : 'grid';
   main.style.display = isOpen ? 'block' : 'none';
   document.body.style.overflow = isOpen ? 'auto' : 'hidden';
+  if(!isOpen) loadDashboardData();
 }
 
 function showSection(id, btn){
@@ -322,8 +328,67 @@ function showSection(id, btn){
   document.querySelectorAll('.admin-nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('section-'+id).classList.add('active');
   if(btn) btn.classList.add('active');
+  if(id === 'users') loadUsers();
+  if(id === 'dashboard') loadDashboardData();
 }
 
+// CARGAR DATOS REALES DE FIRESTORE
+async function loadDashboardData(){
+  try{
+    const usersSnapshot = await db.collection('users').get();
+    const usersCount = usersSnapshot.size;
+    document.getElementById('statUsers').textContent = usersCount;
+    
+    if(usersCount > 0){
+      const lastUser = usersSnapshot.docs[usersSnapshot.size-1].data();
+      const lastUserName = lastUser.name || lastUser.email.split('@')[0];
+      document.getElementById('lastUser').textContent = lastUserName;
+    }
+    
+    // Actividad reciente
+    const activityHTML = usersSnapshot.docs.slice(-5).reverse().map(doc => {
+      const user = doc.data();
+      const date = user.createdAt ? user.createdAt.toDate().toLocaleString('es-AR') : 'Reciente';
+      return `<tr><td>Registro nuevo</td><td>${user.name || user.email}</td><td>${date}</td></tr>`;
+    }).join('');
+    
+    document.getElementById('activityTable').innerHTML = activityHTML || '<tr><td colspan="3" style="text-align:center;color:#666;">Sin actividad reciente</td></tr>';
+  }catch(err){
+    console.error('Error loading dashboard:', err);
+    document.getElementById('statUsers').textContent = 'Error';
+  }
+}
+
+async function loadUsers(){
+  const tbody = document.getElementById('usersTable');
+  tbody.innerHTML = '<tr><td colspan="4" class="loading">Cargando...</td></tr>';
+  
+  try{
+    const snapshot = await db.collection('users').orderBy('createdAt', 'desc').get();
+    if(snapshot.empty){
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666;">No hay usuarios registrados</td></tr>';
+      return;
+    }
+    
+    const rows = snapshot.docs.map(doc => {
+      const user = doc.data();
+      const date = user.createdAt ? user.createdAt.toDate().toLocaleDateString('es-AR') : 'Reciente';
+      return `<tr>
+        <td>${user.name || '-'}</td>
+        <td>${user.email}</td>
+        <td>${date}</td>
+        <td style="color:#4CAF50;">Activo</td>
+      </tr>`;
+    }).join('');
+    
+    tbody.innerHTML = rows;
+  }catch(err){
+    console.error('Error loading users:', err);
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#ff4444;">Error al cargar usuarios</td></tr>';
+  }
+}
+
+// AUTH STATE
 auth.onAuthStateChanged(user => {
   const overlay = document.getElementById('authOverlay');
   const content = document.getElementById('mainContent');
@@ -336,11 +401,9 @@ auth.onAuthStateChanged(user => {
     content.classList.add('visible');
     emailSpan.textContent = user.email;
     
-    if(user.email === ADMIN_EMAIL) {
+    if(user.email === ADMIN_EMAIL){
       adminBtn.style.display = 'inline-block';
       adminEmailSpan.textContent = `Admin: ${user.email}`;
-      // Simular conteo de usuarios (después lo conectamos a Firestore)
-      document.getElementById('statUsers').textContent = "2";
     } else {
       adminBtn.style.display = 'none';
     }
