@@ -18,7 +18,7 @@
   <!-- NAV -->
   <nav class="nav">
     <div class="nav-left">
-      <img src="assets/logo.png" alt="Logo" class="nav-logo">
+      <img src="assets/logo.png" alt="Logo" class="nav-logo" onerror="this.style.display='none'">
       <div>
         <div class="nav-brand">CELL SPACE</div>
         <div class="nav-subtitle">ARGENTINA</div>
@@ -35,71 +35,22 @@
     </div>
   </nav>
 
-  <!-- HERO/CARRUSEL -->
+  <!-- HERO/CARRUSEL DINÁMICO -->
   <section class="hero" id="inicio">
-    <div class="carousel">
-      <div class="carousel-slide active">
-        <img src="https://i.imgur.com/8Km9tLL.jpg" alt="Servicio">
-        <div class="carousel-content">
-          <h1>Servicio Técnico Especializado</h1>
-          <h2>Celulares • PC • Consolas</h2>
-          <a href="https://wa.me/5493782437674" class="btn">Contactar por WhatsApp</a>
-        </div>
-      </div>
-      <div class="carousel-slide">
-        <img src="https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=1920" alt="Reparación">
-        <div class="carousel-content">
-          <h1>Reparación Express</h1>
-          <h2>Servicio en el día</h2>
-          <a href="https://wa.me/5493782437674" class="btn">Agendar Turno</a>
-        </div>
-      </div>
-      <div class="carousel-slide">
-        <img src="https://images.unsplash.com/photo-1588515635100-2a14d6954e0b?w=1920" alt="Productos">
-        <div class="carousel-content">
-          <h1>Productos de Calidad</h1>
-          <h2>Accesorios y repuestos originales</h2>
-          <a href="#productos" class="btn">Ver Tienda</a>
-        </div>
-      </div>
-      <button class="carousel-btn prev" onclick="changeSlide(-1)">❮</button>
-      <button class="carousel-btn next" onclick="changeSlide(1)">❯</button>
-      <div class="carousel-dots">
-        <span class="dot active" onclick="goToSlide(0)"></span>
-        <span class="dot" onclick="goToSlide(1)"></span>
-        <span class="dot" onclick="goToSlide(2)"></span>
-      </div>
+    <div class="carousel" id="carousel">
+      <p class="loading" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;">Cargando...</p>
     </div>
   </section>
 
-  <!-- SERVICIOS -->
+  <!-- SERVICIOS DINÁMICOS -->
   <section class="services" id="servicios">
     <h2>Nuestros Servicios</h2>
-    <div class="services-grid">
-      <div class="service-card">
-        <div class="service-icon">📱</div>
-        <h3>Celulares</h3>
-        <p>Pantallas, baterías, placas y más</p>
-      </div>
-      <div class="service-card">
-        <div class="service-icon">💻</div>
-        <h3>PC / Laptop</h3>
-        <p>Formateo, limpieza, reparación</p>
-      </div>
-      <div class="service-card">
-        <div class="service-icon">🎮</div>
-        <h3>Consolas</h3>
-        <p>Reparación de HDMI, mantenimiento</p>
-      </div>
-      <div class="service-card">
-        <div class="service-icon">🤖</div>
-        <h3>Software GSM</h3>
-        <p>Desbloqueo, FRP, flasheo</p>
-      </div>
+    <div class="services-grid" id="servicesGrid">
+      <p class="loading">Cargando servicios...</p>
     </div>
   </section>
 
-  <!-- PRODUCTOS -->
+  <!-- PRODUCTOS DINÁMICOS -->
   <section class="products" id="productos">
     <h2>Productos Destacados</h2>
     <div class="products-grid" id="productsGrid">
@@ -107,23 +58,22 @@
     </div>
   </section>
 
-  <!-- FOOTER -->
+  <!-- FOOTER DINÁMICO -->
   <footer class="footer" id="contacto">
     <div class="footer-content">
       <div class="footer-section">
         <h3>📍 Ubicación</h3>
-        <p>Saladas, Corrientes</p>
+        <p id="footerAddress">Cargando...</p>
         <p>Argentina</p>
       </div>
       <div class="footer-section">
         <h3>🕒 Horario</h3>
-        <p>Lunes a Sábados</p>
-        <p>9:00 - 20:00</p>
+        <p id="footerHours">Cargando...</p>
       </div>
       <div class="footer-section">
         <h3>📱 Contacto</h3>
-        <p>WhatsApp: 3782-437674</p>
-        <a href="https://wa.me/5493782437674" class="btn" style="margin-top:10px;">Escribir</a>
+        <p id="footerPhone">Cargando...</p>
+        <a href="https://wa.me/5493782437674" id="footerWaLink" class="btn" style="margin-top:10px;">Escribir</a>
       </div>
     </div>
     <div class="footer-bottom">

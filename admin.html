@@ -17,22 +17,26 @@
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <img src="assets/logo.png" alt="Logo" class="sidebar-logo">
+      <img src="assets/logo.png" alt="Logo" class="sidebar-logo" onerror="this.style.display='none'">
       <h2>CELL SPACE</h2>
+      <p style="color:#666;font-size:12px;">Panel de Control</p>
     </div>
     <nav class="sidebar-nav">
       <a href="#dashboard" class="nav-link active" onclick="showSection('dashboard', this)">📊 Dashboard</a>
+      <a href="#hero" class="nav-link" onclick="showSection('hero', this)">🎨 Carrusel/Hero</a>
+      <a href="#servicios" class="nav-link" onclick="showSection('servicios', this)">🛠️ Servicios</a>
       <a href="#productos" class="nav-link" onclick="showSection('productos', this)">📦 Productos</a>
+      <a href="#contacto" class="nav-link" onclick="showSection('contacto', this)">📍 Contacto/Footer</a>
       <a href="#usuarios" class="nav-link" onclick="showSection('usuarios', this)">👥 Usuarios</a>
       <a href="index.html" target="_blank" class="nav-link">🌐 Ver Sitio</a>
-      <a href="#" class="nav-link" onclick="logout()">🚪 Cerrar Sesión</a>
+      <a href="#" class="nav-link" onclick="logout()" style="margin-top:auto;color:#ff4444;">🚪 Cerrar Sesión</a>
     </nav>
   </aside>
 
   <!-- MAIN CONTENT -->
   <main class="main-content">
     <header class="top-bar">
-      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <button class="menu-toggle" onclick="toggleSidebar()">☰ Menú</button>
       <h1>Panel de Administración</h1>
       <div class="user-info">
         <span id="adminEmail"></span>
@@ -57,34 +61,82 @@
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">📱</div>
-          <div class="stat-info">
-            <h3>Consultas Hoy</h3>
-            <p>12</p>
-          </div>
-        </div>
-        <div class="stat-card">
           <div class="stat-icon">🎯</div>
           <div class="stat-info">
             <h3>En Stock</h3>
             <p id="inStockProducts">0</p>
           </div>
         </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔧</div>
+          <div class="stat-info">
+            <h3>Servicios</h3>
+            <p id="totalServices">0</p>
+          </div>
+        </div>
       </div>
 
       <div class="recent-activity">
-        <h2>Actividad Reciente</h2>
+        <h2>📈 Actividad Reciente</h2>
         <div id="recentActivity" class="activity-list">
           <p class="loading">Cargando...</p>
         </div>
       </div>
     </section>
 
+    <!-- HERO/CARRUSEL SECTION -->
+    <section id="hero" class="section">
+      <div class="section-header">
+        <h2>🎨 Editar Carrusel/Hero</h2>
+        <button class="btn btn-primary" onclick="addSlide()">+ Agregar Slide</button>
+      </div>
+      
+      <div id="slidesContainer" class="slides-list">
+        <p class="loading">Cargando slides...</p>
+      </div>
+    </section>
+
+    <!-- SERVICIOS SECTION -->
+    <section id="servicios" class="section">
+      <div class="section-header">
+        <h2>🛠️ Gestionar Servicios</h2>
+        <button class="btn btn-primary" onclick="toggleServiceForm()">+ Nuevo Servicio</button>
+      </div>
+
+      <div id="serviceForm" class="form-container" style="display:none;">
+        <form id="serviceFormEl" class="form">
+          <input type="hidden" id="serviceId">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Icono (emoji)</label>
+              <input type="text" id="serviceIcon" placeholder="ej: 📱" required>
+            </div>
+            <div class="form-group">
+              <label>Título</label>
+              <input type="text" id="serviceTitle" placeholder="ej: Celulares" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Descripción</label>
+            <textarea id="serviceDesc" placeholder="Descripción del servicio..." rows="3" required></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="resetServiceForm()">Cancelar</button>
+            <button type="submit" class="btn btn-primary">💾 Guardar Servicio</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="services-admin-grid" id="adminServicesList">
+        <p class="loading">Cargando servicios...</p>
+      </div>
+    </section>
+
     <!-- PRODUCTOS SECTION -->
     <section id="productos" class="section">
       <div class="section-header">
-        <h2>Gestión de Productos</h2>
-        <button class="btn" onclick="toggleProductForm()">+ Nuevo Producto</button>
+        <h2>📦 Gestión de Productos</h2>
+        <button class="btn btn-primary" onclick="toggleProductForm()">+ Nuevo Producto</button>
       </div>
 
       <div id="productForm" class="form-container" style="display:none;">
@@ -145,9 +197,41 @@
       </div>
     </section>
 
+    <!-- CONTACTO/FOOTER SECTION -->
+    <section id="contacto" class="section">
+      <h2>📍 Información de Contacto</h2>
+      <div class="form-container">
+        <form id="contactForm" class="form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Dirección</label>
+              <input type="text" id="contactAddress" placeholder="Saladas, Corrientes">
+            </div>
+            <div class="form-group">
+              <label>WhatsApp</label>
+              <input type="text" id="contactPhone" placeholder="3782-437674">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Horario</label>
+              <input type="text" id="contactHours" placeholder="Lunes a Sábados 9:00 - 20:00">
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="contactEmail" placeholder="info@cellspace.com">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💾 Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
     <!-- USUARIOS SECTION -->
     <section id="usuarios" class="section">
-      <h2>Usuarios Registrados</h2>
+      <h2>👥 Usuarios Registrados</h2>
       <div class="table-container">
         <table class="data-table">
           <thead>
