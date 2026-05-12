@@ -65,24 +65,24 @@ img{max-width:100%;display:block;}
 #mainContent{opacity:0;pointer-events:none;transition:opacity .5s;padding-top:100px;min-height:100vh;}
 #mainContent.visible{opacity:1;pointer-events:all;}
 
-/* CARRUSEL HERO */
-.hero{position:relative;height:100vh;overflow:hidden;}
-.carousel{position:relative;width:100%;height:100%;}
+/* CARRUSEL COMPACTO */
+.hero{position:relative;max-width:1200px;margin:0 auto;padding:0 20px;}
+.carousel{position:relative;width:100%;height:450px;border-radius:16px;overflow:hidden;margin:20px 0;box-shadow:0 10px 40px rgba(255,106,0,0.2);}
 .carousel-slide{position:absolute;inset:0;opacity:0;transition:opacity 1s ease-in-out;}
 .carousel-slide.active{opacity:1;}
 .carousel-slide img{width:100%;height:100%;object-fit:cover;}
-.carousel-slide::before{content:'';position:absolute;inset:0;background:linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.85));}
-.carousel-content{position:absolute;bottom:0;left:0;right:0;padding:80px 5%;text-align:center;z-index:2;}
-.carousel-content h1{font-size:3rem;text-transform:uppercase;margin-bottom:15px;text-shadow:2px 2px 10px rgba(0,0,0,0.8);animation:slideUp .8s ease;}
-.carousel-content h2{color:var(--orange);font-size:1.6rem;margin-bottom:30px;text-shadow:1px 1px 5px rgba(0,0,0,0.8);animation:slideUp .8s ease .2s both;}
-.carousel-content .btn{animation:slideUp .8s ease .4s both;}
-.carousel-dots{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:3;}
-.dot{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,0.4);cursor:pointer;transition:0.3s;}
+.carousel-slide::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.3) 100%);}
+.carousel-content{position:absolute;top:50%;left:0;transform:translateY(-50%);padding:40px;max-width:500px;z-index:2;}
+.carousel-content h1{font-size:2.2rem;text-transform:uppercase;margin-bottom:10px;text-shadow:2px 2px 10px rgba(0,0,0,0.8);animation:slideUp .8s ease;line-height:1.1;}
+.carousel-content h2{color:var(--orange);font-size:1.3rem;margin-bottom:25px;text-shadow:1px 1px 5px rgba(0,0,0,0.8);animation:slideUp .8s ease .2s both;}
+.carousel-content .btn{animation:slideUp .8s ease .4s both;padding:12px 30px;font-size:14px;}
+.carousel-dots{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:3;}
+.dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.4);cursor:pointer;transition:0.3s;}
 .dot.active{background:var(--orange);transform:scale(1.3);}
-.carousel-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,106,0,0.3);border:none;color:white;width:50px;height:50px;border-radius:50%;cursor:pointer;font-size:24px;transition:0.3s;z-index:3;}
+.carousel-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,106,0,0.3);border:none;color:white;width:45px;height:45px;border-radius:50%;cursor:pointer;font-size:20px;transition:0.3s;z-index:3;}
 .carousel-btn:hover{background:var(--orange);}
-.carousel-btn.prev{left:20px;}
-.carousel-btn.next{right:20px;}
+.carousel-btn.prev{left:15px;}
+.carousel-btn.next{right:15px;}
 
 /* ADMIN PANEL */
 #adminPanel{background:#111;border:1px solid #333;border-radius:16px;padding:25px;margin:30px auto;max-width:800px;display:none;}
@@ -137,9 +137,11 @@ img{max-width:100%;display:block;}
   .nav-logo{height:50px;}
   .nav-brand{font-size:18px;}
   .nav-right{gap:15px;flex-wrap:wrap;justify-content:center;}
-  .carousel-content h1{font-size:2rem;}
-  .carousel-content h2{font-size:1.2rem;}
-  .carousel-btn{width:40px;height:40px;font-size:18px;}
+  .carousel{height:300px;border-radius:12px;}
+  .carousel-content{padding:25px;max-width:100%;}
+  .carousel-content h1{font-size:1.5rem;}
+  .carousel-content h2{font-size:1rem;}
+  .carousel-btn{width:35px;height:35px;font-size:16px;}
   .publish-form{grid-template-columns:1fr;}
   .publish-form .full{grid-column:1;}
   .feed-grid{grid-template-columns:1fr;}
@@ -195,7 +197,7 @@ img{max-width:100%;display:block;}
     </div>
   </nav>
 
-  <!-- 🎠 CARRUSEL HERO -->
+  <!-- 🎠 CARRUSEL COMPACTO -->
   <section class="hero" id="inicio">
     <div class="carousel">
       <!-- Slide 1 -->
