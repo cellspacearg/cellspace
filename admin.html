@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Admin - Cell Space Argentina</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+  
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
+</head>
+<body>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="assets/logo.png" alt="Logo" class="sidebar-logo">
+      <h2>CELL SPACE</h2>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#dashboard" class="nav-link active" onclick="showSection('dashboard', this)">📊 Dashboard</a>
+      <a href="#productos" class="nav-link" onclick="showSection('productos', this)">📦 Productos</a>
+      <a href="#usuarios" class="nav-link" onclick="showSection('usuarios', this)">👥 Usuarios</a>
+      <a href="index.html" target="_blank" class="nav-link">🌐 Ver Sitio</a>
+      <a href="#" class="nav-link" onclick="logout()">🚪 Cerrar Sesión</a>
+    </nav>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <header class="top-bar">
+      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <h1>Panel de Administración</h1>
+      <div class="user-info">
+        <span id="adminEmail"></span>
+      </div>
+    </header>
+
+    <!-- DASHBOARD SECTION -->
+    <section id="dashboard" class="section active">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-info">
+            <h3>Total Productos</h3>
+            <p id="totalProducts">0</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-info">
+            <h3>Usuarios</h3>
+            <p id="totalUsers">0</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📱</div>
+          <div class="stat-info">
+            <h3>Consultas Hoy</h3>
+            <p>12</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-info">
+            <h3>En Stock</h3>
+            <p id="inStockProducts">0</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="recent-activity">
+        <h2>Actividad Reciente</h2>
+        <div id="recentActivity" class="activity-list">
+          <p class="loading">Cargando...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRODUCTOS SECTION -->
+    <section id="productos" class="section">
+      <div class="section-header">
+        <h2>Gestión de Productos</h2>
+        <button class="btn" onclick="toggleProductForm()">+ Nuevo Producto</button>
+      </div>
+
+      <div id="productForm" class="form-container" style="display:none;">
+        <form id="publishForm" class="form">
+          <input type="hidden" id="prodId">
+          <div class="form-group">
+            <label>Nombre del Producto</label>
+            <input type="text" id="prodName" placeholder="ej: iPhone 13 128GB" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Precio ($)</label>
+              <input type="number" id="prodPrice" placeholder="0" min="0" required>
+            </div>
+            <div class="form-group">
+              <label>Categoría</label>
+              <select id="prodCategory">
+                <option value="Celulares">Celulares</option>
+                <option value="Accesorios">Accesorios</option>
+                <option value="PC/Laptop">PC / Laptop</option>
+                <option value="Consolas">Consolas</option>
+                <option value="Servicios">Servicios</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Descripción</label>
+            <textarea id="prodDesc" placeholder="Descripción del producto..." rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Imagen</label>
+            <div class="upload-area" id="uploadArea">
+              <input type="file" id="prodImage" accept="image/*">
+              <img id="imagePreview" class="preview-img">
+              <div id="uploadPlaceholder">
+                <p>📸 Click o arrastra una imagen</p>
+                <span>Máx 5MB • JPG/PNG</span>
+              </div>
+              <div class="progress" id="uploadProgress"><div class="progress-fill" id="progressFill"></div></div>
+              <p id="uploadStatus" class="upload-status"></p>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="prodStock" checked>
+              <span>Producto en stock</span>
+            </label>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="resetProductForm()">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="saveBtn">💾 Guardar</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="products-admin-grid" id="adminProductsList">
+        <p class="loading">Cargando productos...</p>
+      </div>
+    </section>
+
+    <!-- USUARIOS SECTION -->
+    <section id="usuarios" class="section">
+      <h2>Usuarios Registrados</h2>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Fecha Registro</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="usersTable">
+            <tr><td colspan="4" class="loading">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
