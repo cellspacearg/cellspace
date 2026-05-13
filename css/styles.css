@@ -5,12 +5,12 @@ a{color:var(--orange);text-decoration:none;}
 img{max-width:100%;display:block;}
 
 /* FONDO ANIMADO */
-body::before{content:'';position:fixed;inset:0;z-index:-2;background:radial-gradient(ellipse at 20% 50%, rgba(255,106,0,0.06) 0%, transparent 50%),radial-gradient(ellipse at 80% 20%, rgba(255,106,0,0.04) 0%, transparent 50%),#060606;}
+body::before{content:'';position:fixed;inset:0;z-index:-2;background:radial-gradient(ellipse at 20% 50%,rgba(255,106,0,0.06) 0%,transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(255,106,0,0.04) 0%,transparent 50%),#060606;}
 body::after{content:'';position:fixed;inset:0;z-index:-1;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cdefs%3E%3Cpattern id='circuit' x='0' y='0' width='200' height='200' patternUnits='userSpaceOnUse'%3E%3Cg fill='none' stroke='rgba(255,106,0,0.07)' stroke-width='1.2'%3E%3Cpath d='M0 40h80l10-10h30'/%3E%3Cpath d='M120 40h80'/%3E%3Cpath d='M0 80h50l20 20h50l10-10h40'/%3E%3Cpath d='M120 80h30l20 20h50'/%3E%3Cpath d='M60 0v60l10 10v30'/%3E%3Cpath d='M60 120v40l10 10v30'/%3E%3Ccircle cx='60' cy='60' r='3' fill='rgba(255,106,0,0.15)'/%3E%3Ccircle cx='100' cy='60' r='3' fill='rgba(255,106,0,0.15)'/%3E%3C/g%3E%3C/pattern%3E%3C/defs%3E%3Crect width='400' height='400' fill='url(%23circuit)'/%3E%3C/svg%3E");animation:circuitMove 60s linear infinite;opacity:0.6;}
-@keyframes circuitMove{0%{background-position:0 0;}100%{background-position:400px 400px;}}
+@keyframes circuitMove{0%{background-position:0 0}100%{background-position:400px 400px}}
 .particles{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;}
 .particle{position:absolute;width:2px;height:2px;background:rgba(255,106,0,0.4);border-radius:50%;animation:floatParticle linear infinite;}
-@keyframes floatParticle{0%{transform:translateY(100vh) scale(0);opacity:0;}10%{opacity:1;}90%{opacity:1;}100%{transform:translateY(-10vh) scale(1);opacity:0;}}
+@keyframes floatParticle{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-10vh) scale(1);opacity:0}}
 
 /* NAV */
 .nav{position:fixed;top:0;width:100%;padding:12px 5%;display:flex;justify-content:space-between;align-items:center;background:rgba(6,6,6,0.95);backdrop-filter:blur(15px);z-index:100;border-bottom:1px solid rgba(255,106,0,0.3);}
