@@ -1,19 +1,17 @@
-// VARIABLES GLOBALES
+// VARIABLES
 let currentSlide = 0;
 let slideInterval;
-let currentCategory = 'all';
-let allProducts = [];
 
-// ========== INICIALIZACIÓN ==========
+// INICIALIZAR
 document.addEventListener('DOMContentLoaded', () => {
   createParticles();
   loadCarousel();
   loadServices();
-  loadProducts();
+  loadFeaturedProducts();
   loadContact();
 });
 
-// ========== PARTÍCULAS ==========
+// PARTÍCULAS
 function createParticles() {
   const container = document.getElementById('particles');
   if (!container) return;
@@ -29,7 +27,7 @@ function createParticles() {
   }
 }
 
-// ========== CARRUSEL DINÁMICO ==========
+// CARRUSEL
 async function loadCarousel() {
   const carousel = document.getElementById('carousel');
   try {
@@ -38,253 +36,95 @@ async function loadCarousel() {
     if (snap.empty) {
       carousel.innerHTML = `
         <div class="carousel-slide active">
-          <img src="https://i.imgur.com/8Km9tLL.jpg" alt="Servicio">
+          <img src="https://i.imgur.com/8Km9tLL.jpg">
           <div class="carousel-content">
             <h1>Servicio Técnico Especializado</h1>
             <h2>Celulares • PC • Consolas</h2>
-            <a href="https://wa.me/5493782437674" class="btn">Contactar por WhatsApp</a>
+            <a href="https://wa.me/5493782437674" class="btn">Contactar</a>
           </div>
-        </div>
-        <div class="carousel-slide">
-          <img src="https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=1920" alt="Reparación">
-          <div class="carousel-content">
-            <h1>Reparación Express</h1>
-            <h2>Servicio en el día</h2>
-            <a href="https://wa.me/5493782437674" class="btn">Agendar Turno</a>
-          </div>
-        </div>
-        <button class="carousel-btn prev" onclick="changeSlide(-1)">❮</button>
-        <button class="carousel-btn next" onclick="changeSlide(1)">❯</button>
-        <div class="carousel-dots">
-          <span class="dot active" onclick="goToSlide(0)"></span>
-          <span class="dot" onclick="goToSlide(1)"></span>
         </div>`;
-      startCarousel();
       return;
     }
     
     let slidesHTML = '';
-    let dotsHTML = '';
-    
     snap.forEach((doc, index) => {
       const s = doc.data();
-      slidesHTML += `
-        <div class="carousel-slide ${index === 0 ? 'active' : ''}">
-          <img src="${s.imageUrl || 'https://via.placeholder.com/1920x600'}" alt="${s.title}">
-          <div class="carousel-content">
-            <h1>${s.title}</h1>
-            <h2>${s.subtitle || ''}</h2>
-            <a href="https://wa.me/5493782437674?text=${encodeURIComponent(s.buttonText || 'Consultar')}" class="btn">${s.buttonText || 'Contactar'}</a>
-          </div>
-        </div>`;
-      dotsHTML += `<span class="dot ${index === 0 ? 'active' : ''}" onclick="goToSlide(${index})"></span>`;
+      slidesHTML += `<div class="carousel-slide ${index===0?'active':''}"><img src="${s.imageUrl}"><div class="carousel-content"><h1>${s.title}</h1><h2>${s.subtitle||''}</h2><a href="https://wa.me/5493782437674" class="btn">${s.buttonText||'Contactar'}</a></div></div>`;
     });
     
-    carousel.innerHTML = `
-      ${slidesHTML}
-      <button class="carousel-btn prev" onclick="changeSlide(-1)">❮</button>
-      <button class="carousel-btn next" onclick="changeSlide(1)">❯</button>
-      <div class="carousel-dots">${dotsHTML}</div>`;
-    
-    startCarousel();
-  } catch (e) {
-    console.error('Error cargando carousel:', e);
-    carousel.innerHTML = '<p style="color:white;text-align:center">Error</p>';
-  }
-}
-
-function startCarousel() {
-  slideInterval = setInterval(() => changeSlide(1), 5000);
-}
-
-function showSlide(n) {
-  const slides = document.querySelectorAll('.carousel-slide');
-  const dots = document.querySelectorAll('.dot');
-  if (!slides.length) return;
-  
-  if (n >= slides.length) currentSlide = 0;
-  if (n < 0) currentSlide = slides.length - 1;
-  
-  slides.forEach(s => s.classList.remove('active'));
-  dots.forEach(d => d.classList.remove('active'));
-  
-  slides[currentSlide].classList.add('active');
-  dots[currentSlide].classList.add('active');
+    carousel.innerHTML = slidesHTML + `<button class="carousel-btn prev" onclick="changeSlide(-1)">❮</button><button class="carousel-btn next" onclick="changeSlide(1)">❯</button>`;
+    slideInterval = setInterval(() => changeSlide(1), 5000);
+  } catch (e) { console.error(e); }
 }
 
 function changeSlide(n) {
-  currentSlide += n;
-  showSlide(currentSlide);
-  resetInterval();
+  const slides = document.querySelectorAll('.carousel-slide');
+  if (!slides.length) return;
+  slides[currentSlide].classList.remove('active');
+  currentSlide = (currentSlide + n + slides.length) % slides.length;
+  slides[currentSlide].classList.add('active');
 }
 
-function goToSlide(n) {
-  currentSlide = n;
-  showSlide(currentSlide);
-  resetInterval();
-}
-
-function resetInterval() {
-  clearInterval(slideInterval);
-  slideInterval = setInterval(() => changeSlide(1), 5000);
-}
-
-// ========== SERVICIOS ==========
+// SERVICIOS
 async function loadServices() {
   const grid = document.getElementById('servicesGrid');
   try {
     const snap = await db.collection('services').get();
     if (snap.empty) {
-      grid.innerHTML = `
-        <div class="service-card"><div class="service-icon">📱</div><h3>Celulares</h3><p>Pantallas, baterías, placas</p></div>
-        <div class="service-card"><div class="service-icon">💻</div><h3>PC/Laptop</h3><p>Formateo, limpieza</p></div>
-        <div class="service-card"><div class="service-icon">🎮</div><h3>Consolas</h3><p>HDMI, mantenimiento</p></div>
-        <div class="service-card"><div class="service-icon">🤖</div><h3>Software</h3><p>Desbloqueo, FRP</p></div>`;
+      grid.innerHTML = `<div class="service-card"><div class="service-icon">📱</div><h3>Celulares</h3><p>Reparación express</p></div><div class="service-card"><div class="service-icon">💻</div><h3>PC/Laptop</h3><p>Formateo y limpieza</p></div><div class="service-card"><div class="service-icon">🎮</div><h3>Consolas</h3><p>Mantenimiento</p></div>`;
       return;
     }
     grid.innerHTML = snap.docs.map(d => {
       const s = d.data();
-      return `<div class="service-card"><div class="service-icon">${s.icon || '🔧'}</div><h3>${s.title}</h3><p>${s.description || ''}</p></div>`;
+      return `<div class="service-card"><div class="service-icon">${s.icon||'🔧'}</div><h3>${s.title}</h3><p>${s.description||''}</p></div>`;
     }).join('');
-  } catch (e) {
-    grid.innerHTML = '<p style="color:var(--muted)">Error</p>';
-  }
+  } catch (e) { console.error(e); }
 }
 
-// ========== TIENDA PREMIUM ==========
-async function loadProducts() {
-  const grid = document.getElementById('productsGrid');
-  const countEl = document.getElementById('productsCount');
-  
+// PRODUCTOS DESTACADOS (Solo 4-6)
+async function loadFeaturedProducts() {
+  const grid = document.getElementById('featuredProducts');
   try {
-    const snap = await db.collection('products').where('inStock', '==', true).orderBy('createdAt', 'desc').get();
+    const snap = await db.collection('products').where('inStock', '==', true).orderBy('createdAt', 'desc').limit(6).get();
     
     if (snap.empty) {
-      grid.innerHTML = '<div class="empty-state"><p>📦 No hay productos disponibles</p></div>';
-      countEl.textContent = '0 productos';
+      grid.innerHTML = '<div class="empty-state"><p>No hay productos destacados</p><a href="tienda.html" class="btn" style="margin-top:20px">Ver Tienda</a></div>';
       return;
     }
     
-    allProducts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    renderProducts(allProducts);
-    countEl.textContent = `${allProducts.length} productos encontrados`;
-    setupFilters();
-    
-  } catch (e) {
-    console.error('Error cargando productos:', e);
-    grid.innerHTML = '<div class="empty-state"><p style="color:#ff4444">Error al cargar</p></div>';
-  }
-}
-
-function renderProducts(products) {
-  const grid = document.getElementById('productsGrid');
-  
-  if (products.length === 0) {
-    grid.innerHTML = '<div class="empty-state"><p>No se encontraron productos</p></div>';
-    return;
-  }
-  
-  grid.innerHTML = products.map(p => {
-    const discount = p.discount || 0;
-    const oldPrice = discount ? Math.round(p.price / (1 - discount / 100)) : 0;
-    const rating = p.rating || Math.floor(Math.random() * 2) + 4; // 4 o 5 estrellas por defecto
-    const reviews = p.reviews || Math.floor(Math.random() * 100) + 20;
-    
-    return `
-      <div class="product-card-premium" data-category="${p.category || 'General'}">
-        ${discount > 0 ? `<div class="discount-badge">-${discount}%</div>` : ''}
-        ${p.isNew ? '<div class="new-badge">NUEVO</div>' : ''}
-        
-        <div class="product-image-container">
-          <img src="${p.imageUrl || 'https://via.placeholder.com/300x300?text=Producto'}" 
-               alt="${p.title}" 
-               class="product-image"
-               onerror="this.src='https://via.placeholder.com/300x300?text=Sin+Imagen'">
-          <button class="wishlist-btn">♡</button>
-        </div>
-        
-        <div class="product-info-premium">
-          <div class="product-category">${p.category || 'General'}</div>
-          <h3 class="product-title-premium">${p.title}</h3>
-          
-          <div class="product-rating">
-            ${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}
-            <span class="rating-count">(${reviews})</span>
+    grid.innerHTML = snap.docs.map(doc => {
+      const p = doc.data();
+      return `
+        <div class="product-card-premium">
+          ${p.discount ? `<div class="discount-badge">-${p.discount}%</div>` : ''}
+          <div class="product-image-container">
+            <img src="${p.imageUrl||'https://via.placeholder.com/300'}" class="product-image">
           </div>
-          
-          <div class="product-price-premium">
-            <span class="current-price">$${p.price.toLocaleString('es-AR')}</span>
-            ${oldPrice ? `<span class="old-price">$${oldPrice.toLocaleString('es-AR')}</span>` : ''}
+          <div class="product-info-premium">
+            <div class="product-category">${p.category||'Producto'}</div>
+            <h3 class="product-title-premium">${p.title}</h3>
+            <div class="product-price-premium">
+              <span class="current-price">$${p.price.toLocaleString('es-AR')}</span>
+            </div>
+            <button class="btn-add-cart-premium" data-id="${doc.id}" data-name="${p.title}" data-price="${p.price}" data-image="${p.imageUrl}">🛒 Agregar</button>
           </div>
-          
-          <p class="product-desc-premium">${p.description || ''}</p>
-          
-          <button class="btn-add-cart-premium" 
-                  data-id="${p.id}" 
-                  data-name="${p.title}" 
-                  data-price="${p.price}" 
-                  data-image="${p.imageUrl}">
-            🛒 Agregar al carrito
-          </button>
-        </div>
-      </div>
-    `;
-  }).join('');
-  
-  // Re-attach cart listeners
-  document.querySelectorAll('.btn-add-cart-premium').forEach(btn => {
-    btn.addEventListener('click', function() {
-      if(typeof addToCart === 'function') {
-        addToCart(this.dataset.id, this.dataset.name, parseFloat(this.dataset.price), this.dataset.image);
-        this.innerHTML = '✅ Agregado';
-        this.style.background = '#4CAF50';
-        setTimeout(() => {
-          this.innerHTML = '🛒 Agregar al carrito';
-          this.style.background = '';
-        }, 1500);
-      }
+        </div>`;
+    }).join('');
+    
+    // Attach cart listeners
+    document.querySelectorAll('.btn-add-cart-premium').forEach(btn => {
+      btn.addEventListener('click', function() {
+        if(typeof addToCart === 'function') {
+          addToCart(this.dataset.id, this.dataset.name, parseFloat(this.dataset.price), this.dataset.image);
+          this.innerHTML = '✅ Agregado';
+          setTimeout(() => { this.innerHTML = '🛒 Agregar'; }, 1500);
+        }
+      });
     });
-  });
+  } catch (e) { console.error(e); }
 }
 
-function setupFilters() {
-  // Category Filter
-  document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
-      
-      const category = this.dataset.category;
-      currentCategory = category;
-      
-      if (category === 'all') {
-        renderProducts(allProducts);
-        document.getElementById('productsCount').textContent = `${allProducts.length} productos encontrados`;
-      } else {
-        const filtered = allProducts.filter(p => p.category === category);
-        renderProducts(filtered);
-        document.getElementById('productsCount').textContent = `${filtered.length} productos encontrados`;
-      }
-    });
-  });
-  
-  // Search Filter
-  const searchInput = document.getElementById('productSearch');
-  if(searchInput) {
-    searchInput.addEventListener('input', function() {
-      const term = this.value.toLowerCase();
-      const filtered = allProducts.filter(p => 
-        p.title.toLowerCase().includes(term) || 
-        (p.description && p.description.toLowerCase().includes(term)) ||
-        (p.category && p.category.toLowerCase().includes(term))
-      );
-      renderProducts(filtered);
-      document.getElementById('productsCount').textContent = `${filtered.length} productos encontrados`;
-    });
-  }
-}
-
-// ========== CONTACTO ==========
+// CONTACTO
 async function loadContact() {
   try {
     const doc = await db.collection('site_config').doc('contact').get();
@@ -294,5 +134,5 @@ async function loadContact() {
       document.getElementById('footerHours').textContent = c.hours || 'Lun-Sáb 9-20hs';
       document.getElementById('footerPhone').textContent = 'WhatsApp: ' + (c.phone || '3782-437674');
     }
-  } catch (e) { console.error('Error cargando contacto:', e); }
+  } catch (e) { console.error(e); }
 }
