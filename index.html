@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cell Space Argentina</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
@@ -14,41 +16,118 @@
 </head>
 <body>
   <div class="particles" id="particles"></div>
-  
+
+  <!-- NAVBAR -->
   <nav class="nav">
     <div class="nav-left">
       <img src="assets/logo.png" class="nav-logo" onerror="this.style.display='none'">
-      <div><div class="nav-brand">CELL SPACE</div><div class="nav-subtitle">ARGENTINA</div></div>
+      <div>
+        <div class="nav-brand">CELL SPACE</div>
+        <div class="nav-subtitle">ARGENTINA</div>
+      </div>
     </div>
     <div class="nav-right">
-      <a href="index.html">Inicio</a><a href="#servicios">Servicios</a><a href="#productos">Productos</a>
-      <button onclick="toggleCart()" class="cart-icon-btn">🛒 <span id="cartCount">0</span></button>
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="#servicios" class="nav-link">Servicios</a>
+      <a href="#productos" class="nav-link">Tienda</a>
+      
+      <!-- Botón Carrito -->
+      <button class="cart-header-btn" onclick="toggleCart()">
+        🛒 <span id="cartCountHeader">0</span>
+      </button>
+
+      <!-- Auth Buttons -->
       <a href="login.html" id="loginLink" class="btn-small">Ingresar</a>
       <button id="adminLink" class="btn-small" style="display:none;" onclick="window.location.href='admin.html'">⚙️ Panel</button>
       <button id="logoutBtn" class="btn-small" style="display:none;" onclick="logout()">Salir</button>
     </div>
   </nav>
 
-  <section class="hero" id="inicio"><div class="carousel" id="carousel"><p class="loading" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;">Cargando...</p></div></section>
-  <section class="services" id="servicios"><h2>Nuestros Servicios</h2><div class="services-grid" id="servicesGrid"><p class="loading">Cargando...</p></div></section>
-  <section class="products" id="productos"><h2>Productos</h2><div class="products-grid" id="productsGrid"><p class="loading">Cargando...</p></div></section>
-  
+  <!-- HERO SECTION (Dinámico) -->
+  <section class="hero" id="inicio">
+    <div class="carousel" id="carousel">
+      <p class="loading" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;">Cargando...</p>
+    </div>
+  </section>
+
+  <!-- SERVICIOS (Dinámico) -->
+  <section class="services" id="servicios">
+    <h2>Nuestros Servicios</h2>
+    <div class="services-grid" id="servicesGrid">
+      <p class="loading">Cargando servicios...</p>
+    </div>
+  </section>
+
+  <!-- TIENDA PREMIUM (Nueva Sección) -->
+  <section class="shop-section" id="productos">
+    <div class="shop-header">
+      <h1 class="shop-title">Tienda <span>Online</span></h1>
+      <p class="shop-subtitle">Los mejores precios en tecnología premium</p>
+      
+      <div class="shop-controls">
+        <div class="search-box">
+          <input type="text" id="productSearch" placeholder="🔍 Buscar productos...">
+        </div>
+      </div>
+      
+      <div class="category-filters" id="categoryFilters">
+        <button class="filter-btn active" data-category="all">Todos</button>
+        <button class="filter-btn" data-category="Celulares">Celulares</button>
+        <button class="filter-btn" data-category="Accesorios">Accesorios</button>
+        <button class="filter-btn" data-category="PC/Laptop">PC/Laptop</button>
+        <button class="filter-btn" data-category="Consolas">Consolas</button>
+        <button class="filter-btn" data-category="Gaming">Gaming</button>
+      </div>
+      
+      <div class="products-count" id="productsCount">0 productos encontrados</div>
+    </div>
+    
+    <div class="products-grid-premium" id="productsGrid">
+      <div class="loading-premium">
+        <div class="spinner"></div>
+        <p>Cargando productos...</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
   <footer class="footer" id="contacto">
     <div class="footer-content">
-      <div class="footer-section"><h3>📍 Ubicación</h3><p id="footerAddress">Cargando...</p><p>Argentina</p></div>
-      <div class="footer-section"><h3>🕒 Horario</h3><p id="footerHours">Cargando...</p></div>
-      <div class="footer-section"><h3>📱 Contacto</h3><p id="footerPhone">Cargando...</p><a href="https://wa.me/5493782437674" class="btn" style="margin-top:10px;">Escribir</a></div>
+      <div class="footer-section">
+        <h3>📍 Ubicación</h3>
+        <p id="footerAddress">Cargando...</p>
+        <p>Argentina</p>
+      </div>
+      <div class="footer-section">
+        <h3>🕒 Horario</h3>
+        <p id="footerHours">Cargando...</p>
+      </div>
+      <div class="footer-section">
+        <h3>📱 Contacto</h3>
+        <p id="footerPhone">Cargando...</p>
+        <a href="https://wa.me/5493782437674" class="btn" style="margin-top:10px;">Escribir</a>
+      </div>
     </div>
-    <div class="footer-bottom"><p>&copy; 2026 Cell Space Argentina</p></div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Cell Space Argentina</p>
+    </div>
   </footer>
 
-  <!-- MODAL CARRITO -->
+  <!-- MODAL DEL CARRITO -->
   <div id="cartOverlay" class="cart-overlay">
     <div class="cart-modal">
-      <div class="cart-header"><h2>🛒 Tu Carrito</h2><button onclick="toggleCart()" style="background:none;border:none;color:white;font-size:1.5rem;cursor:pointer;">✕</button></div>
-      <div id="cartItems" class="cart-items"></div>
+      <div class="cart-header">
+        <h2>🛒 Tu Carrito</h2>
+        <button onclick="toggleCart()" style="background:none;border:none;color:white;font-size:1.5rem;cursor:pointer;">✕</button>
+      </div>
+      <div id="cartItems" class="cart-items">
+        <!-- Items se cargan dinámicamente -->
+      </div>
       <div class="cart-footer">
-        <div class="cart-total"><span>Total:</span><span id="cartTotal">$0</span></div>
+        <div class="cart-total">
+          <span>Total:</span>
+          <span id="cartTotal">$0</span>
+        </div>
         <div class="cart-buttons">
           <button onclick="toggleCart()" class="btn btn-secondary">Seguir Comprando</button>
           <button onclick="checkoutWhatsApp()" class="btn btn-primary">✅ Finalizar Pedido</button>
@@ -57,6 +136,7 @@
     </div>
   </div>
 
+  <!-- SCRIPTS -->
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/public.js"></script>
