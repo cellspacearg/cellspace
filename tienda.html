@@ -19,21 +19,28 @@
   <!-- NAVBAR -->
   <nav class="nav">
     <div class="nav-left">
-      <img src="assets/logo.png" class="nav-logo" onerror="this.style.display='none'">
-      <div><div class="nav-brand">CELL SPACE</div><div class="nav-subtitle">ARGENTINA</div></div>
+      <a href="index.html" class="nav-logo-link">
+        <img src="assets/logo.png" class="nav-logo" alt="Logo" onerror="this.style.display='none'">
+      </a>
+      <div>
+        <div class="nav-brand">CELL SPACE</div>
+        <div class="nav-subtitle">ARGENTINA</div>
+      </div>
     </div>
     <div class="nav-right">
       <a href="index.html" class="nav-link">Inicio</a>
       <a href="index.html#servicios">Servicios</a>
       <a href="tienda.html" class="nav-link active">Tienda</a>
-      <button class="cart-header-btn" onclick="toggleCart()">🛒 <span id="cartCountHeader">0</span></button>
+      <button class="cart-header-btn" onclick="toggleCart()">
+        🛒 <span id="cartCountHeader">0</span>
+      </button>
       <a href="login.html" id="loginLink" class="btn-small">Ingresar</a>
       <button id="adminLink" class="btn-small" style="display:none;" onclick="window.location.href='admin.html'">⚙️ Panel</button>
       <button id="logoutBtn" class="btn-small" style="display:none;" onclick="logout()">Salir</button>
     </div>
   </nav>
 
-  <!-- TIENDA PREMIUM COMPLETA -->
+  <!-- TIENDA PREMIUM -->
   <section class="shop-section">
     <div class="shop-header">
       <h1 class="shop-title">Tienda <span>Online</span></h1>
@@ -59,27 +66,49 @@
     </div>
     
     <div class="products-grid-premium" id="productsGrid">
-      <div class="loading-premium"><div class="spinner"></div><p>Cargando productos...</p></div>
+      <div class="loading-premium">
+        <div class="spinner"></div>
+        <p>Cargando productos...</p>
+      </div>
     </div>
   </section>
 
   <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-content">
-      <div class="footer-section"><h3>📍 Ubicación</h3><p>Saladas, Corrientes</p><p>Argentina</p></div>
-      <div class="footer-section"><h3>🕒 Horario</h3><p>Lunes a Sábados 9:00 - 20:00</p></div>
-      <div class="footer-section"><h3>📱 Contacto</h3><p>WhatsApp: 3782-437674</p><a href="https://wa.me/5493782437674" class="btn" style="margin-top:10px;">Escribir</a></div>
+      <div class="footer-section">
+        <h3>📍 Ubicación</h3>
+        <p>Saladas, Corrientes</p>
+        <p>Argentina</p>
+      </div>
+      <div class="footer-section">
+        <h3>🕒 Horario</h3>
+        <p>Lunes a Sábados 9:00 - 20:00</p>
+      </div>
+      <div class="footer-section">
+        <h3>📱 Contacto</h3>
+        <p>WhatsApp: 3782-437674</p>
+        <a href="https://wa.me/5493782437674" class="btn" style="margin-top:10px;">Escribir</a>
+      </div>
     </div>
-    <div class="footer-bottom"><p>&copy; 2026 Cell Space Argentina</p></div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Cell Space Argentina</p>
+    </div>
   </footer>
 
   <!-- CARRITO MODAL -->
   <div id="cartOverlay" class="cart-overlay">
     <div class="cart-modal">
-      <div class="cart-header"><h2>🛒 Tu Carrito</h2><button onclick="toggleCart()" style="background:none;border:none;color:white;font-size:1.5rem;cursor:pointer;">✕</button></div>
+      <div class="cart-header">
+        <h2>🛒 Tu Carrito</h2>
+        <button onclick="toggleCart()" style="background:none;border:none;color:white;font-size:1.5rem;cursor:pointer;">✕</button>
+      </div>
       <div id="cartItems" class="cart-items"></div>
       <div class="cart-footer">
-        <div class="cart-total"><span>Total:</span><span id="cartTotal">$0</span></div>
+        <div class="cart-total">
+          <span>Total:</span>
+          <span id="cartTotal">$0</span>
+        </div>
         <div class="cart-buttons">
           <button onclick="toggleCart()" class="btn btn-secondary">Seguir Comprando</button>
           <button onclick="checkoutWhatsApp()" class="btn btn-primary">✅ Finalizar Pedido</button>
