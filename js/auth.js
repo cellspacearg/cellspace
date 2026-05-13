@@ -80,7 +80,8 @@ if(window.location.pathname.includes('admin.html')){
     if(!user || user.email !== ADMIN_EMAIL){
       window.location.href = 'login.html';
     } else {
-      document.getElementById('adminEmail').textContent = user.email;
+      const adminEmailEl = document.getElementById('adminEmail');
+      if(adminEmailEl) adminEmailEl.textContent = user.email;
     }
   });
 }
