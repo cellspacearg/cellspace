@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Admin - Cell Space Argentina</title>
+  <title>Panel Admin - Cell Space</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/admin.css">
   
-  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
@@ -18,16 +17,18 @@
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <img src="assets/logo.png" alt="Logo" class="sidebar-logo" onerror="this.style.display='none'">
+      <a href="index.html" style="text-decoration:none;">
+        <img src="assets/logo.png" class="sidebar-logo" onerror="this.style.display='none'">
+      </a>
       <h2>CELL SPACE</h2>
       <p style="color:#666;font-size:12px;">Panel de Control</p>
     </div>
     <nav class="sidebar-nav">
       <a href="#dashboard" class="nav-link active" onclick="showSection('dashboard', this)">📊 Dashboard</a>
-      <a href="#hero" class="nav-link" onclick="showSection('hero', this)">🎨 Carrusel/Hero</a>
+      <a href="#hero" class="nav-link" onclick="showSection('hero', this)">🎨 Carrusel</a>
       <a href="#servicios" class="nav-link" onclick="showSection('servicios', this)">🛠️ Servicios</a>
       <a href="#productos" class="nav-link" onclick="showSection('productos', this)">📦 Productos</a>
-      <a href="#contacto" class="nav-link" onclick="showSection('contacto', this)">📍 Contacto/Footer</a>
+      <a href="#contacto" class="nav-link" onclick="showSection('contacto', this)">📍 Contacto</a>
       <a href="#usuarios" class="nav-link" onclick="showSection('usuarios', this)">👥 Usuarios</a>
       <a href="index.html" target="_blank" class="nav-link">🌐 Ver Sitio</a>
       <a href="#" class="nav-link" onclick="logout()" style="margin-top:auto;color:#ff4444;">🚪 Cerrar Sesión</a>
@@ -44,7 +45,7 @@
       </div>
     </header>
 
-    <!-- DASHBOARD SECTION -->
+    <!-- DASHBOARD -->
     <section id="dashboard" class="section active">
       <div class="stats-grid">
         <div class="stat-card">
@@ -76,7 +77,6 @@
           </div>
         </div>
       </div>
-
       <div class="recent-activity">
         <h2>📈 Actividad Reciente</h2>
         <div id="recentActivity" class="activity-list">
@@ -85,25 +85,23 @@
       </div>
     </section>
 
-    <!-- HERO/CARRUSEL SECTION -->
+    <!-- HERO/CARRUSEL -->
     <section id="hero" class="section">
       <div class="section-header">
-        <h2>🎨 Editar Carrusel/Hero</h2>
+        <h2>🎨 Carrusel/Hero</h2>
         <button class="btn btn-primary" onclick="addSlide()">+ Agregar Slide</button>
       </div>
-      
       <div id="slidesContainer" class="slides-list">
-        <p class="loading">Cargando slides...</p>
+        <p class="loading">Cargando...</p>
       </div>
     </section>
 
-    <!-- SERVICIOS SECTION -->
+    <!-- SERVICIOS -->
     <section id="servicios" class="section">
       <div class="section-header">
-        <h2>🛠️ Gestionar Servicios</h2>
+        <h2>🛠️ Servicios</h2>
         <button class="btn btn-primary" onclick="toggleServiceForm()">+ Nuevo Servicio</button>
       </div>
-
       <div id="serviceForm" class="form-container" style="display:none;">
         <form id="serviceFormEl" class="form">
           <input type="hidden" id="serviceId">
@@ -123,23 +121,21 @@
           </div>
           <div class="form-actions">
             <button type="button" class="btn btn-secondary" onclick="resetServiceForm()">Cancelar</button>
-            <button type="submit" class="btn btn-primary">💾 Guardar Servicio</button>
+            <button type="submit" class="btn btn-primary">💾 Guardar</button>
           </div>
         </form>
       </div>
-
       <div class="services-admin-grid" id="adminServicesList">
-        <p class="loading">Cargando servicios...</p>
+        <p class="loading">Cargando...</p>
       </div>
     </section>
 
-    <!-- PRODUCTOS SECTION -->
+    <!-- PRODUCTOS -->
     <section id="productos" class="section">
       <div class="section-header">
-        <h2>📦 Gestión de Productos</h2>
+        <h2>📦 Productos</h2>
         <button class="btn btn-primary" onclick="toggleProductForm()">+ Nuevo Producto</button>
       </div>
-
       <div id="productForm" class="form-container" style="display:none;">
         <form id="publishForm" class="form">
           <input type="hidden" id="prodId">
@@ -176,7 +172,9 @@
                 <p>📸 Click o arrastra una imagen</p>
                 <span>Máx 5MB • JPG/PNG</span>
               </div>
-              <div class="progress" id="uploadProgress"><div class="progress-fill" id="progressFill"></div></div>
+              <div class="progress" id="uploadProgress">
+                <div class="progress-fill" id="progressFill"></div>
+              </div>
               <p id="uploadStatus" class="upload-status"></p>
             </div>
           </div>
@@ -192,13 +190,12 @@
           </div>
         </form>
       </div>
-
       <div class="products-admin-grid" id="adminProductsList">
-        <p class="loading">Cargando productos...</p>
+        <p class="loading">Cargando...</p>
       </div>
     </section>
 
-    <!-- CONTACTO/FOOTER SECTION -->
+    <!-- CONTACTO -->
     <section id="contacto" class="section">
       <h2>📍 Información de Contacto</h2>
       <div class="form-container">
@@ -230,7 +227,7 @@
       </div>
     </section>
 
-    <!-- USUARIOS SECTION -->
+    <!-- USUARIOS -->
     <section id="usuarios" class="section">
       <h2>👥 Usuarios Registrados</h2>
       <div class="table-container">
@@ -251,7 +248,6 @@
     </section>
   </main>
 
-  <!-- Scripts en orden correcto -->
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/admin.js"></script>
