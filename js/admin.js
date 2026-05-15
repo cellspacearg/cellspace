@@ -211,3 +211,184 @@ window.showSection = function(id, btn) {
     setTimeout(loadFooterSettings, 100);
   }
 };
+// ========== IMEI HISTORY FUNCTIONS ==========
+
+// Cargar historial IMEI en admin
+async function loadIMEIHistoryAdmin() {
+  const tb = document.getElementById('imeiHistoryTable');
+  if (!tb) return;
+  
+  tb.innerHTML = '<tr><td colspan="8" class="loading">Cargando...</td></tr>';
+  
+  try {
+    const snap = await db.collection('imei_history')
+      .orderBy('timestamp', 'desc')
+      .limit(100)
+      .get();
+    
+    if (snap.empty) {
+      tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted)">Sin consultas registradas</td></tr>';
+      updateIMEIStats([]);
+      return;
+    }
+    
+    const checks = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    
+    tb.innerHTML = checks.map(h => {
+      const date = h.timestamp?.toDate?.()?.toLocaleString('es-AR') || 'Reciente';
+      const brand = h.result?.brand || '-';
+      const model = h.result?.model || '-';
+      const status = h.result?.blacklist || 'Unknown';
+      const statusColor = status === 'Clean' ? '#4CAF50' : status === 'Blacklisted' ? '#ff4444' : '#ffc107';
+      const userEmail = h.userEmail ? h.userEmail.split('@')[0] : 'Invitado';
+      
+      return `
+        <tr>
+          <td>${date}</td>
+          <td><strong>${h.imei}</strong></td>
+          <td>${h.searchType?.toUpperCase() || 'IMEI'}</td>
+          <td>${brand}</td>
+          <td>${model}</td>
+          <td><span style="color:${statusColor};font-weight:600">${status}</span></td>
+          <td>${userEmail}</td>
+          <td>
+            <button class="btn-sm" onclick="viewIMEIDetails('${h.id}')" style="background:#2196F3;color:white;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;">👁️ Ver</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+    
+    updateIMEIStats(checks);
+    
+  } catch (e) {
+    console.error('Error cargando IMEI history:', e);
+    tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#ff4444">Error al cargar: ' + e.message + '</td></tr>';
+  }
+}
+
+// Actualizar estadísticas de IMEI
+function updateIMEIStats(checks) {
+  const total = checks.length;
+  const clean = checks.filter(h => h.result?.blacklist === 'Clean').length;
+  const blacklist = checks.filter(h => h.result?.blacklist === 'Blacklisted').length;
+  
+  const totalEl = document.getElementById('totalChecks');
+  const cleanEl = document.getElementById('cleanChecks');
+  const blacklistEl = document.getElementById('blacklistChecks');
+  const totalChecksEl = document.getElementById('totalIMEIChecks');
+  
+  if (totalEl) totalEl.textContent = total;
+  if (cleanEl) cleanEl.textContent = clean;
+  if (blacklistEl) blacklistEl.textContent = blacklist;
+  if (totalChecksEl) totalChecksEl.textContent = total;
+}
+
+// Ver detalles de una consulta IMEI
+window.viewIMEIDetails = async function(id) {
+  try {
+    const doc = await db.collection('imei_history').doc(id).get();
+    if (!doc.exists) {
+      alert('Consulta no encontrada');
+      return;
+    }
+    
+    const h = doc.data();
+    const result = h.result || {};
+    
+    const details = `
+ DETALLES DE CONSULTA IMEI
+━━━━━━━━━━━━━━━━━━━━━━
+📱 IMEI/Serial: ${h.imei}
+🔢 Tipo: ${h.searchType?.toUpperCase() || 'IMEI'}
+📅 Fecha: ${h.timestamp?.toDate?.()?.toLocaleString('es-AR') || 'N/A'}
+👤 Usuario: ${h.userEmail || 'Invitado'}
+
+📋 INFORMACIÓN DEL DISPOSITIVO
+━━━━━━━━━━━━━━━━━━━━━━
+🏷️ Marca: ${result.brand || 'N/A'}
+📱 Modelo: ${result.model || 'N/A'}
+🎨 Color: ${result.color || 'N/A'}
+💾 Capacidad: ${result.capacity || 'N/A'}
+🔢 Model Number: ${result.modelNumber || 'N/A'}
+🔢 MPN: ${result.mpn || 'N/A'}
+🔢 Serial: ${result.serial || 'N/A'}
+
+🔒 ESTADO Y BLOQUEO
+━━━━━━━━━━━━━━━━━━━━━━
+🛡️ Blacklist: ${result.blacklist || 'Unknown'}
+🔓 SIM Lock: ${result.simLock || 'N/A'}
+📡 Carrier: ${result.carrier || 'N/A'}
+ Find My iPhone: ${result.fmi || 'N/A'}
+⚙️ KG Status: ${result.kgStatus || 'N/A'}
+🔐 Knox: ${result.knox || 'N/A'}
+
+📅 GARANTÍA Y ACTIVACIÓN
+━━━━━━━━━━━━━━━━━━━━━━
+✅ Activation: ${result.activationStatus || 'N/A'}
+🛡️ Warranty: ${result.warrantyStatus || 'N/A'}
+📅 Warranty Date: ${result.warrantyDate || 'N/A'}
+📅 Purchase Date: ${result.purchaseDate || 'N/A'}
+🏪 Sold By: ${result.soldBy || 'N/A'}
+🔄 Replacement: ${result.replacement || 'N/A'}
+
+📍 ORIGEN
+━━━━━━━━━━━━━━━━━━━━━━
+🌍 CSC: ${result.csc || 'N/A'}
+    `;
+    
+    alert(details);
+    
+  } catch (e) {
+    alert('Error al cargar detalles: ' + e.message);
+  }
+};
+
+// Modificar showSection para cargar IMEI history
+const originalShowSection = window.showSection;
+window.showSection = function(id, btn) {
+  // Llamar a la función original si existe
+  if (originalShowSection) {
+    originalShowSection(id, btn);
+  } else {
+    // Si no existe, hacer el cambio básico
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if (btn) btn.classList.add('active');
+  }
+  
+  // Cargar secciones específicas
+  if (id === 'footer') {
+    setTimeout(loadFooterSettings, 100);
+  } else if (id === 'imei') {
+    setTimeout(loadIMEIHistoryAdmin, 100);
+  } else if (id === 'dashboard') {
+    setTimeout(loadDashboard, 100);
+  } else if (id === 'productos') {
+    setTimeout(loadAdminProducts, 100);
+  } else if (id === 'servicios') {
+    setTimeout(loadServices, 100);
+  } else if (id === 'usuarios') {
+    setTimeout(loadUsers, 100);
+  }
+};
+
+// Actualizar loadDashboard para incluir stats de IMEI
+const originalLoadDashboard = window.loadDashboard;
+window.loadDashboard = async function() {
+  // Llamar a la función original si existe
+  if (originalLoadDashboard) {
+    await originalLoadDashboard();
+  }
+  
+  // Agregar stats de IMEI
+  try {
+    const imeiSnap = await db.collection('imei_history').get();
+    const totalIMEIChecksEl = document.getElementById('totalIMEIChecks');
+    if (totalIMEIChecksEl) {
+      totalIMEIChecksEl.textContent = imeiSnap.size;
+    }
+  } catch (e) {
+    console.error('Error cargando stats IMEI:', e);
+  }
+};
