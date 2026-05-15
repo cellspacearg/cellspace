@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMEI Checker - Cell Space Argentina</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/imei-checker.css">
+  
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
+  <script src="https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+  <div class="particles" id="particles"></div>
+
+  <!-- NAVBAR -->
+  <nav class="nav">
+    <div class="nav-left">
+      <a href="index.html" class="nav-logo-link">
+        <img src="assets/logo.png" class="nav-logo" alt="Logo" onerror="this.style.display='none'">
+      </a>
+      <div><div class="nav-brand">CELL SPACE</div><div class="nav-subtitle">ARGENTINA</div></div>
+    </div>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="tienda.html" class="nav-link">Tienda</a>
+      <a href="imei-checker.html" class="nav-link active">🔍 IMEI Checker</a>
+      <button class="cart-header-btn" onclick="toggleCart()">🛒 <span id="cartCountHeader">0</span></button>
+      <a href="login.html" id="loginLink" class="btn-small">Ingresar</a>
+      <button id="adminLink" class="btn-small" style="display:none;" onclick="window.location.href='admin.html'">⚙️ Panel</button>
+      <button id="logoutBtn" class="btn-small" style="display:none;" onclick="logout()">Salir</button>
+    </div>
+  </nav>
+
+  <!-- HERO CHECKER -->
+  <section class="checker-hero">
+    <div class="checker-container">
+      <h1>🔍 IMEI & Serial Checker PRO</h1>
+      <p class="checker-subtitle">Verificá el estado de tu dispositivo en segundos</p>
+      
+      <!-- Buscador -->
+      <div class="search-box-large">
+        <div class="search-tabs">
+          <button class="search-tab active" data-type="imei">📱 IMEI</button>
+          <button class="search-tab" data-type="serial">🔢 Serial Number</button>
+          <button class="search-tab" data-type="meid">📡 MEID</button>
+        </div>
+        
+        <div class="search-input-group">
+          <input type="text" id="imeiInput" placeholder="Ingresa el IMEI (15-16 dígitos)" maxlength="16">
+          <button class="btn-search" onclick="checkIMEI()">🔍 Consultar</button>
+        </div>
+        
+        <div class="search-hints">
+          <span>💡 Tip: El IMEI se encuentra en *#06# o en Ajustes > General > Información</span>
+        </div>
+      </div>
+
+      <!-- Opciones adicionales -->
+      <div class="extra-options">
+        <button class="btn-outline" onclick="document.getElementById('fileInput').click()">📸 OCR desde foto</button>
+        <button class="btn-outline" onclick="startQRScan()">📷 Escanear QR</button>
+        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleImageUpload(event)">
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTADOS -->
+  <section class="results-section" id="resultsSection" style="display:none;">
+    <div class="results-container">
+      <div class="results-header">
+        <h2>📋 Resultado de la Consulta</h2>
+        <div class="results-actions">
+          <button class="btn-action" onclick="copyResults()">📋 Copiar</button>
+          <button class="btn-action" onclick="generatePDF()">📄 PDF</button>
+          <button class="btn-action" onclick="shareWhatsApp()">💬 WhatsApp</button>
+          <button class="btn-action" onclick="exportExcel()">📊 Excel</button>
+        </div>
+      </div>
+
+      <!-- Tarjeta de resultados -->
+      <div class="result-card" id="resultCard">
+        <!-- Se llena dinámicamente -->
+      </div>
+
+      <!-- Historial de esta consulta -->
+      <div class="history-preview" id="historyPreview">
+        <h4>📜 Consultas anteriores de este IMEI</h4>
+        <div id="imeiHistory"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HISTORIAL GENERAL -->
+  <section class="history-section">
+    <h2>📚 Mi Historial de Consultas</h2>
+    <div class="history-grid" id="historyGrid">
+      <p class="loading">Cargando historial...</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer-professional">
+    <div class="footer-container">
+      <div class="footer-grid">
+        <div class="footer-section">
+          <img src="assets/logo.png" class="footer-logo" onerror="this.style.display='none'">
+          <p id="footerDescription">Tu tienda de tecnología y centro de reparaciones profesional.</p>
+          <div class="social-links" id="socialLinks"></div>
+        </div>
+        <div class="footer-section">
+          <h3>SERVICIOS</h3>
+          <ul class="footer-list" id="footerServices"></ul>
+        </div>
+        <div class="footer-section">
+          <h3>TIENDA</h3>
+          <ul class="footer-list" id="footerStore"></ul>
+        </div>
+        <div class="footer-section">
+          <h3>CONTACTO</h3>
+          <div class="footer-contact">
+            <p id="footerAddress">📍 Cargando...</p>
+            <p id="footerHours">🕒 Cargando...</p>
+            <p id="footerPhone">📱 Cargando...</p>
+            <p id="footerEmail">✉️ Cargando...</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; <span id="footerYear">2026</span> Cell Space Argentina</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- CARRITO MODAL -->
+  <div id="cartOverlay" class="cart-overlay">
+    <div class="cart-modal">
+      <div class="cart-header"><h2>🛒 Tu Carrito</h2><button onclick="toggleCart()" style="background:none;border:none;color:white;font-size:1.5rem;cursor:pointer;">✕</button></div>
+      <div id="cartItems" class="cart-items"></div>
+      <div class="cart-footer">
+        <div class="cart-total"><span>Total:</span><span id="cartTotal">$0</span></div>
+        <div class="cart-buttons">
+          <button onclick="toggleCart()" class="btn btn-secondary">Seguir Comprando</button>
+          <button onclick="checkoutWhatsApp()" class="btn btn-primary">✅ Finalizar Pedido</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/footer.js"></script>
+  <script src="js/imei-checker.js"></script>
+</body>
+</html>
