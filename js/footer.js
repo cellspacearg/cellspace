@@ -84,38 +84,39 @@ function loadDefaultFooter() {
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 }
 
-// GUARDAR FOOTER DESDE ADMIN
-async function saveFooterSettings() {
+// HACER LA FUNCIÓN GLOBAL
+window.saveFooterSettings = async function() {
   try {
-    const servicesText = document.getElementById('footerServicesList').value;
-    const storeText = document.getElementById('footerStoreList').value;
+    const servicesText = document.getElementById('footerServicesList')?.value || '';
+    const storeText = document.getElementById('footerStoreList')?.value || '';
     
     const data = {
-      description: document.getElementById('footerDesc').value,
+      description: document.getElementById('footerDesc')?.value || '',
       social: {
-        facebook: document.getElementById('socialFacebook').value,
-        instagram: document.getElementById('socialInstagram').value,
-        tiktok: document.getElementById('socialTiktok').value,
-        telegram: document.getElementById('socialTelegram').value
+        facebook: document.getElementById('socialFacebook')?.value || '',
+        instagram: document.getElementById('socialInstagram')?.value || '',
+        tiktok: document.getElementById('socialTiktok')?.value || '',
+        telegram: document.getElementById('socialTelegram')?.value || ''
       },
       services: servicesText.split(',').map(s => s.trim()).filter(s => s),
       store: storeText.split(',').map(s => s.trim()).filter(s => s),
       contact: {
-        address: document.getElementById('contactAddress').value,
-        hours: document.getElementById('contactHours').value,
-        phone: document.getElementById('contactPhone').value,
-        email: document.getElementById('contactEmail').value
+        address: document.getElementById('contactAddress')?.value || '',
+        hours: document.getElementById('contactHours')?.value || '',
+        phone: document.getElementById('contactPhone')?.value || '',
+        email: document.getElementById('contactEmail')?.value || ''
       },
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
     
     await db.collection('site_config').doc('footer').set(data, { merge: true });
-    alert('✅ Footer guardado correctamente');
+    alert('✅ Footer guardado correctamente. Recargá la página para ver los cambios.');
     
   } catch (e) {
-    alert('❌ Error: ' + e.message);
+    console.error('Error:', e);
+    alert('❌ Error al guardar: ' + e.message);
   }
-}
+};
 
 // Cargar footer al iniciar
 document.addEventListener('DOMContentLoaded', loadFooter);
