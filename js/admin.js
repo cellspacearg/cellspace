@@ -138,3 +138,76 @@ document.getElementById('contactForm')?.addEventListener('submit',async e=>{e.pr
 async function loadUsers(){const tb=document.getElementById('usersTable');tb.innerHTML='<tr><td colspan="4" class="loading">Cargando...</td></tr>';try{const snap=await db.collection('users').orderBy('createdAt','desc').get();if(snap.empty){tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted)">Sin usuarios</td></tr>';return;}tb.innerHTML=snap.docs.map(d=>{const u=d.data();const date=u.createdAt?u.createdAt.toDate().toLocaleDateString('es-AR'):'Reciente';return `<tr><td>${u.name||'-'}</td><td>${u.email}</td><td>${date}</td><td><span style="color:#4CAF50">Activo</span></td></tr>`}).join('');}catch(e){tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:#ff4444">Error</td></tr>';}}
 
 document.addEventListener('DOMContentLoaded', loadDashboard);
+// CARGAR SETTINGS DEL FOOTER CUANDO SE ENTRA A ESA SECCIÓN
+async function loadFooterSettings() {
+  try {
+    const doc = await db.collection('site_config').doc('footer').get();
+    
+    if (doc.exists) {
+      const data = doc.data();
+      
+      // Cargar descripción
+      const footerDescEl = document.getElementById('footerDesc');
+      if (footerDescEl) footerDescEl.value = data.description || '';
+      
+      // Cargar redes sociales
+      if (data.social) {
+        const fbEl = document.getElementById('socialFacebook');
+        const igEl = document.getElementById('socialInstagram');
+        const ttEl = document.getElementById('socialTiktok');
+        const tgEl = document.getElementById('socialTelegram');
+        
+        if (fbEl) fbEl.value = data.social.facebook || '';
+        if (igEl) igEl.value = data.social.instagram || '';
+        if (ttEl) ttEl.value = data.social.tiktok || '';
+        if (tgEl) tgEl.value = data.social.telegram || '';
+      }
+      
+      // Cargar servicios y tienda
+      const servicesEl = document.getElementById('footerServicesList');
+      const storeEl = document.getElementById('footerStoreList');
+      
+      if (servicesEl && data.services) {
+        servicesEl.value = data.services.join(', ');
+      }
+      if (storeEl && data.store) {
+        storeEl.value = data.store.join(', ');
+      }
+      
+      // Cargar contacto
+      if (data.contact) {
+        const addrEl = document.getElementById('contactAddress');
+        const hoursEl = document.getElementById('contactHours');
+        const phoneEl = document.getElementById('contactPhone');
+        const emailEl = document.getElementById('contactEmail');
+        
+        if (addrEl) addrEl.value = data.contact.address || '';
+        if (hoursEl) hoursEl.value = data.contact.hours || '';
+        if (phoneEl) phoneEl.value = data.contact.phone || '';
+        if (emailEl) emailEl.value = data.contact.email || '';
+      }
+    }
+  } catch (e) {
+    console.error('Error cargando footer settings:', e);
+  }
+}
+
+// MODIFICAR showSection PARA CARGAR FOOTER SETTINGS
+const originalShowSection = window.showSection;
+window.showSection = function(id, btn) {
+  // Llamar a la función original si existe
+  if (originalShowSection) {
+    originalShowSection(id, btn);
+  } else {
+    // Si no existe, hacer el cambio básico
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if (btn) btn.classList.add('active');
+  }
+  
+  // Cargar footer settings si es la sección de footer
+  if (id === 'footer') {
+    setTimeout(loadFooterSettings, 100);
+  }
+};
