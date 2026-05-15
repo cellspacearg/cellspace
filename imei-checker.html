@@ -34,9 +34,8 @@
   <section class="checker-hero">
     <div class="checker-container">
       <h1>🔍 IMEI & Serial Checker PRO</h1>
-      <p class="checker-subtitle">Verificá el estado de tu dispositivo en segundos</p>
+      <p class="checker-subtitle">Verificación profesional de estado de dispositivo</p>
       
-      <!-- SEARCH BOX -->
       <div class="search-box-large">
         <div class="search-tabs">
           <button class="search-tab active" data-type="imei">📱 IMEI</button>
@@ -46,14 +45,10 @@
         
         <div class="search-input-group">
           <input type="text" id="imeiInput" placeholder="Ingresa el IMEI (15-16 dígitos)" maxlength="16">
-          <button class="btn-search" id="searchBtn" onclick="checkIMEI()">
-            🔍 Consultar
-          </button>
+          <button class="btn-search" id="searchBtn" onclick="checkIMEI()">🔍 Consultar</button>
         </div>
         
-        <div class="search-hints">
-          💡 Tip: El IMEI se encuentra en *#06# o en Ajustes > General > Información
-        </div>
+        <div class="search-hints">💡 Tip: Marcá *#06# en tu teléfono o revisá en Ajustes > General > Información</div>
       </div>
     </div>
   </section>
@@ -61,16 +56,20 @@
   <!-- RESULTS SECTION -->
   <section class="results-section" id="resultsSection" style="display:none;">
     <div class="results-container">
-      <div class="results-header">
-        <h2>📋 Resultado de la Consulta</h2>
+      <div class="report-header">
+        <img src="assets/logo.png" class="report-logo" alt="Cell Space Logo" onerror="this.style.display='none'">
+        <div class="report-title-group">
+          <h2>📋 Reporte de Verificación</h2>
+          <p class="report-date" id="reportDate">Generado: --/--/----</p>
+        </div>
         <div class="results-actions">
           <button class="btn-action" onclick="copyResults()">📋 Copiar</button>
           <button class="btn-action" onclick="shareWhatsApp()">💬 WhatsApp</button>
         </div>
       </div>
 
-      <div id="resultCard" class="result-card">
-        <!-- Results loaded here -->
+      <div id="resultCard" class="result-card-report">
+        <!-- Resultados cargados dinámicamente -->
       </div>
     </div>
   </section>
