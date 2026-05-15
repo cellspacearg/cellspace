@@ -29,6 +29,7 @@
       <a href="#productos" class="nav-link" onclick="showSection('productos', this)">📦 Productos</a>
       <a href="#contacto" class="nav-link" onclick="showSection('contacto', this)">📍 Contacto</a>
       <a href="#footer" class="nav-link" onclick="showSection('footer', this)">📄 Footer</a>
+      <a href="#imei" class="nav-link" onclick="showSection('imei', this)">🔍 IMEI History</a>
       <a href="#usuarios" class="nav-link" onclick="showSection('usuarios', this)">👥 Usuarios</a>
       <a href="index.html" target="_blank" class="nav-link">🌐 Ver Sitio</a>
       <a href="#" class="nav-link" onclick="logout()" style="margin-top:auto;color:#ff4444;">🚪 Cerrar Sesión</a>
@@ -51,6 +52,7 @@
         <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-info"><h3>Usuarios</h3><p id="totalUsers">0</p></div></div>
         <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-info"><h3>En Stock</h3><p id="inStockProducts">0</p></div></div>
         <div class="stat-card"><div class="stat-icon">🔧</div><div class="stat-info"><h3>Servicios</h3><p id="totalServices">0</p></div></div>
+        <div class="stat-card"><div class="stat-icon">🔍</div><div class="stat-info"><h3>Consultas IMEI</h3><p id="totalIMEIChecks">0</p></div></div>
       </div>
       <div class="recent-activity">
         <h2>📈 Actividad Reciente</h2>
@@ -175,6 +177,58 @@
 
       <div class="form-actions">
         <button type="button" class="btn btn-primary" onclick="saveFooterSettings()">💾 Guardar Footer</button>
+      </div>
+    </section>
+
+    <!-- IMEI HISTORY -->
+    <section id="imei" class="section">
+      <div class="section-header">
+        <h2>🔍 Historial de Consultas IMEI</h2>
+        <button class="btn btn-primary" onclick="loadIMEIHistoryAdmin()">🔄 Actualizar</button>
+      </div>
+      
+      <div class="stats-grid" style="margin-bottom:30px;">
+        <div class="stat-card">
+          <div class="stat-icon">🔍</div>
+          <div class="stat-info">
+            <h3>Total Consultas</h3>
+            <p id="totalChecks">0</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-info">
+            <h3>IMEI Clean</h3>
+            <p id="cleanChecks">0</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-info">
+            <h3>IMEI Blacklist</h3>
+            <p id="blacklistChecks">0</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>IMEI/Serial</th>
+              <th>Tipo</th>
+              <th>Marca</th>
+              <th>Modelo</th>
+              <th>Estado</th>
+              <th>Usuario</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="imeiHistoryTable">
+            <tr><td colspan="8" class="loading">Cargando...</td></tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
