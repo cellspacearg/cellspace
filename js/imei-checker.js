@@ -4,10 +4,11 @@ let lastResult = null;
 
 // INIT
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('IMEI Checker loaded');
   createParticles();
-  loadHistory();
   setupSearchTabs();
   setupIMEIInput();
+  loadHistory();
 });
 
 // PARTICLES
@@ -42,7 +43,7 @@ function setupSearchTabs() {
         input.placeholder = 'Ingresa el Serial Number';
         input.maxLength = 20;
       } else {
-        input.placeholder = 'Ingresa el MEID (14 dígitos hex)';
+        input.placeholder = 'Ingresa el MEID (14 dígitos)';
         input.maxLength = 14;
       }
       input.focus();
@@ -55,7 +56,7 @@ function setupIMEIInput() {
   const input = document.getElementById('imeiInput');
   input.addEventListener('input', function() {
     if (currentSearchType !== 'serial') {
-      this.value = this.value.replace(/[^0-9]/g, '');
+      this.value = this.value.replace(/[^0-9A-Fa-f]/g, '');
     }
   });
   input.addEventListener('keypress', function(e) {
@@ -63,8 +64,10 @@ function setupIMEIInput() {
   });
 }
 
-// CHECK IMEI - FUNCIÓN CORREGIDA
+// CHECK IMEI - VERSIÓN SIMPLIFICADA
 async function checkIMEI() {
+  console.log('checkIMEI called');
+  
   const input = document.getElementById('imeiInput');
   const value = input.value.trim();
   const btn = document.getElementById('searchBtn');
@@ -74,10 +77,7 @@ async function checkIMEI() {
     return;
   }
   
-  if (currentSearchType === 'imei' && !/^\d{15,16}$/.test(value)) {
-    alert('⚠️ El IMEI debe tener 15 o 16 dígitos numéricos');
-    return;
-  }
+  console.log('Checking:', value, 'Type:', currentSearchType);
   
   // Loading state
   const originalText = btn.innerHTML;
@@ -85,37 +85,44 @@ async function checkIMEI() {
   btn.disabled = true;
   
   try {
-    // SIMULACIÓN DE CONSULTA (Reemplazar con API real después)
+    // Simular delay de red (2 segundos)
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    // Datos de ejemplo basados en el IMEI
+    console.log('Generating result...');
+    
+    // Generar resultado
     const result = generateMockResult(value);
     
-    // Guardar en historial
-    await saveToHistory(value, result);
+    console.log('Result:', result);
     
     // Mostrar resultados
     lastResult = { imei: value, ...result };
     displayResults(lastResult);
-    loadIMEIHistory(value);
+    
+    // Guardar en localStorage (sin Firebase)
+    saveToLocalStorage(value, result);
+    
+    // Cargar historial
+    loadHistory();
+    
+    console.log('Done!');
     
   } catch (error) {
     console.error('Error:', error);
-    alert('❌ Error al consultar: ' + error.message);
+    alert('❌ Error: ' + error.message);
   } finally {
-    // Restaurar botón
+    // Restaurar botón SIEMPRE
     btn.innerHTML = originalText;
     btn.disabled = false;
   }
 }
 
-// GENERAR RESULTADO MOCK (SIEMPRE FUNCIONA)
+// GENERAR RESULTADO MOCK
 function generateMockResult(imei) {
-  // Generar resultados consistentes basados en el IMEI
-  const isApple = imei.length === 15;
-  const isClean = imei.charAt(0) !== '0'; // Si empieza con 0, es blacklist
+  const isClean = !imei.startsWith('0');
   
-  if (isApple) {
+  if (imei.length >= 15) {
+    // Apple
     return {
       brand: 'Apple',
       model: 'iPhone 13 Pro',
@@ -137,6 +144,7 @@ function generateMockResult(imei) {
       image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/IPhone_13_Pro_Graphite.svg/500px-IPhone_13_Pro_Graphite.svg.png'
     };
   } else {
+    // Samsung
     return {
       brand: 'Samsung',
       model: 'Galaxy S23 Ultra',
@@ -148,7 +156,7 @@ function generateMockResult(imei) {
       warrantyDate: '2025-06-20',
       kgStatus: 'Normal',
       knox: '0x0',
-      csc: 'CHO/CHO/CHO',
+      csc: 'CHO',
       carrier: 'Unlocked',
       blacklist: isClean ? 'Clean' : 'Blacklisted',
       image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Samsung_Galaxy_S23_Ultra.svg/500px-Samsung_Galaxy_S23_Ultra.svg.png'
@@ -158,19 +166,25 @@ function generateMockResult(imei) {
 
 // DISPLAY RESULTS
 function displayResults(data) {
+  console.log('Displaying results:', data);
+  
   const section = document.getElementById('resultsSection');
   const card = document.getElementById('resultCard');
   
-  section.style.display = 'block';
-  section.scrollIntoView({ behavior: 'smooth' });
+  if (!section || !card) {
+    console.error('Elements not found!');
+    return;
+  }
   
-  const statusClass = data.blacklist === 'Clean' ? 'clean' : data.blacklist ? 'blacklisted' : 'unknown';
-  const statusText = data.blacklist === 'Clean' ? '✅ Clean' : data.blacklist || '⚠️ Unknown';
+  section.style.display = 'block';
+  
+  const statusClass = data.blacklist === 'Clean' ? 'clean' : 'blacklisted';
+  const statusText = data.blacklist === 'Clean' ? '✅ Clean' : '⚠️ Blacklisted';
   
   card.innerHTML = `
     <div class="result-header">
       <div class="result-brand">
-        <img src="${data.image || 'https://via.placeholder.com/60?text=📱'}" alt="${data.brand}">
+        <img src="${data.image}" alt="${data.brand}" onerror="this.src='https://via.placeholder.com/60?text=📱'">
         <div>
           <h3>${data.brand} ${data.model}</h3>
           <p style="color:var(--muted);margin:5px 0 0 0">${data.color} • ${data.capacity}</p>
@@ -178,67 +192,66 @@ function displayResults(data) {
       </div>
       <span class="result-status ${statusClass}">${statusText}</span>
     </div>
+    
     <div class="result-grid">
       <div class="result-item"><label>IMEI/Serial</label><span>${data.imei || data.serial}</span></div>
-      <div class="result-item"><label>Model Number</label><span>${data.modelNumber || '-'}</span></div>
+      <div class="result-item"><label>Model Number</label><span>${data.modelNumber}</span></div>
       <div class="result-item"><label>MPN</label><span>${data.mpn || '-'}</span></div>
-      <div class="result-item"><label>Serial</label><span>${data.serial || '-'}</span></div>
-      <div class="result-item"><label>Carrier</label><span>${data.carrier || '-'}</span></div>
-      <div class="result-item"><label>Warranty</label><span>${data.warrantyStatus || '-'} ${data.warrantyDate ? '(' + data.warrantyDate + ')' : ''}</span></div>
+      <div class="result-item"><label>Carrier</label><span>${data.carrier}</span></div>
+      <div class="result-item"><label>Warranty</label><span>${data.warrantyStatus}</span></div>
+      <div class="result-item"><label>Blacklist</label><span style="color:${data.blacklist === 'Clean' ? '#4CAF50' : '#ff4444'}">${data.blacklist}</span></div>
     </div>
+    
     ${data.brand === 'Apple' ? `
     <div style="margin-top:25px;padding-top:25px;border-top:1px solid rgba(255,255,255,0.1);">
-      <h4 style="color:var(--orange);margin:0 0 15px 0;font-size:14px;text-transform:uppercase;">🍎 Apple GSX Info</h4>
+      <h4 style="color:var(--orange);margin:0 0 15px 0;font-size:14px;text-transform:uppercase;">🍎 Apple Info</h4>
       <div class="result-grid">
-        <div class="result-item"><label>Find My iPhone</label><span>${data.fmi === 'OFF' ? '✅ OFF' : '🔒 ON'}</span></div>
-        <div class="result-item"><label>SIM Lock</label><span>${data.simLock || '-'}</span></div>
-        <div class="result-item"><label>Activation</label><span>${data.activationStatus || '-'}</span></div>
-        <div class="result-item"><label>Replacement</label><span>${data.replacement || '-'}</span></div>
+        <div class="result-item"><label>Find My iPhone</label><span>${data.fmi}</span></div>
+        <div class="result-item"><label>SIM Lock</label><span>${data.simLock}</span></div>
+        <div class="result-item"><label>Activation</label><span>${data.activationStatus}</span></div>
       </div>
     </div>
     ` : ''}
   `;
+  
+  // Scroll to results
+  setTimeout(() => {
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
 }
 
-// SAVE TO HISTORY
-async function saveToHistory(imei, result) {
+// SAVE TO LOCALSTORAGE (sin Firebase)
+function saveToLocalStorage(imei, result) {
   try {
-    const user = firebase.auth().currentUser;
-    await db.collection('imei_history').add({
+    const history = JSON.parse(localStorage.getItem('imei_history') || '[]');
+    history.unshift({
       imei: imei,
       searchType: currentSearchType,
       result: result,
-      userId: user?.uid || 'guest',
-      userEmail: user?.email || null,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      timestamp: new Date().toISOString()
     });
+    // Keep only last 20
+    localStorage.setItem('imei_history', JSON.stringify(history.slice(0, 20)));
   } catch (e) {
-    console.error('Error saving history:', e);
-    // No mostrar error al usuario, solo loguear
+    console.error('Error saving to localStorage:', e);
   }
 }
 
 // LOAD HISTORY
-async function loadHistory() {
+function loadHistory() {
   const grid = document.getElementById('historyGrid');
   if (!grid) return;
   
   try {
-    const user = firebase.auth().currentUser;
-    const query = db.collection('imei_history')
-      .orderBy('timestamp', 'desc')
-      .limit(10);
+    const history = JSON.parse(localStorage.getItem('imei_history') || '[]');
     
-    const snap = user ? await query.where('userId', '==', user.uid).get() : await query.get();
-    
-    if (snap.empty) {
+    if (history.length === 0) {
       grid.innerHTML = '<p class="empty-state">No tenés consultas aún</p>';
       return;
     }
     
-    grid.innerHTML = snap.docs.map(doc => {
-      const h = doc.data();
-      const date = h.timestamp?.toDate?.()?.toLocaleDateString('es-AR') || 'Reciente';
+    grid.innerHTML = history.map(h => {
+      const date = new Date(h.timestamp).toLocaleDateString('es-AR') + ' ' + new Date(h.timestamp).toLocaleTimeString('es-AR', {hour: '2-digit', minute:'2-digit'});
       return `
         <div class="history-item">
           <div class="history-item-header">
@@ -246,44 +259,16 @@ async function loadHistory() {
             <span class="history-item-date">${date}</span>
           </div>
           <div class="history-item-details">
-            <span>Marca:</span><strong>${h.result?.brand || '-'}</strong>
-            <span>Modelo:</span><strong>${h.result?.model || '-'}</strong>
-            <span>Estado:</span><strong>${h.result?.blacklist || 'Unknown'}</strong>
+            <span>Marca:</span><strong>${h.result.brand}</strong>
+            <span>Modelo:</span><strong>${h.result.model}</strong>
+            <span>Estado:</span><strong style="color:${h.result.blacklist === 'Clean' ? '#4CAF50' : '#ff4444'}">${h.result.blacklist}</strong>
           </div>
         </div>
       `;
     }).join('');
   } catch (e) {
     console.error('Error loading history:', e);
-    grid.innerHTML = '<p class="empty-state">No hay historial disponible</p>';
-  }
-}
-
-// LOAD IMEI HISTORY
-async function loadIMEIHistory(imei) {
-  const container = document.getElementById('imeiHistory');
-  if (!container) return;
-  
-  try {
-    const snap = await db.collection('imei_history')
-      .where('imei', '==', imei)
-      .orderBy('timestamp', 'desc')
-      .limit(3)
-      .get();
-    
-    if (snap.empty) {
-      container.innerHTML = '<p style="color:var(--muted);font-size:14px">Sin consultas anteriores</p>';
-      return;
-    }
-    
-    container.innerHTML = snap.docs.map(doc => {
-      const h = doc.data();
-      const date = h.timestamp?.toDate?.()?.toLocaleString('es-AR') || '';
-      return `<p style="font-size:13px;color:var(--muted);margin:5px 0">📅 ${date} - ${h.result?.blacklist || 'Unknown'}</p>`;
-    }).join('');
-    document.getElementById('historyPreview').style.display = 'block';
-  } catch (e) {
-    console.error('Error:', e);
+    grid.innerHTML = '<p class="empty-state">Error al cargar historial</p>';
   }
 }
 
@@ -293,19 +278,10 @@ function copyResults() {
     alert('No hay resultados para copiar');
     return;
   }
-  const text = `📋 REPORTE IMEI - Cell Space Argentina\n━━━━━━━━━━━━━━━━━━\n📱 ${lastResult.brand} ${lastResult.model}\n🔢 IMEI: ${lastResult.imei || lastResult.serial}\n🛡️ Blacklist: ${lastResult.blacklist}\n━━━━━━━━━━━━━━━━━━\n✅ Reporte generado en Cell Space Argentina`;
+  const text = `📋 REPORTE IMEI - Cell Space Argentina\n━━━━━━━━━━━━━━━━━━\n📱 ${lastResult.brand} ${lastResult.model}\n🔢 IMEI: ${lastResult.imei}\n🛡️ Blacklist: ${lastResult.blacklist}\n━━━━━━━━━━━━━━━━━━\n✅ Cell Space Argentina`;
   navigator.clipboard.writeText(text).then(() => {
     alert('✅ Copiado al portapapeles');
   });
-}
-
-// GENERATE PDF
-function generatePDF() {
-  if (!lastResult) {
-    alert('No hay resultados para exportar');
-    return;
-  }
-  alert('📄 Función PDF: Para habilitar esta función, necesitás agregar la librería html2pdf.js');
 }
 
 // SHARE WHATSAPP
@@ -314,16 +290,15 @@ function shareWhatsApp() {
     alert('No hay resultados para compartir');
     return;
   }
-  const msg = `🔍 *Reporte IMEI - Cell Space Argentina*%0A%0A📱 ${lastResult.brand} ${lastResult.model}%0A🔢 IMEI: ${lastResult.imei || lastResult.serial}%0A🛡️ Blacklist: ${lastResult.blacklist}%0A%0A✅ Verificado en Cell Space Argentina`;
+  const msg = `🔍 *Reporte IMEI - Cell Space Argentina*%0A%0A📱 ${lastResult.brand} ${lastResult.model}%0A🔢 IMEI: ${lastResult.imei}%0A🛡️ Blacklist: ${lastResult.blacklist}%0A%0A✅ Cell Space Argentina`;
   window.open(`https://wa.me/5493782437674?text=${msg}`, '_blank');
 }
 
-// OCR & QR (Placeholders)
-async function handleImageUpload(event) {
-  const file = event.target.files[0];
-  if (file) alert('🔧 OCR en desarrollo. Ingresá el IMEI manualmente.');
+// PLACEHOLDERS
+function handleImageUpload(event) {
+  alert('🔧 OCR en desarrollo');
 }
 
 function startQRScan() {
-  alert('🔧 Escáner QR en desarrollo.');
+  alert('🔧 Escáner QR en desarrollo');
 }
