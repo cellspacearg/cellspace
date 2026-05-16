@@ -262,7 +262,7 @@ function getBrandImage(brand) {
   return images[brand] || images['Apple'];
 }
 
-// DISPLAY RESULTS - DISEÑO COMPACTO "CELL SPACE SYSTEM"
+// DISPLAY RESULTS - DISEÑO COMPACTO "CELL SPACE SYSTEM" (Logo al lado + Texto grande)
 function displayResults(data) {
   const section = document.getElementById('resultsSection');
   const card = document.getElementById('resultCard');
@@ -280,14 +280,18 @@ function displayResults(data) {
   const warrantyColor = data.warrantyStatus === "Limited Warranty" ? "#4CAF50" : "#ff4444";
   
   card.innerHTML = `
-    <!-- HEADER: LOGO Y MARCA -->
-    <div style="text-align:center;padding:20px 15px;background:rgba(0,0,0,0.3);border-radius:16px 16px 0 0;border-bottom:1px solid rgba(255,106,0,0.3);">
-      <img src="assets/logo.png" alt="Cell Space Logo" style="width:80px;height:80px;object-fit:contain;margin-bottom:10px;" onerror="this.style.display='none'">
-      <h2 style="color:var(--orange);margin:0;font-size:1.6rem;font-weight:800;letter-spacing:1px;">CELL SPACE</h2>
-      <p style="color:white;margin:2px 0 0 0;font-size:14px;letter-spacing:3px;text-transform:uppercase;">ARGENTINA</p>
-      <div style="margin-top:15px;padding:5px 15px;background:rgba(255,255,255,0.05);border-radius:20px;display:inline-block;">
-        <p style="color:var(--muted);margin:0;font-size:11px;text-transform:uppercase;letter-spacing:1px;">Sistema de Verificación Oficial</p>
+    <!-- HEADER: LOGO AL LADO DEL TEXTO -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:15px;padding:20px 20px;background:rgba(0,0,0,0.4);border-radius:16px 16px 0 0;border-bottom:1px solid rgba(255,106,0,0.3);">
+      <img src="assets/logo.png" alt="Cell Space Logo" style="width:65px;height:65px;object-fit:contain;" onerror="this.style.display='none'">
+      <div style="text-align:left;">
+        <h2 style="color:var(--orange);margin:0;font-size:1.8rem;font-weight:800;letter-spacing:1px;line-height:1;">CELL SPACE</h2>
+        <p style="color:white;margin:3px 0 0 0;font-size:14px;letter-spacing:3px;text-transform:uppercase;font-weight:500;">ARGENTINA</p>
       </div>
+    </div>
+    
+    <!-- SUBTITULO -->
+    <div style="text-align:center;padding:8px;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,106,0,0.1);">
+      <p style="color:var(--muted);margin:0;font-size:12px;text-transform:uppercase;letter-spacing:1px;">Sistema de Verificación Oficial</p>
     </div>
     
     <!-- CUERPO: INFORMACIÓN COMPACTA -->
@@ -295,88 +299,88 @@ function displayResults(data) {
       
       <!-- MODELO DESTACADO -->
       <div style="text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid rgba(255,255,255,0.1);">
-        <h3 style="color:white;margin:0;font-size:1.3rem;font-weight:600;">${data.brand} ${data.modelName}</h3>
-        <p style="color:var(--orange);margin:5px 0 0 0;font-size:12px;font-weight:600;">${data.modelNumber} • ${data.description || ''}</p>
+        <h3 style="color:white;margin:0;font-size:1.5rem;font-weight:600;">${data.brand} ${data.modelName}</h3>
+        <p style="color:var(--orange);margin:5px 0 0 0;font-size:13px;font-weight:600;">${data.modelNumber} • ${data.description || ''}</p>
       </div>
 
       <!-- DATOS DE IDENTIFICACIÓN -->
-      <div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:10px;margin-bottom:15px;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-          <span style="color:var(--muted);font-size:11px;">IMEI Principal</span>
-          <span style="color:white;font-family:monospace;font-weight:bold;font-size:13px;">${data.imei}</span>
+      <div style="background:rgba(255,255,255,0.03);padding:15px;border-radius:10px;margin-bottom:15px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+          <span style="color:var(--muted);font-size:12px;">IMEI Principal</span>
+          <span style="color:white;font-family:monospace;font-weight:bold;font-size:14px;">${data.imei}</span>
         </div>
-        ${data.imei2 ? `<div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-          <span style="color:var(--muted);font-size:11px;">IMEI Secundario</span>
-          <span style="color:var(--muted);font-family:monospace;font-size:12px;">${data.imei2}</span>
+        ${data.imei2 ? `<div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+          <span style="color:var(--muted);font-size:12px;">IMEI Secundario</span>
+          <span style="color:var(--muted);font-family:monospace;font-size:13px;">${data.imei2}</span>
         </div>` : ''}
-        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-          <span style="color:var(--muted);font-size:11px;">Número de Serie</span>
-          <span style="color:white;font-family:monospace;font-size:12px;">${data.serialNumber}</span>
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+          <span style="color:var(--muted);font-size:12px;">Número de Serie</span>
+          <span style="color:white;font-family:monospace;font-size:13px;">${data.serialNumber}</span>
         </div>
         <div style="display:flex;justify-content:space-between;">
-          <span style="color:var(--muted);font-size:11px;">MEID</span>
-          <span style="color:var(--muted);font-family:monospace;font-size:12px;">${data.meid}</span>
+          <span style="color:var(--muted);font-size:12px;">MEID</span>
+          <span style="color:var(--muted);font-family:monospace;font-size:13px;">${data.meid}</span>
         </div>
       </div>
 
       <!-- ESTADOS PRINCIPALES -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;">
-        <div style="background:${data.blacklistStatus === 'Clean' ? 'rgba(76,175,80,0.1)' : 'rgba(255,68,68,0.1)'};padding:12px;border-radius:10px;text-align:center;border:1px solid ${blacklistColor};">
-          <div style="color:var(--muted);font-size:10px;margin-bottom:5px;text-transform:uppercase;">Reporte</div>
-          <div style="color:${blacklistColor};font-weight:800;font-size:14px;">
+        <div style="background:${data.blacklistStatus === 'Clean' ? 'rgba(76,175,80,0.1)' : 'rgba(255,68,68,0.1)'};padding:15px;border-radius:10px;text-align:center;border:1px solid ${blacklistColor};">
+          <div style="color:var(--muted);font-size:11px;margin-bottom:5px;text-transform:uppercase;">Reporte</div>
+          <div style="color:${blacklistColor};font-weight:800;font-size:15px;">
             ${data.blacklistStatus === 'Clean' ? '✅ LIMPIO' : '⚠️ REPORTADO'}
           </div>
         </div>
         
-        <div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:10px;text-align:center;">
-          <div style="color:var(--muted);font-size:10px;margin-bottom:5px;text-transform:uppercase;">Sim Lock</div>
-          <div style="color:${data.simLockStatus === 'Unlocked' ? '#4CAF50' : '#ff4444'};font-weight:700;font-size:13px;">
+        <div style="background:rgba(255,255,255,0.03);padding:15px;border-radius:10px;text-align:center;">
+          <div style="color:var(--muted);font-size:11px;margin-bottom:5px;text-transform:uppercase;">Sim Lock</div>
+          <div style="color:${data.simLockStatus === 'Unlocked' ? '#4CAF50' : '#ff4444'};font-weight:700;font-size:14px;">
             ${data.simLockStatus}
           </div>
         </div>
 
-        <div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:10px;text-align:center;">
-          <div style="color:var(--muted);font-size:10px;margin-bottom:5px;text-transform:uppercase;">Garantía</div>
-          <div style="color:${warrantyColor};font-weight:700;font-size:12px;">
+        <div style="background:rgba(255,255,255,0.03);padding:15px;border-radius:10px;text-align:center;">
+          <div style="color:var(--muted);font-size:11px;margin-bottom:5px;text-transform:uppercase;">Garantía</div>
+          <div style="color:${warrantyColor};font-weight:700;font-size:13px;">
             ${data.warrantyStatus}
           </div>
         </div>
 
-        <div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:10px;text-align:center;">
-          <div style="color:var(--muted);font-size:10px;margin-bottom:5px;text-transform:uppercase;">Valor Est.</div>
-          <div style="color:white;font-weight:700;font-size:14px;">
+        <div style="background:rgba(255,255,255,0.03);padding:15px;border-radius:10px;text-align:center;">
+          <div style="color:var(--muted);font-size:11px;margin-bottom:5px;text-transform:uppercase;">Valor Est.</div>
+          <div style="color:white;font-weight:700;font-size:15px;">
             ${data.estimatedValue}
           </div>
         </div>
       </div>
 
       <!-- DETALLES TÉCNICOS -->
-      <div style="background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-          <span style="color:var(--muted);font-size:11px;">Activación</span>
-          <span style="color:#4CAF50;font-size:12px;">Activado</span>
+      <div style="background:rgba(255,255,255,0.02);padding:15px;border-radius:10px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+          <span style="color:var(--muted);font-size:12px;">Activación</span>
+          <span style="color:#4CAF50;font-weight:600;font-size:13px;">Activado</span>
         </div>
-        ${data.brand === 'Apple' ? `<div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-          <span style="color:var(--muted);font-size:11px;">Find My iPhone</span>
-          <span style="color:${data.findMyiPhone === 'OFF' ? '#4CAF50' : '#ff4444'};font-size:12px;">${data.findMyiPhone}</span>
+        ${data.brand === 'Apple' ? `<div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+          <span style="color:var(--muted);font-size:12px;">Find My iPhone</span>
+          <span style="color:${data.findMyiPhone === 'OFF' ? '#4CAF50' : '#ff4444'};font-weight:600;font-size:13px;">${data.findMyiPhone}</span>
         </div>` : ''}
-        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-          <span style="color:var(--muted);font-size:11px;">Reemplazado</span>
-          <span style="color:${data.replacedDevice === 'No' ? '#4CAF50' : '#ff4444'};font-size:12px;">${data.replacedDevice}</span>
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+          <span style="color:var(--muted);font-size:12px;">Reemplazado</span>
+          <span style="color:${data.replacedDevice === 'No' ? '#4CAF50' : '#ff4444'};font-weight:600;font-size:13px;">${data.replacedDevice}</span>
         </div>
         <div style="display:flex;justify-content:space-between;">
-          <span style="color:var(--muted);font-size:11px;">Refurbished</span>
-          <span style="color:${data.refurbishedDevice === 'No' ? '#4CAF50' : '#ff4444'};font-size:12px;">${data.refurbishedDevice}</span>
+          <span style="color:var(--muted);font-size:12px;">Refurbished</span>
+          <span style="color:${data.refurbishedDevice === 'No' ? '#4CAF50' : '#ff4444'};font-weight:600;font-size:13px;">${data.refurbishedDevice}</span>
         </div>
       </div>
     </div>
     
     <!-- FOOTER: VERIFICACIÓN PROPIA -->
     <div style="padding:15px;text-align:center;background:linear-gradient(180deg, rgba(255,106,0,0.05) 0%, rgba(255,106,0,0.15) 100%);border-radius:0 0 16px 16px;border-top:1px solid rgba(255,106,0,0.3);">
-      <p style="color:var(--orange);margin:0 0 5px 0;font-weight:700;font-size:13px;letter-spacing:0.5px;">
+      <p style="color:var(--orange);margin:0 0 5px 0;font-weight:700;font-size:14px;letter-spacing:0.5px;">
         ✅ REPORTE VERIFICADO POR CELL SPACE
       </p>
-      <p style="color:var(--muted);margin:0;font-size:11px;">
+      <p style="color:var(--muted);margin:0;font-size:12px;">
         Fecha de emisión: ${fechaHora}
       </p>
     </div>
