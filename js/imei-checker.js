@@ -272,7 +272,7 @@ function getBrandImage(brand) {
   return images[brand] || images['Apple'];
 }
 
-// DISPLAY RESULTS
+// DISPLAY RESULTS - DISEÑO COMPACTO
 function displayResults(data) {
   const section = document.getElementById('resultsSection');
   const card = document.getElementById('resultCard');
@@ -284,30 +284,115 @@ function displayResults(data) {
   }
   
   const now = new Date();
-  dateEl.textContent = `${now.toLocaleDateString('es-AR', {day: 'numeric', month: 'long', year: 'numeric'})}, ${now.toLocaleTimeString('es-AR', {hour: '2-digit', minute:'2-digit'})} horas`;
+  const fechaHora = `${now.toLocaleDateString('es-AR')} ${now.toLocaleTimeString('es-AR', {hour: '2-digit', minute:'2-digit'})}`;
+  dateEl.textContent = fechaHora;
   
   const blacklistColor = data.blacklistStatus === "Clean" ? "#4CAF50" : "#ff4444";
   const warrantyColor = data.warrantyStatus === "Limited Warranty" ? "#4CAF50" : "#ff4444";
   
+  // DISEÑO COMPACTO EN 2 COLUMNAS
   card.innerHTML = `
-    <!-- LOGO CENTRADO -->
-    <div style="text-align:center;margin-bottom:30px;padding:20px;background:rgba(255,106,0,0.05);border-radius:16px;border:1px solid rgba(255,106,0,0.2);">
-      <img src="assets/logo.png" alt="Cell Space Argentina" style="width:100px;height:100px;object-fit:contain;margin-bottom:15px;" onerror="this.style.display='none'">
-      <h2 style="color:var(--orange);margin:0;font-size:1.6rem;text-transform:uppercase;letter-spacing:2px;">Cell Space Argentina</h2>
-      <p style="color:var(--muted);margin:5px 0 0 0;font-size:13px;">Powered by SickW/DHRU API</p>
+    <!-- HEADER CON LOGO -->
+    <div style="display:flex;align-items:center;gap:15px;padding:20px;background:linear-gradient(135deg, rgba(255,106,0,0.15) 0%, rgba(255,106,0,0.05) 100%);border-radius:12px 12px 0 0;border-bottom:2px solid var(--orange);">
+      <img src="assets/logo.png" alt="Logo" style="width:70px;height:70px;object-fit:contain;" onerror="this.style.display='none'">
+      <div style="flex:1;">
+        <h2 style="color:var(--orange);margin:0;font-size:1.4rem;text-transform:uppercase;letter-spacing:1px;">Cell Space Argentina</h2>
+        <p style="color:var(--muted);margin:3px 0 0 0;font-size:12px;">Reporte de Verificación IMEI</p>
+        <p style="color:var(--muted);margin:0;font-size:11px;">${fechaHora}</p>
+      </div>
     </div>
     
-    <!-- INFO PRINCIPAL -->
-    <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:25px;margin-bottom:25px;text-align:center;">
-      <h3 style="color:white;margin:0 0 10px 0;font-size:1.5rem;">${data.brand} ${data.modelName}</h3>
-      <p style="color:var(--muted);margin:0 0 15px 0;font-size:14px;">${data.modelNumber}</p>
-      <div style="display:flex;justify-content:center;gap:30px;flex-wrap:wrap;">
-        <div style="text-align:center;">
-          <div style="color:var(--muted);font-size:11px;">IMEI</div>
-          <div style="color:white;font-family:monospace;font-weight:bold;font-size:15px;margin-top:5px;">${data.imei}</div>
+    <!-- INFO PRINCIPAL EN 2 COLUMNAS -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;padding:20px;background:rgba(255,255,255,0.02);">
+      
+      <!-- COLUMNA IZQUIERDA -->
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;">
+          <div style="color:var(--muted);font-size:10px;margin-bottom:4px;text-transform:uppercase;">Dispositivo</div>
+          <div style="color:white;font-weight:600;font-size:14px;">${data.brand} ${data.modelName}</div>
+          <div style="color:var(--muted);font-size:12px;">${data.modelNumber}</div>
+        </div>
+        
+        <div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;">
+          <div style="color:var(--muted);font-size:10px;margin-bottom:4px;">IMEI</div>
+          <div style="color:white;font-family:monospace;font-weight:bold;font-size:13px;">${data.imei}</div>
+          ${data.imei2 ? `<div style="color:var(--muted);font-family:monospace;font-size:11px;margin-top:3px;">${data.imei2}</div>` : ''}
+        </div>
+        
+        <div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;">
+          <div style="color:var(--muted);font-size:10px;margin-bottom:4px;">Serial Number</div>
+          <div style="color:white;font-family:monospace;font-size:12px;">${data.serialNumber}</div>
+        </div>
+        
+        <div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;">
+          <div style="color:var(--muted);font-size:10px;margin-bottom:4px;">MEID</div>
+          <div style="color:white;font-family:monospace;font-size:12px;">${data.meid}</div>
+        </div>
+      </div>
+      
+      <!-- COLUMNA DERECHA -->
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <!-- ESTADOS PRINCIPALES -->
+        <div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;">
+          <div style="color:var(--muted);font-size:10px;margin-bottom:8px;text-transform:uppercase;">Blacklist Status</div>
+          <div style="color:${blacklistColor};font-weight:bold;padding:8px;border-radius:6px;text-align:center;font-size:14px;background:${data.blacklistStatus === 'Clean' ? 'rgba(76,175,80,0.15)' : 'rgba(255,68,68,0.15)'};border:1px solid ${blacklistColor};">
+            ${data.blacklistStatus === 'Clean' ? '✅ CLEAN' : '⚠️ BLACKLISTED'}
+          </div>
+        </div>
+        
+        <div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;">
+          <div style="color:var(--muted);font-size:10px;margin-bottom:4px;">Garantía</div>
+          <div style="color:${warrantyColor};font-weight:600;font-size:13px;">${data.warrantyStatus}</div>
+          <div style="color:var(--muted);font-size:11px;margin-top:3px;">${data.purchaseDate}</div>
+        </div>
+        
+        <div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;">
+          <div style="color:var(--muted);font-size:10px;margin-bottom:4px;">SIM Lock</div>
+          <div style="color:${data.simLockStatus === 'Unlocked' ? '#4CAF50' : '#ff4444'};font-weight:600;font-size:13px;">${data.simLockStatus}</div>
+          <div style="color:var(--muted);font-size:11px;margin-top:3px;">${data.lockedCarrier}</div>
+        </div>
+        
+        <div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;">
+          <div style="color:var(--muted);font-size:10px;margin-bottom:4px;">Valor Estimado</div>
+          <div style="color:${data.blacklistStatus === 'Clean' ? '#4CAF50' : '#ff4444'};font-weight:bold;font-size:16px;">${data.estimatedValue}</div>
         </div>
       </div>
     </div>
+    
+    <!-- DETALLES ADICIONALES -->
+    <div style="padding:15px 20px;background:rgba(255,255,255,0.02);border-top:1px solid rgba(255,255,255,0.05);">
+      <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:12px;">
+        <div style="text-align:center;padding:10px;background:rgba(255,255,255,0.03);border-radius:8px;">
+          <div style="color:var(--muted);font-size:10px;margin-bottom:4px;">Activación</div>
+          <div style="color:#4CAF50;font-weight:600;font-size:12px;">✅ Activado</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:rgba(255,255,255,0.03);border-radius:8px;">
+          <div style="color:var(--muted);font-size:10px;margin-bottom:4px;">FMI</div>
+          <div style="color:${data.findMyiPhone === 'OFF' ? '#4CAF50' : '#ff4444'};font-weight:600;font-size:12px;">${data.findMyiPhone}</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:rgba(255,255,255,0.03);border-radius:8px;">
+          <div style="color:var(--muted);font-size:10px;margin-bottom:4px;">Soporte</div>
+          <div style="color:${data.technicalSupport === 'Activo' ? '#4CAF50' : '#ff4444'};font-weight:600;font-size:12px;">${data.technicalSupport}</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- FOOTER -->
+    <div style="padding:15px;text-align:center;background:linear-gradient(135deg, rgba(255,106,0,0.1) 0%, rgba(255,106,0,0.05) 100%);border-radius:0 0 12px 12px;border-top:2px solid var(--orange);">
+      <p style="color:var(--orange);margin:0 0 5px 0;font-weight:700;font-size:13px;">✅ Verificado por Cell Space Argentina</p>
+      <p style="color:var(--muted);margin:0;font-size:10px;">Powered by SickW/DHRU API</p>
+    </div>
+  `;
+  
+  section.style.display = 'block';
+  setTimeout(() => {
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+  
+  if (data.blacklistStatus === 'Blacklisted') {
+    setTimeout(() => alert('⚠️ ATENCIÓN: Dispositivo REPORTADO'), 500);
+  }
+}
     
     <!-- ESTADOS -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));gap:12px;margin-bottom:25px;">
