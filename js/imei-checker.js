@@ -5,7 +5,7 @@ const API_CONFIG = {
     url: 'https://api.ifreeicloud.co.uk/api/',
     key: 'BE9-5RV-B6W-T4A-XOR-GJ5-SMM-I4C',
     username: 'ChoppCell',
-    serviceId: '1' // ⚠️ ID del servicio de verificación. Ajustalo si tu proveedor usa otro número.
+    serviceId: '0' // ⚠️ ID del servicio de verificación. Ajustalo si tu proveedor usa otro número.
   },
   fallback: {
     name: 'SickW',
