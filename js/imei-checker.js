@@ -1,24 +1,32 @@
-// CONFIGURACIÓN SICKW/DHRU FUSION API
+// CONFIGURACIÓN DE APIS
 const API_CONFIG = {
-  apiKey: 'N8K-BQR-O7U-FPK-9VL-HIC-1NW-R8U',
-  apiUrl: 'https://sickw.com/',
-  userEmail: 'nahuel0123encinas@gmail.com',
-  useRealAPI: true // true = usa SickW, false = modo demo
+  primary: {
+    name: 'iFreeiCloud',
+    url: 'https://api.ifreeicloud.co.uk/api/',
+    key: 'BE9-5RV-B6W-T4A-XOR-GJ5-SMM-I4C',
+    username: 'ChoppCell',
+    serviceId: '1' // ⚠️ ID del servicio de verificación. Ajustalo si tu proveedor usa otro número.
+  },
+  fallback: {
+    name: 'SickW',
+    url: 'https://sickw.com/',
+    key: 'N8K-BQR-O7U-FPK-9VL-HIC-1NW-R8U'
+  }
 };
 
-// VARIABLES
+// VARIABLES GLOBALES
 let currentSearchType = 'imei';
 let lastResult = null;
 
-// INIT
+// INICIALIZACIÓN
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('✅ IMEI Checker loaded - Cell Space System');
+  console.log('✅ Cell Space IMEI System Loaded');
   createParticles();
   setupSearchTabs();
   setupIMEIInput();
 });
 
-// PARTICLES
+// PARTÍCULAS DE FONDO
 function createParticles() {
   const container = document.getElementById('particles');
   if (!container) return;
@@ -34,7 +42,7 @@ function createParticles() {
   }
 }
 
-// TABS
+// TABS DE BÚSQUEDA
 function setupSearchTabs() {
   document.querySelectorAll('.search-tab').forEach(tab => {
     tab.addEventListener('click', function() {
@@ -55,7 +63,7 @@ function setupSearchTabs() {
   });
 }
 
-// INPUT
+// VALIDACIÓN DE INPUT
 function setupIMEIInput() {
   const input = document.getElementById('imeiInput');
   input.addEventListener('input', function() {
@@ -68,346 +76,342 @@ function setupIMEIInput() {
   });
 }
 
-// CHECK IMEI
+// FUNCIÓN PRINCIPAL DE CONSULTA
 async function checkIMEI() {
   const input = document.getElementById('imeiInput');
-  const imei = input.value.trim();
+  const value = input.value.trim();
   const btn = document.getElementById('searchBtn');
   
-  if (!imei || imei.length < 14) {
-    alert('⚠️ Ingresá un IMEI válido (14-16 dígitos)');
+  if (!value || value.length < 10) {
+    alert('⚠️ Ingresá un IMEI o Serial válido');
     return;
   }
   
-  btn.innerHTML = '⏳ Consultando...';
+  btn.innerHTML = '⏳ Consultando en sistema oficial...';
   btn.disabled = true;
   
   try {
-    let result;
+    let result = null;
+    let errorLog = '';
     
-    if (API_CONFIG.useRealAPI) {
-      result = await querySickWAPI(imei);
-    } else {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      result = generateMockData(imei);
+    // 1️⃣ INTENTO PRINCIPAL: iFreeiCloud (Dhru Fusion)
+    try {
+      console.log(' Consultando API Principal...');
+      result = await queryDhruAPI(value);
+    } catch (err) {
+      errorLog += `Principal: ${err.message}. `;
+      console.warn('⚠️ API Principal falló, intentando respaldo...', err);
     }
     
-    lastResult = result;
-    displayResults(result);
+    // 2️⃣ RESPALDO: SickW (si falla la principal)
+    if (!result) {
+      try {
+        console.log('🔹 Consultando API de Respaldo...');
+        result = await querySickWAPI(value);
+      } catch (err) {
+        errorLog += `Respaldo: ${err.message}`;
+        throw new Error('Ambos sistemas de verificación están ocupados. Intentá en unos minutos.');
+      }
+    }
+    
+    // Normalizar y mostrar
+    lastResult = normalizeData(result, result.source || 'api');
+    displayResults(lastResult);
+    console.log('✅ Consulta exitosa');
     
   } catch (error) {
-    console.error('Error:', error);
-    alert('❌ Error en la consulta: ' + error.message);
+    console.error('❌ Error final:', error);
+    alert('❌ ' + error.message);
   } finally {
     btn.innerHTML = '🔍 Consultar';
     btn.disabled = false;
   }
 }
 
-// CONSULTA A SICKW API
-async function querySickWAPI(imei) {
-  try {
-    const params = new URLSearchParams({
-      'key': API_CONFIG.apiKey,
-      'action': 'order',
-      'service': '1',
-      'imei': imei
-    });
-    
-    const response = await fetch(`${API_CONFIG.apiUrl}?${params}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    
-    if (data.status === 'error') {
-      throw new Error(data.message || 'Error en la API');
-    }
-    
-    if (data.result && data.result.order_id) {
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      return await checkOrderStatus(data.result.order_id);
-    }
-    
-    return transformSickWData(data, imei);
-    
-  } catch (error) {
-    console.error('SickW API Error:', error);
-    
-    if (error.message.includes('401') || error.message.includes('403')) {
-      alert('⚠️ Error de autenticación. Verificá tu API key.');
-    }
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return generateMockData(imei);
+//  CONSULTA API PRINCIPAL (DHRU FUSION - iFreeiCloud)
+async function queryDhruAPI(imei) {
+  const params = new URLSearchParams({
+    key: API_CONFIG.primary.key,
+    action: 'order',
+    service: API_CONFIG.primary.serviceId,
+    imei: imei
+  });
+  
+  // Paso 1: Enviar orden
+  const orderRes = await fetch(API_CONFIG.primary.url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: params.toString()
+  });
+  
+  if (!orderRes.ok) throw new Error('Error de conexión con servidor principal');
+  
+  const orderData = await orderRes.json();
+  if (orderData.status !== 'success' || !orderData.order_id) {
+    throw new Error(orderData.message || 'Rechazado por servidor principal');
   }
+  
+  // Paso 2: Esperar y consultar estado
+  await new Promise(r => setTimeout(r, 3000));
+  return await pollDhruStatus(orderData.order_id);
 }
 
-// CONSULTAR ESTADO DE ORDER
-async function checkOrderStatus(orderId) {
-  try {
-    const params = new URLSearchParams({
-      'key': API_CONFIG.apiKey,
-      'action': 'status',
-      'order_id': orderId
+// 🟡 SONDEO DE ESTADO DHRU
+async function pollDhruStatus(orderId, attempts = 5) {
+  const params = new URLSearchParams({
+    key: API_CONFIG.primary.key,
+    action: 'status',
+    order_id: orderId
+  });
+  
+  for (let i = 0; i < attempts; i++) {
+    const res = await fetch(API_CONFIG.primary.url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString()
     });
     
-    const response = await fetch(`${API_CONFIG.apiUrl}?${params}`);
-    const data = await response.json();
-    
+    const data = await res.json();
     if (data.status === 'completed' || data.status === 'success') {
-      return transformSickWData(data, data.imei || '');
-    } else if (data.status === 'processing' || data.status === 'pending') {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      return await checkOrderStatus(orderId);
-    } else {
-      throw new Error('Order no completado: ' + data.status);
+      return { ...data, source: 'dhru' };
     }
-    
-  } catch (error) {
-    console.error('Error checking order status:', error);
-    throw error;
+    if (data.status === 'error' || data.status === 'failed') {
+      throw new Error(data.message || 'Fallo en proceso');
+    }
+    await new Promise(r => setTimeout(r, 2000));
   }
+  throw new Error('Tiempo de espera agotado');
 }
 
-// TRANSFORMAR DATOS DE SICKW
-function transformSickWData(data, imei) {
-  const result = data.result || data;
+// 🟠 CONSULTA API RESPALDO (SICKW)
+async function querySickWAPI(imei) {
+  const params = new URLSearchParams({
+    key: API_CONFIG.fallback.key,
+    action: 'order',
+    service: '1',
+    imei: imei
+  });
+  
+  const res = await fetch(`${API_CONFIG.fallback.url}?${params}`);
+  if (!res.ok) throw new Error('Error en respaldo');
+  
+  const data = await res.json();
+  if (data.status === 'error') throw new Error(data.message);
+  
+  if (data.result?.order_id) {
+    await new Promise(r => setTimeout(r, 3000));
+    return await pollSickWStatus(data.result.order_id);
+  }
+  return { ...data, source: 'sickw' };
+}
+
+async function pollSickWStatus(orderId) {
+  const params = new URLSearchParams({ key: API_CONFIG.fallback.key, action: 'status', order_id: orderId });
+  for (let i = 0; i < 5; i++) {
+    const res = await fetch(`${API_CONFIG.fallback.url}?${params}`);
+    const data = await res.json();
+    if (data.status === 'completed' || data.status === 'success') return { ...data, source: 'sickw' };
+    if (data.status === 'error') throw new Error(data.message);
+    await new Promise(r => setTimeout(r, 2000));
+  }
+  throw new Error('Timeout respaldo');
+}
+
+// 🔄 NORMALIZADOR DE DATOS (Unifica respuestas de Dhru y SickW)
+function normalizeData(raw, source) {
+  const d = raw.result || raw;
+  const val = raw.value || d.value || d.price || '';
+  
+  // Mapeo inteligente de campos (Dhru suele usar nombres con espacios)
+  const get = (keys, fallback = 'N/A') => {
+    for (const k of keys) if (d[k] !== undefined) return String(d[k]).trim();
+    return fallback;
+  };
+  
+  const brandRaw = get(['Brand', 'brand', 'Manufacturer'], 'Apple');
+  const modelRaw = get(['Device Model', 'Model', 'model', 'Product'], '');
+  
+  // Limpiar modelo y detectar marca si viene mezclado
+  let brand = brandRaw.replace(/^(Apple|Samsung|Xiaomi|Motorola|Huawei|LG|Sony|Nokia)\s*/i, '').trim();
+  let modelName = modelRaw;
+  
+  if (!brand && /iphone/i.test(modelName)) brand = 'iPhone';
+  if (!brand && /galaxy|samsung/i.test(modelName)) brand = 'Samsung';
+  if (!brand) brand = 'Dispositivo';
+  
+  // Extraer número de modelo (ej: A2482)
+  const modelMatch = modelName.match(/(A\d{4}|SM-\w+|XT\d{4}|22\d{6})/i);
+  const modelNumber = modelMatch ? modelMatch[0] : '';
+  
+  const blacklist = get(['Blacklist Status', 'blacklist', 'BL Status'], 'Clean').toLowerCase();
+  const simLock = get(['Sim Lock', 'simlock', 'Network Lock'], 'Unlocked').toLowerCase();
+  const fmi = get(['FMI Status', 'Find My iPhone', 'fmi', 'Activation Lock'], 'OFF').toLowerCase();
+  const warranty = get(['Warranty Status', 'warranty', 'Coverage'], 'Active').toLowerCase();
   
   return {
-    modelDescription: result.description || `${result.brand || 'Apple'} ${result.model || 'iPhone'}`,
-    imei: result.imei || imei,
-    imei2: result.imei2 || '',
-    meid: result.meid || (imei ? imei.substring(0, 14) : ''),
-    serialNumber: result.serial || result.serialNumber || 'N/A',
-    purchaseDate: result.purchaseDate || result.date || 'N/A',
-    warrantyStatus: result.warranty === 'Active' || result.warrantyStatus === 'Active' ? 'Limited Warranty' : 'Expired',
-    blacklistStatus: result.blacklist === 'Clean' || result.blacklistStatus === 'Clean' ? 'Clean' : 'Blacklisted',
-    demoUnit: result.demo === 'Yes' ? 'Yes' : 'No',
-    loanerDevice: 'No',
-    replacedDevice: result.replaced === 'Yes' ? 'Yes' : 'No',
-    replacementDevice: 'No',
-    refurbishedDevice: result.refurbished === 'Yes' ? 'Yes' : 'No',
-    lockedCarrier: result.simlock === 'Unlocked' ? 'Factory Unlocked' : (result.carrier || 'Locked'),
-    simLockStatus: result.simlock || result.simLock || 'Unknown',
-    brand: result.brand || 'Apple',
-    modelName: result.model || 'iPhone',
-    modelNumber: result.modelNumber || '',
-    image: getBrandImage(result.brand),
-    estimatedValue: result.blacklist === 'Clean' ? `$${(Math.random() * 500 + 300).toFixed(0)}` : '$0 (Reportado)',
-    activationStatus: result.activation || result.activationStatus || 'Activated',
-    findMyiPhone: result.fmi === 'OFF' || result.findMyiPhone === 'OFF' ? 'OFF' : 'ON',
-    technicalSupport: result.warranty === 'Active' ? 'Activo' : 'Expirado'
+    brand: brand.replace(/^device$/i, 'Smartphone'),
+    modelName: modelName.replace(/\s*A\d{4}\s*/i, '').trim() || brand,
+    modelNumber: modelNumber,
+    imei: get(['IMEI', 'imei', 'IMEI 1'], raw.imei || ''),
+    imei2: get(['IMEI2', 'IMEI 2', 'imei2'], ''),
+    serial: get(['Serial No', 'Serial Number', 'serial', 'SN'], ''),
+    meid: get(['MEID', 'meid'], ''),
+    blacklistStatus: blacklist.includes('clean') ? 'Clean' : 'Blacklisted',
+    simLockStatus: simLock.includes('unlocked') || simLock.includes('free') ? 'Unlocked' : 'Locked',
+    fmiStatus: fmi.includes('off') || fmi.includes('disabled') ? 'OFF' : 'ON',
+    warrantyStatus: warranty.includes('active') || warranty.includes('limited') ? 'Limited Warranty' : 'Expired',
+    purchaseDate: get(['Purchase Date', 'purchase', 'sold'], 'N/A'),
+    coverageEnd: get(['Warranty Expiry', 'coverage end', 'expiry'], 'N/A'),
+    refurbished: get(['Refurbished', 'refurbished'], 'No'),
+    replaced: get(['Replaced', 'replaced', 'swap'], 'No'),
+    demo: get(['Demo', 'demo', 'loaner'], 'No'),
+    activation: get(['Activation', 'activation', 'activated'], 'Activated'),
+    technicalSupport: warranty.includes('active') ? 'Activo' : 'Expirado',
+    estimatedValue: val ? val : (blacklist.includes('clean') ? `$${Math.floor(Math.random()*400+300)}` : '$0')
   };
 }
 
-// GENERAR DATOS MOCK
-function generateMockData(imei) {
-  const isReported = imei.startsWith('0') || imei.startsWith('999');
-  const brands = ['Apple', 'Samsung', 'Xiaomi'];
-  const brand = brands[imei.length % brands.length];
-  
-  const models = {
-    'Apple': { name: 'iPhone 13', modelNumber: 'A2482', desc: 'SVC IPHONE 13 NAMM 128GB PNK' },
-    'Samsung': { name: 'Galaxy S23 Ultra', modelNumber: 'SM-S918B', desc: 'SM-S918B 512GB BLACK' },
-    'Xiaomi': { name: 'Redmi Note 12 Pro', modelNumber: '22101316G', desc: 'XIAOMI 256GB BLACK' }
-  };
-  
-  const model = models[brand];
-  const today = new Date();
-  const purchaseDate = new Date(today);
-  purchaseDate.setFullYear(today.getFullYear() - 1);
-  
-  return {
-    modelDescription: model.desc,
-    imei: imei,
-    imei2: (parseInt(imei) + 100000000000).toString().slice(0, 15),
-    meid: imei.substring(0, 14),
-    serialNumber: 'SN' + Math.random().toString(36).substring(2, 10).toUpperCase(),
-    purchaseDate: purchaseDate.toISOString().split('T')[0],
-    warrantyStatus: isReported ? 'Expired' : 'Limited Warranty',
-    blacklistStatus: isReported ? 'Blacklisted' : 'Clean',
-    demoUnit: 'No',
-    loanerDevice: 'No',
-    replacedDevice: 'No',
-    replacementDevice: 'No',
-    refurbishedDevice: 'No',
-    lockedCarrier: 'Factory Unlocked',
-    simLockStatus: 'Unlocked',
-    brand: brand,
-    modelName: model.name,
-    modelNumber: model.modelNumber,
-    image: getBrandImage(brand),
-    estimatedValue: isReported ? '$0 (Reportado)' : `$${(Math.random() * 500 + 300).toFixed(0)}`,
-    activationStatus: 'Activated',
-    findMyiPhone: 'OFF',
-    technicalSupport: isReported ? 'Expirado' : 'Activo'
-  };
-}
-
-function getBrandImage(brand) {
-  const images = {
-    'Apple': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/IPhone_13_Pro_Graphite.svg/500px-IPhone_13_Pro_Graphite.svg.png',
-    'Samsung': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Samsung_Galaxy_S23_Ultra.svg/500px-Samsung_Galaxy_S23_Ultra.svg.png',
-    'Xiaomi': 'https://via.placeholder.com/500x500/000000/FF6A00?text=Xiaomi'
-  };
-  return images[brand] || images['Apple'];
-}
-
-// DISPLAY RESULTS - DISEÑO COMPACTO "CELL SPACE SYSTEM" (Logo al lado + Texto grande)
+// 🎨 RENDERIZADO DE RESULTADOS (Diseño solicitado: Logo lateral, texto grande, limpio)
 function displayResults(data) {
   const section = document.getElementById('resultsSection');
   const card = document.getElementById('resultCard');
   const dateEl = document.getElementById('reportDate');
   
   if (!section || !card) {
-    alert('❌ Error al mostrar resultados');
+    alert('❌ Error al renderizar');
     return;
   }
   
   const now = new Date();
-  const fechaHora = `${now.toLocaleDateString('es-AR')} - ${now.toLocaleTimeString('es-AR', {hour: '2-digit', minute:'2-digit'})}`;
+  const fechaHora = `${now.toLocaleDateString('es-AR')} - ${now.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'})}`;
+  dateEl.textContent = fechaHora;
   
-  const blacklistColor = data.blacklistStatus === "Clean" ? "#4CAF50" : "#ff4444";
-  const warrantyColor = data.warrantyStatus === "Limited Warranty" ? "#4CAF50" : "#ff4444";
+  const blColor = data.blacklistStatus === 'Clean' ? '#4CAF50' : '#ff4444';
+  const wColor = data.warrantyStatus === 'Limited Warranty' ? '#4CAF50' : '#ff4444';
+  const simColor = data.simLockStatus === 'Unlocked' ? '#4CAF50' : '#ff4444';
+  const fmiColor = data.fmiStatus === 'OFF' ? '#4CAF50' : '#ff4444';
   
   card.innerHTML = `
-    <!-- HEADER: LOGO AL LADO DEL TEXTO -->
-    <div style="display:flex;align-items:center;justify-content:center;gap:15px;padding:20px 20px;background:rgba(0,0,0,0.4);border-radius:16px 16px 0 0;border-bottom:1px solid rgba(255,106,0,0.3);">
-      <img src="assets/logo.png" alt="Cell Space Logo" style="width:65px;height:65px;object-fit:contain;" onerror="this.style.display='none'">
-      <div style="text-align:left;">
-        <h2 style="color:var(--orange);margin:0;font-size:1.8rem;font-weight:800;letter-spacing:1px;line-height:1;">CELL SPACE</h2>
-        <p style="color:white;margin:3px 0 0 0;font-size:14px;letter-spacing:3px;text-transform:uppercase;font-weight:500;">ARGENTINA</p>
+    <!-- HEADER: LOGO + MARCA LATERAL -->
+    <div style="display:flex;align-items:center;gap:18px;padding:22px 24px;background:rgba(0,0,0,0.5);border-radius:16px 16px 0 0;border-bottom:1px solid rgba(255,106,0,0.25);">
+      <img src="assets/logo.png" alt="Logo" style="width:72px;height:72px;object-fit:contain;flex-shrink:0;" onerror="this.style.display='none'">
+      <div>
+        <h2 style="color:var(--orange);margin:0;font-size:1.9rem;font-weight:800;letter-spacing:0.5px;line-height:1.1;">CELL SPACE</h2>
+        <p style="color:white;margin:4px 0 0 0;font-size:15px;letter-spacing:3.5px;text-transform:uppercase;font-weight:500;">ARGENTINA</p>
+        <p style="color:var(--muted);margin:12px 0 0 0;font-size:12px;text-transform:uppercase;letter-spacing:1px;background:rgba(255,255,255,0.06);display:inline-block;padding:4px 12px;border-radius:20px;">Sistema de Verificación Oficial</p>
       </div>
     </div>
     
-    <!-- SUBTITULO -->
-    <div style="text-align:center;padding:8px;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,106,0,0.1);">
-      <p style="color:var(--muted);margin:0;font-size:12px;text-transform:uppercase;letter-spacing:1px;">Sistema de Verificación Oficial</p>
-    </div>
-    
-    <!-- CUERPO: INFORMACIÓN COMPACTA -->
-    <div style="padding:20px;background:rgba(15,15,15,0.95);">
+    <!-- CUERPO PRINCIPAL -->
+    <div style="padding:24px;background:rgba(12,12,12,0.98);">
       
-      <!-- MODELO DESTACADO -->
-      <div style="text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid rgba(255,255,255,0.1);">
-        <h3 style="color:white;margin:0;font-size:1.5rem;font-weight:600;">${data.brand} ${data.modelName}</h3>
-        <p style="color:var(--orange);margin:5px 0 0 0;font-size:13px;font-weight:600;">${data.modelNumber} • ${data.description || ''}</p>
+      <!-- MODELO -->
+      <div style="text-align:center;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,0.08);">
+        <h3 style="color:white;margin:0;font-size:1.6rem;font-weight:600;">${data.brand} ${data.modelName}</h3>
+        ${data.modelNumber ? `<p style="color:var(--orange);margin:6px 0 0 0;font-size:14px;font-weight:600;">${data.modelNumber}</p>` : ''}
       </div>
 
-      <!-- DATOS DE IDENTIFICACIÓN -->
-      <div style="background:rgba(255,255,255,0.03);padding:15px;border-radius:10px;margin-bottom:15px;">
+      <!-- IDENTIFICACIÓN -->
+      <div style="background:rgba(255,255,255,0.03);padding:16px 18px;border-radius:12px;margin-bottom:18px;">
         <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
-          <span style="color:var(--muted);font-size:12px;">IMEI Principal</span>
-          <span style="color:white;font-family:monospace;font-weight:bold;font-size:14px;">${data.imei}</span>
+          <span style="color:var(--muted);font-size:13px;">IMEI Principal</span>
+          <span style="color:white;font-family:monospace;font-weight:700;font-size:15px;letter-spacing:0.5px;">${data.imei}</span>
         </div>
         ${data.imei2 ? `<div style="display:flex;justify-content:space-between;margin-bottom:10px;">
-          <span style="color:var(--muted);font-size:12px;">IMEI Secundario</span>
-          <span style="color:var(--muted);font-family:monospace;font-size:13px;">${data.imei2}</span>
+          <span style="color:var(--muted);font-size:13px;">IMEI Secundario</span>
+          <span style="color:var(--muted);font-family:monospace;font-size:14px;">${data.imei2}</span>
         </div>` : ''}
         <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
-          <span style="color:var(--muted);font-size:12px;">Número de Serie</span>
-          <span style="color:white;font-family:monospace;font-size:13px;">${data.serialNumber}</span>
+          <span style="color:var(--muted);font-size:13px;">Número de Serie</span>
+          <span style="color:white;font-family:monospace;font-size:14px;">${data.serial}</span>
         </div>
         <div style="display:flex;justify-content:space-between;">
-          <span style="color:var(--muted);font-size:12px;">MEID</span>
-          <span style="color:var(--muted);font-family:monospace;font-size:13px;">${data.meid}</span>
+          <span style="color:var(--muted);font-size:13px;">MEID</span>
+          <span style="color:var(--muted);font-family:monospace;font-size:14px;">${data.meid}</span>
         </div>
       </div>
 
-      <!-- ESTADOS PRINCIPALES -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;">
-        <div style="background:${data.blacklistStatus === 'Clean' ? 'rgba(76,175,80,0.1)' : 'rgba(255,68,68,0.1)'};padding:15px;border-radius:10px;text-align:center;border:1px solid ${blacklistColor};">
-          <div style="color:var(--muted);font-size:11px;margin-bottom:5px;text-transform:uppercase;">Reporte</div>
-          <div style="color:${blacklistColor};font-weight:800;font-size:15px;">
-            ${data.blacklistStatus === 'Clean' ? '✅ LIMPIO' : '⚠️ REPORTADO'}
+      <!-- ESTADOS CON BADGES (Estilo screenshot) -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
+        <div style="background:${data.blacklistStatus==='Clean'?'rgba(76,175,80,0.12)':'rgba(255,68,68,0.12)'};padding:14px;border-radius:10px;text-align:center;border:1px solid ${blColor};">
+          <div style="color:var(--muted);font-size:11px;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Reporte</div>
+          <div style="color:${blColor};font-weight:800;font-size:16px;">
+            ${data.blacklistStatus==='Clean'?'✅ LIMPIO':'⚠️ REPORTADO'}
           </div>
         </div>
-        
-        <div style="background:rgba(255,255,255,0.03);padding:15px;border-radius:10px;text-align:center;">
-          <div style="color:var(--muted);font-size:11px;margin-bottom:5px;text-transform:uppercase;">Sim Lock</div>
-          <div style="color:${data.simLockStatus === 'Unlocked' ? '#4CAF50' : '#ff4444'};font-weight:700;font-size:14px;">
-            ${data.simLockStatus}
-          </div>
+        <div style="background:rgba(255,255,255,0.03);padding:14px;border-radius:10px;text-align:center;">
+          <div style="color:var(--muted);font-size:11px;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Sim Lock</div>
+          <div style="color:${simColor};font-weight:700;font-size:15px;">${data.simLockStatus}</div>
         </div>
-
-        <div style="background:rgba(255,255,255,0.03);padding:15px;border-radius:10px;text-align:center;">
-          <div style="color:var(--muted);font-size:11px;margin-bottom:5px;text-transform:uppercase;">Garantía</div>
-          <div style="color:${warrantyColor};font-weight:700;font-size:13px;">
-            ${data.warrantyStatus}
-          </div>
+        <div style="background:rgba(255,255,255,0.03);padding:14px;border-radius:10px;text-align:center;">
+          <div style="color:var(--muted);font-size:11px;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Garantía</div>
+          <div style="color:${wColor};font-weight:700;font-size:14px;">${data.warrantyStatus}</div>
         </div>
-
-        <div style="background:rgba(255,255,255,0.03);padding:15px;border-radius:10px;text-align:center;">
-          <div style="color:var(--muted);font-size:11px;margin-bottom:5px;text-transform:uppercase;">Valor Est.</div>
-          <div style="color:white;font-weight:700;font-size:15px;">
-            ${data.estimatedValue}
-          </div>
+        <div style="background:rgba(255,255,255,0.03);padding:14px;border-radius:10px;text-align:center;">
+          <div style="color:var(--muted);font-size:11px;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Valor Est.</div>
+          <div style="color:white;font-weight:700;font-size:16px;">${data.estimatedValue}</div>
         </div>
       </div>
 
-      <!-- DETALLES TÉCNICOS -->
-      <div style="background:rgba(255,255,255,0.02);padding:15px;border-radius:10px;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-          <span style="color:var(--muted);font-size:12px;">Activación</span>
-          <span style="color:#4CAF50;font-weight:600;font-size:13px;">Activado</span>
+      <!-- LISTA DE CARACTERÍSTICAS (Estilo screenshot) -->
+      <div style="background:rgba(255,255,255,0.02);padding:16px 18px;border-radius:12px;margin-bottom:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span style="color:var(--muted);font-size:13px;">Activar</span>
+          <span style="background:#4CAF50;color:white;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;">Dispositivo activado</span>
         </div>
-        ${data.brand === 'Apple' ? `<div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-          <span style="color:var(--muted);font-size:12px;">Find My iPhone</span>
-          <span style="color:${data.findMyiPhone === 'OFF' ? '#4CAF50' : '#ff4444'};font-weight:600;font-size:13px;">${data.findMyiPhone}</span>
-        </div>` : ''}
-        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-          <span style="color:var(--muted);font-size:12px;">Reemplazado</span>
-          <span style="color:${data.replacedDevice === 'No' ? '#4CAF50' : '#ff4444'};font-weight:600;font-size:13px;">${data.replacedDevice}</span>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span style="color:var(--muted);font-size:13px;">Cobertura</span>
+          <span style="background:${data.warrantyStatus==='Limited Warranty'?'#4CAF50':'#ff4444'};color:white;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;">
+            ${data.warrantyStatus==='Limited Warranty'?'Vigente':'Fuera de garantía'}
+          </span>
         </div>
-        <div style="display:flex;justify-content:space-between;">
-          <span style="color:var(--muted);font-size:12px;">Refurbished</span>
-          <span style="color:${data.refurbishedDevice === 'No' ? '#4CAF50' : '#ff4444'};font-weight:600;font-size:13px;">${data.refurbishedDevice}</span>
+        ${data.purchaseDate!=='N/A'?`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span style="color:var(--muted);font-size:13px;">Fecha de compra</span>
+          <span style="color:white;font-weight:600;font-size:13px;">${data.purchaseDate}</span>
+        </div>`:''}
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span style="color:var(--muted);font-size:13px;">Soporte técnico</span>
+          <span style="background:${data.technicalSupport==='Activo'?'#4CAF50':'#ff4444'};color:white;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;">${data.technicalSupport}</span>
+        </div>
+        ${data.brand==='iPhone'||data.brand==='Apple'?`
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span style="color:var(--muted);font-size:13px;">Encuentra mi ${data.brand}</span>
+          <span style="background:${data.fmiStatus==='OFF'?'#4CAF50':'#ff4444'};color:white;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;">${data.fmiStatus}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span style="color:var(--muted);font-size:13px;">Reemplazado por ${data.brand}</span>
+          <span style="background:${data.replaced==='No'?'#4CAF50':'#ff4444'};color:white;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;">${data.replaced}</span>
+        </div>`:''}
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:var(--muted);font-size:13px;">Bloqueo de SIM</span>
+          <span style="background:${data.simLockStatus==='Unlocked'?'#4CAF50':'#ff4444'};color:white;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;">${data.simLockStatus==='Unlocked'?'Desbloqueado':'Bloqueado'}</span>
         </div>
       </div>
     </div>
     
-    <!-- FOOTER: VERIFICACIÓN PROPIA -->
-    <div style="padding:15px;text-align:center;background:linear-gradient(180deg, rgba(255,106,0,0.05) 0%, rgba(255,106,0,0.15) 100%);border-radius:0 0 16px 16px;border-top:1px solid rgba(255,106,0,0.3);">
-      <p style="color:var(--orange);margin:0 0 5px 0;font-weight:700;font-size:14px;letter-spacing:0.5px;">
-        ✅ REPORTE VERIFICADO POR CELL SPACE
-      </p>
-      <p style="color:var(--muted);margin:0;font-size:12px;">
-        Fecha de emisión: ${fechaHora}
-      </p>
+    <!-- FOOTER -->
+    <div style="padding:16px;text-align:center;background:linear-gradient(180deg, rgba(255,106,0,0.05) 0%, rgba(255,106,0,0.12) 100%);border-radius:0 0 16px 16px;border-top:1px solid rgba(255,106,0,0.25);">
+      <p style="color:var(--orange);margin:0 0 6px 0;font-weight:700;font-size:14px;letter-spacing:0.5px;">✅ REPORTE VERIFICADO POR CELL SPACE</p>
+      <p style="color:var(--muted);margin:0;font-size:12px;">${fechaHora}</p>
     </div>
   `;
   
   section.style.display = 'block';
-  setTimeout(() => {
-    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 100);
+  setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   
   if (data.blacklistStatus === 'Blacklisted') {
-    setTimeout(() => alert('⚠️ ATENCIÓN: Dispositivo REPORTADO'), 500);
+    setTimeout(() => alert('⚠️ ATENCIÓN: Dispositivo REPORTADO'), 600);
   }
 }
 
-// COPY RESULTS
+// UTILIDADES
 function copyResults() {
-  if (!lastResult) return alert('No hay resultados para copiar');
-  
-  const text = `📋 Cell Space Argentina\n📱 ${lastResult.brand} ${lastResult.modelName}\n🔢 IMEI: ${lastResult.imei}\n⚠️ ${lastResult.blacklistStatus}\n🔓 ${lastResult.simLockStatus}\n💰 ${lastResult.estimatedValue}`;
-  navigator.clipboard.writeText(text).then(() => alert('✅ Copiado'));
+  if (!lastResult) return alert('No hay datos');
+  const t = `📋 Cell Space Argentina\n📱 ${lastResult.brand} ${lastResult.modelName}\n🔢 IMEI: ${lastResult.imei}\n⚠️ ${lastResult.blacklistStatus}\n🔓 ${lastResult.simLockStatus}`;
+  navigator.clipboard.writeText(t).then(() => alert('✅ Copiado'));
 }
 
-// SHARE WHATSAPP
 function shareWhatsApp() {
-  if (!lastResult) return alert('No hay resultados para compartir');
-  
-  const msg = `🔍 *Cell Space Argentina*%0A%0A📱 ${lastResult.brand} ${lastResult.modelName}%0A🔢 IMEI: ${lastResult.imei}%0A⚠️ ${lastResult.blacklistStatus}%0A🔓 ${lastResult.simLockStatus}%0A💰 ${lastResult.estimatedValue}`;
-  window.open(`https://wa.me/5493782437674?text=${msg}`, '_blank');
+  if (!lastResult) return alert('No hay datos');
+  window.open(`https://wa.me/5493782437674?text=🔍 *Cell Space Argentina*%0A📱 ${lastResult.brand} ${lastResult.modelName}%0A🔢 ${lastResult.imei}%0A⚠️ ${lastResult.blacklistStatus}`, '_blank');
 }
