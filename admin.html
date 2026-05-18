@@ -3,17 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Admin - Cell Space</title>
+  <title>Panel de Administración - Cell Space</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/admin.css">
   
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
 </head>
 <body>
+  <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <a href="index.html" style="text-decoration:none;">
@@ -24,8 +26,8 @@
     </div>
     <nav class="sidebar-nav">
       <a href="#dashboard" class="nav-link active" onclick="showSection('dashboard', this)">📊 Dashboard</a>
-      <a href="#hero" class="nav-link" onclick="showSection('hero', this)">🎨 Carrusel</a>
-      <a href="#servicios" class="nav-link" onclick="showSection('servicios', this)">🛠️ Servicios</a>
+      <a href="#hero" class="nav-link" onclick="showSection('hero', this)">🎠 Carrusel</a>
+      <a href="#servicios" class="nav-link" onclick="showSection('servicios', this)">🔧 Servicios</a>
       <a href="#productos" class="nav-link" onclick="showSection('productos', this)">📦 Productos</a>
       <a href="#contacto" class="nav-link" onclick="showSection('contacto', this)">📍 Contacto</a>
       <a href="#footer" class="nav-link" onclick="showSection('footer', this)">📄 Footer</a>
@@ -36,6 +38,7 @@
     </nav>
   </aside>
 
+  <!-- MAIN CONTENT -->
   <main class="main-content">
     <header class="top-bar">
       <button class="menu-toggle" onclick="toggleSidebar()">☰ Menú</button>
@@ -48,74 +51,155 @@
     <!-- DASHBOARD -->
     <section id="dashboard" class="section active">
       <div class="stats-grid">
-        <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-info"><h3>Total Productos</h3><p id="totalProducts">0</p></div></div>
-        <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-info"><h3>Usuarios</h3><p id="totalUsers">0</p></div></div>
-        <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-info"><h3>En Stock</h3><p id="inStockProducts">0</p></div></div>
-        <div class="stat-card"><div class="stat-icon">🔧</div><div class="stat-info"><h3>Servicios</h3><p id="totalServices">0</p></div></div>
-        <div class="stat-card"><div class="stat-icon">🔍</div><div class="stat-info"><h3>Consultas IMEI</h3><p id="totalIMEIChecks">0</p></div></div>
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-info">
+            <h3>Total Productos</h3>
+            <p id="totalProducts">0</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-info">
+            <h3>Usuarios</h3>
+            <p id="totalUsers">0</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔧</div>
+          <div class="stat-info">
+            <h3>Servicios</h3>
+            <p id="totalServices">0</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔍</div>
+          <div class="stat-info">
+            <h3>Consultas IMEI</h3>
+            <p id="totalIMEIChecks">0</p>
+          </div>
+        </div>
       </div>
       <div class="recent-activity">
         <h2>📈 Actividad Reciente</h2>
-        <div id="recentActivity" class="activity-list"><p class="loading">Cargando...</p></div>
+        <div id="recentActivity" class="activity-list">
+          <p class="loading">Cargando...</p>
+        </div>
       </div>
     </section>
 
-    <!-- HERO -->
+    <!-- CARRUSEL -->
     <section id="hero" class="section">
-      <div class="section-header"><h2>🎨 Carrusel/Hero</h2><button class="btn btn-primary" onclick="addSlide()">+ Agregar Slide</button></div>
-      <div id="slidesContainer" class="slides-list"><p class="loading">Cargando...</p></div>
+      <div class="section-header">
+        <h2>🎠 Carrusel/Hero</h2>
+        <button class="btn btn-primary" onclick="addSlide()">+ Agregar Slide</button>
+      </div>
+      <div id="slidesContainer" class="slides-list">
+        <p class="loading">Cargando...</p>
+      </div>
     </section>
 
     <!-- SERVICIOS -->
     <section id="servicios" class="section">
-      <div class="section-header"><h2>🛠️ Servicios</h2><button class="btn btn-primary" onclick="toggleServiceForm()">+ Nuevo Servicio</button></div>
+      <div class="section-header">
+        <h2>🔧 Servicios</h2>
+        <button class="btn btn-primary" onclick="toggleServiceForm()">+ Nuevo Servicio</button>
+      </div>
+      
       <div id="serviceForm" class="form-container" style="display:none;">
         <form id="serviceFormEl" class="form">
           <input type="hidden" id="serviceId">
           <div class="form-row">
-            <div class="form-group"><label>Icono (emoji)</label><input type="text" id="serviceIcon" placeholder="ej: 📱" required></div>
-            <div class="form-group"><label>Título</label><input type="text" id="serviceTitle" placeholder="ej: Celulares" required></div>
+            <div class="form-group">
+              <label>Icono (emoji)</label>
+              <input type="text" id="serviceIcon" placeholder="ej: 🔧" required>
+            </div>
+            <div class="form-group">
+              <label>Título</label>
+              <input type="text" id="serviceTitle" placeholder="ej: Reparación de Celulares" required>
+            </div>
           </div>
-          <div class="form-group"><label>Descripción</label><textarea id="serviceDesc" placeholder="Descripción del servicio..." rows="3" required></textarea></div>
+          <div class="form-group">
+            <label>Descripción</label>
+            <textarea id="serviceDesc" placeholder="Descripción del servicio..." rows="3" required></textarea>
+          </div>
           <div class="form-actions">
             <button type="button" class="btn btn-secondary" onclick="resetServiceForm()">Cancelar</button>
             <button type="submit" class="btn btn-primary">💾 Guardar</button>
           </div>
         </form>
       </div>
-      <div class="services-admin-grid" id="adminServicesList"><p class="loading">Cargando...</p></div>
+      
+      <div class="services-admin-grid" id="adminServicesList">
+        <p class="loading">Cargando...</p>
+      </div>
     </section>
 
     <!-- PRODUCTOS -->
     <section id="productos" class="section">
-      <div class="section-header"><h2>📦 Productos</h2><button class="btn btn-primary" onclick="toggleProductForm()">+ Nuevo Producto</button></div>
+      <div class="section-header">
+        <h2>📦 Productos</h2>
+        <button class="btn btn-primary" onclick="toggleProductForm()">+ Nuevo Producto</button>
+      </div>
+      
       <div id="productForm" class="form-container" style="display:none;">
         <form id="publishForm" class="form">
           <input type="hidden" id="prodId">
-          <div class="form-group"><label>Nombre del Producto</label><input type="text" id="prodName" placeholder="ej: iPhone 13 128GB" required></div>
-          <div class="form-row">
-            <div class="form-group"><label>Precio ($)</label><input type="number" id="prodPrice" placeholder="0" min="0" required></div>
-            <div class="form-group"><label>Categoría</label><select id="prodCategory"><option value="Celulares">Celulares</option><option value="Accesorios">Accesorios</option><option value="PC/Laptop">PC / Laptop</option><option value="Consolas">Consolas</option><option value="Servicios">Servicios</option></select></div>
+          <div class="form-group">
+            <label>Nombre del Producto</label>
+            <input type="text" id="prodName" placeholder="ej: iPhone 13 128GB" required>
           </div>
-          <div class="form-group"><label>Descripción</label><textarea id="prodDesc" placeholder="Descripción del producto..." rows="3"></textarea></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Precio ($)</label>
+              <input type="number" id="prodPrice" placeholder="0" min="0" required>
+            </div>
+            <div class="form-group">
+              <label>Categoría</label>
+              <select id="prodCategory">
+                <option value="Celulares">Celulares</option>
+                <option value="Accesorios">Accesorios</option>
+                <option value="PC/Laptop">PC / Laptop</option>
+                <option value="Consolas">Consolas</option>
+                <option value="Servicios">Servicios</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Descripción</label>
+            <textarea id="prodDesc" placeholder="Descripción del producto..." rows="3"></textarea>
+          </div>
           <div class="form-group">
             <label>Imagen</label>
             <div class="upload-area" id="uploadArea">
               <input type="file" id="prodImage" accept="image/*">
               <img id="imagePreview" class="preview-img">
-              <div id="uploadPlaceholder"><p>📸 Click o arrastra una imagen</p><span>Máx 5MB • JPG/PNG</span></div>
-              <div class="progress" id="uploadProgress"><div class="progress-fill" id="progressFill"></div></div>
+              <div id="uploadPlaceholder">
+                <p>📸 Click o arrastra una imagen</p>
+                <span>Máx 5MB • JPG/PNG</span>
+              </div>
+              <div class="progress" id="uploadProgress">
+                <div class="progress-fill" id="progressFill"></div>
+              </div>
               <p id="uploadStatus" class="upload-status"></p>
             </div>
           </div>
-          <div class="form-group"><label class="checkbox-label"><input type="checkbox" id="prodStock" checked><span>Producto en stock</span></label></div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="prodStock" checked>
+              <span>Producto en stock</span>
+            </label>
+          </div>
           <div class="form-actions">
             <button type="button" class="btn btn-secondary" onclick="resetProductForm()">Cancelar</button>
             <button type="submit" class="btn btn-primary" id="saveBtn">💾 Guardar</button>
           </div>
         </form>
       </div>
-      <div class="products-admin-grid" id="adminProductsList"><p class="loading">Cargando...</p></div>
+      
+      <div class="products-admin-grid" id="adminProductsList">
+        <p class="loading">Cargando...</p>
+      </div>
     </section>
 
     <!-- CONTACTO -->
@@ -124,19 +208,33 @@
       <div class="form-container">
         <form id="contactForm" class="form">
           <div class="form-row">
-            <div class="form-group"><label>Dirección</label><input type="text" id="contactAddress" placeholder="Saladas, Corrientes"></div>
-            <div class="form-group"><label>WhatsApp</label><input type="text" id="contactPhone" placeholder="3782-437674"></div>
+            <div class="form-group">
+              <label>Dirección</label>
+              <input type="text" id="contactAddress" placeholder="Saladas, Corrientes">
+            </div>
+            <div class="form-group">
+              <label>WhatsApp</label>
+              <input type="text" id="contactPhone" placeholder="3782-437674">
+            </div>
           </div>
           <div class="form-row">
-            <div class="form-group"><label>Horario</label><input type="text" id="contactHours" placeholder="Lunes a Sábados 9:00 - 20:00"></div>
-            <div class="form-group"><label>Email</label><input type="email" id="contactEmail" placeholder="info@cellspace.com"></div>
+            <div class="form-group">
+              <label>Horario</label>
+              <input type="text" id="contactHours" placeholder="Lunes a Sábados 9:00 - 20:00">
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="contactEmail" placeholder="info@cellspace.com">
+            </div>
           </div>
-          <div class="form-actions"><button type="submit" class="btn btn-primary">💾 Guardar Cambios</button></div>
+          <div class="form-actions">
+            <button type="button" onclick="window.saveContact(event)" class="btn btn-primary">💾 Guardar Cambios</button>
+          </div>
         </form>
       </div>
     </section>
 
-    <!-- FOOTER SETTINGS -->
+    <!-- FOOTER -->
     <section id="footer" class="section">
       <h2>📄 Configuración del Footer</h2>
       
@@ -150,12 +248,24 @@
       <div class="form-container">
         <h3>🔗 Redes Sociales</h3>
         <div class="form-row">
-          <div class="form-group"><label>Facebook URL</label><input type="text" id="socialFacebook" placeholder="https://facebook.com/tu pagina"></div>
-          <div class="form-group"><label>Instagram URL</label><input type="text" id="socialInstagram" placeholder="https://instagram.com/tu pagina"></div>
+          <div class="form-group">
+            <label>Facebook URL</label>
+            <input type="text" id="socialFacebook" placeholder="https://facebook.com/tu pagina">
+          </div>
+          <div class="form-group">
+            <label>Instagram URL</label>
+            <input type="text" id="socialInstagram" placeholder="https://instagram.com/tu pagina">
+          </div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>TikTok URL</label><input type="text" id="socialTiktok" placeholder="https://tiktok.com/@tu usuario"></div>
-          <div class="form-group"><label>Telegram URL</label><input type="text" id="socialTelegram" placeholder="https://t.me/tu usuario"></div>
+          <div class="form-group">
+            <label>TikTok URL</label>
+            <input type="text" id="socialTiktok" placeholder="https://tiktok.com/@tu usuario">
+          </div>
+          <div class="form-group">
+            <label>Telegram URL</label>
+            <input type="text" id="socialTelegram" placeholder="https://t.me/tu usuario">
+          </div>
         </div>
       </div>
 
@@ -176,7 +286,7 @@
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn btn-primary" onclick="saveFooterSettings()">💾 Guardar Footer</button>
+        <button type="button" onclick="window.saveFooterSettings()" class="btn btn-primary">💾 Guardar Footer</button>
       </div>
     </section>
 
@@ -237,15 +347,23 @@
       <h2>👥 Usuarios Registrados</h2>
       <div class="table-container">
         <table class="data-table">
-          <thead><tr><th>Nombre</th><th>Email</th><th>Fecha Registro</th><th>Estado</th></tr></thead>
-          <tbody id="usersTable"><tr><td colspan="4" class="loading">Cargando...</td></tr></tbody>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Fecha Registro</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="usersTable">
+            <tr><td colspan="4" class="loading">Cargando...</td></tr>
+          </tbody>
         </table>
       </div>
     </section>
   </main>
 
   <script src="js/config.js"></script>
-  <script src="js/auth.js"></script>
   <script src="js/admin.js"></script>
 </body>
 </html>
