@@ -661,3 +661,24 @@ window.logout = function() {
 };
 
 console.log('✅ admin.js cargado correctamente');
+// TEST DE FIREBASE
+console.log('🔍 Verificando Firebase...');
+console.log('📦 App:', firebase.apps?.length > 0 ? 'OK' : 'ERROR');
+console.log('🗄️ Firestore:', typeof db !== 'undefined' ? 'OK' : 'ERROR');
+console.log('👤 Usuario:', firebase.auth().currentUser?.email || 'NO LOGUEADO');
+
+// Test de escritura
+window.testFirebaseWrite = async function() {
+  try {
+    console.log('🧪 Probando escritura en Firebase...');
+    await db.collection('test_collection').doc('test').set({
+      message: 'Si ves esto, Firebase escribe correctamente',
+      timestamp: new Date()
+    });
+    console.log('✅ ¡Firebase ESCRIBE correctamente!');
+    alert('✅ Firebase funciona correctamente');
+  } catch (error) {
+    console.error('❌ ERROR DE ESCRITURA:', error);
+    alert('❌ Firebase NO puede escribir. Revisá las reglas de seguridad.\n\nError: ' + error.message);
+  }
+};
