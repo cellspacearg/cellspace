@@ -9,48 +9,38 @@ let currentImageURL = '';
 let uploadTask = null;
 
 // ========================================
-// INICIALIZACIÓN
+// INICIALIZACIÓN Y AUTENTICACIÓN
 // ========================================
 
-document.addEventListener('DOMContentLoaded', async () => {
-  console.log('✅ DOM cargado');
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('✅ Panel cargado, esperando Firebase...');
   
-  // Verificar autenticación
-  await checkAdminAuth();
-  
-  // Configurar navegación
-  setupNavigation();
-  
-  // Cargar dashboard inicial
-  loadDashboard();
-  
-  console.log('✅ Panel inicializado');
-});
-
-// ========================================
-// AUTENTICACIÓN
-// ========================================
-
-async function checkAdminAuth() {
-  try {
-    const user = firebase.auth().currentUser;
-    console.log('👤 Usuario actual:', user?.email || 'No logueado');
+  // ESCUCHAR CAMBIOS DE AUTH (Espera a que Firebase cargue)
+  firebase.auth().onAuthStateChanged((user) => {
+    console.log('🔍 Estado de Auth:', user ? user.email : 'No logueado');
     
-    if (!user || user.email !== 'nahuel0123encinas@gmail.com') {
-      console.warn('⚠️ Usuario no autorizado, redirigiendo...');
-      alert('⚠️ Acceso restringido. Solo administradores.');
+    if (user) {
+      // Usuario logueado
+      if (user.email === 'nahuel0123encinas@gmail.com') {
+        console.log('✅ Admin verificado:', user.email);
+        document.getElementById('adminEmail').textContent = user.email;
+        
+        // Ahora sí iniciamos el panel
+        setupNavigation();
+        loadDashboard();
+      } else {
+        // No es admin
+        console.warn('⚠️ No eres admin:', user.email);
+        alert('⚠️ Acceso restringido. Solo administradores.');
+        window.location.href = 'login.html';
+      }
+    } else {
+      // No logueado
+      console.warn('⚠️ Usuario no logueado');
       window.location.href = 'login.html';
-      return;
     }
-    
-    document.getElementById('adminEmail').textContent = user.email;
-    console.log('✅ Usuario autorizado:', user.email);
-    
-  } catch (error) {
-    console.error('❌ Error en auth:', error);
-    window.location.href = 'login.html';
-  }
-}
+  });
+});
 
 // ========================================
 // NAVEGACIÓN
