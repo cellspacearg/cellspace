@@ -1,144 +1,745 @@
+// ========================================
+// CELL SPACE - PANEL DE ADMINISTRACIÓN
+// ========================================
+
+console.log('🔧 Cargando panel de administración...');
+
+// VARIABLES GLOBALES
 let currentImageURL = '';
+let uploadTask = null;
 
-// MOSTRAR SECCIÓN
-function showSection(id, btn){
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  if(btn) btn.classList.add('active');
-  if(id==='dashboard') loadDashboard();
-  if(id==='hero') loadSlides();
-  if(id==='servicios') loadServices();
-  if(id==='productos') loadAdminProducts();
-  if(id==='contacto') loadContactInfo();
-  if(id==='usuarios') loadUsers();
+// ========================================
+// INICIALIZACIÓN
+// ========================================
+
+document.addEventListener('DOMContentLoaded', async () => {
+  console.log('✅ DOM cargado');
+  
+  // Verificar autenticación
+  await checkAdminAuth();
+  
+  // Configurar navegación
+  setupNavigation();
+  
+  // Cargar dashboard inicial
+  loadDashboard();
+  
+  console.log('✅ Panel inicializado');
+});
+
+// ========================================
+// AUTENTICACIÓN
+// ========================================
+
+async function checkAdminAuth() {
+  try {
+    const user = firebase.auth().currentUser;
+    console.log('👤 Usuario actual:', user?.email || 'No logueado');
+    
+    if (!user || user.email !== 'nahuel0123encinas@gmail.com') {
+      console.warn('⚠️ Usuario no autorizado, redirigiendo...');
+      alert('⚠️ Acceso restringido. Solo administradores.');
+      window.location.href = 'login.html';
+      return;
+    }
+    
+    document.getElementById('adminEmail').textContent = user.email;
+    console.log('✅ Usuario autorizado:', user.email);
+    
+  } catch (error) {
+    console.error('❌ Error en auth:', error);
+    window.location.href = 'login.html';
+  }
 }
 
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
+// ========================================
+// NAVEGACIÓN
+// ========================================
+
+function setupNavigation() {
+  console.log('🔧 Configurando navegación...');
+  
+  const navLinks = document.querySelectorAll('.nav-link');
+  navLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+      // Si es un link externo o de logout, no prevenir default
+      if (this.getAttribute('href') === '#' || this.onclick?.toString().includes('logout')) {
+        return;
+      }
+      
+      const targetId = this.getAttribute('href').substring(1);
+      console.log('📍 Navegando a:', targetId);
+      
+      e.preventDefault();
+      showSection(targetId, this);
+    });
+  });
+  
+  console.log('✅ Navegación configurada');
 }
 
+function showSection(sectionId, btnElement) {
+  console.log(' Mostrando sección:', sectionId);
+  
+  // Ocultar todas las secciones
+  document.querySelectorAll('.section').forEach(section => {
+    section.classList.remove('active');
+    section.style.display = 'none';
+  });
+  
+  // Remover active de todos los links
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.classList.remove('active');
+  });
+  
+  // Mostrar sección seleccionada
+  const targetSection = document.getElementById(sectionId);
+  if (targetSection) {
+    targetSection.classList.add('active');
+    targetSection.style.display = 'block';
+    console.log('✅ Sección mostrada:', sectionId);
+    
+    // Cargar datos específicos según la sección
+    loadSectionData(sectionId);
+  } else {
+    console.error('❌ Sección no encontrada:', sectionId);
+  }
+  
+  // Activar botón
+  if (btnElement) {
+    btnElement.classList.add('active');
+  }
+}
+
+function loadSectionData(sectionId) {
+  console.log('📥 Cargando datos para:', sectionId);
+  
+  switch(sectionId) {
+    case 'dashboard':
+      loadDashboard();
+      break;
+    case 'hero':
+      loadSlides();
+      break;
+    case 'servicios':
+      loadServices();
+      break;
+    case 'productos':
+      loadAdminProducts();
+      break;
+    case 'contacto':
+      loadContactInfo();
+      break;
+    case 'footer':
+      loadFooterSettings();
+      break;
+    case 'imei':
+      loadIMEIHistoryAdmin();
+      break;
+    case 'usuarios':
+      loadUsers();
+      break;
+    default:
+      console.log('⚠️ Sección sin datos específicos:', sectionId);
+  }
+}
+
+// ========================================
 // DASHBOARD
-async function loadDashboard(){
-  try{
-    const products = await db.collection('products').get();
-    const users = await db.collection('users').get();
-    const services = await db.collection('services').get();
-    document.getElementById('totalProducts').textContent = products.size;
-    document.getElementById('totalUsers').textContent = users.size;
-    document.getElementById('totalServices').textContent = services.size;
-    const inStock = products.docs.filter(d=>d.data().inStock).length;
+// ========================================
+
+async function loadDashboard() {
+  console.log('📊 Cargando dashboard...');
+  
+  try {
+    // Contar productos
+    const productsSnap = await db.collection('products').get();
+    document.getElementById('totalProducts').textContent = productsSnap.size;
+    
+    // Contar usuarios
+    const usersSnap = await db.collection('users').get();
+    document.getElementById('totalUsers').textContent = usersSnap.size;
+    
+    // Contar servicios
+    const servicesSnap = await db.collection('services').get();
+    document.getElementById('totalServices').textContent = servicesSnap.size;
+    
+    // Productos en stock
+    const inStock = productsSnap.docs.filter(doc => doc.data().inStock !== false).length;
     document.getElementById('inStockProducts').textContent = inStock;
-    const recent = users.docs.slice(-5).reverse().map(d=>{
-      const u = d.data();
-      const date = u.createdAt?u.createdAt.toDate().toLocaleString('es-AR'):'Reciente';
-      return `<div style="padding:12px;border-bottom:1px solid rgba(255,106,0,0.1);"><strong>${u.name||u.email}</strong><br><small style="color:var(--muted)">Registrado: ${date}</small></div>`;
-    }).join('');
-    document.getElementById('recentActivity').innerHTML = recent || '<p style="color:var(--muted)">Sin actividad reciente</p>';
-  }catch(e){console.error(e);}
+    
+    // Actividad reciente
+    const recentActivities = [];
+    
+    // Últimos 5 productos
+    productsSnap.docs.slice(-5).forEach(doc => {
+      const data = doc.data();
+      recentActivities.push({
+        type: 'product',
+        title: data.title || 'Producto',
+        date: data.createdAt?.toDate() || new Date()
+      });
+    });
+    
+    // Últimos 5 usuarios
+    usersSnap.docs.slice(-5).forEach(doc => {
+      const data = doc.data();
+      recentActivities.push({
+        type: 'user',
+        title: data.email || 'Usuario',
+        date: data.createdAt?.toDate() || new Date()
+      });
+    });
+    
+    // Ordenar por fecha
+    recentActivities.sort((a, b) => b.date - a.date);
+    
+    // Mostrar actividades
+    const activityHTML = recentActivities.slice(0, 10).map(act => `
+      <div style="padding:10px;border-bottom:1px solid rgba(255,255,255,0.1);">
+        <div style="color:white;font-size:14px;">
+          ${act.type === 'product' ? '📦' : '👤'} ${act.title}
+        </div>
+        <div style="color:var(--muted);font-size:12px;">
+          ${act.date.toLocaleString('es-AR')}
+        </div>
+      </div>
+    `).join('');
+    
+    document.getElementById('recentActivity').innerHTML = activityHTML || '<p style="color:var(--muted);padding:20px;text-align:center;">Sin actividad reciente</p>';
+    
+    console.log('✅ Dashboard cargado');
+    
+  } catch (error) {
+    console.error('❌ Error cargando dashboard:', error);
+    alert('❌ Error al cargar dashboard: ' + error.message);
+  }
 }
 
-// CARRUSEL
-async function loadSlides(){
-  const container = document.getElementById('slidesContainer');
-  container.innerHTML = '<p class="loading">Cargando slides...</p>';
-  try{
-    const snap = await db.collection('hero_slides').orderBy('order','asc').get();
-    if(snap.empty){container.innerHTML = '<p style="color:var(--muted);text-align:center;">No hay slides. Agregá el primero.</p>';return;}
-    container.innerHTML = snap.docs.map((doc, index)=>{
+// ========================================
+// CARRUSEL / SLIDES
+// ========================================
+
+async function loadSlides() {
+  console.log('🎠 Cargando slides...');
+  
+  try {
+    const container = document.getElementById('slidesContainer');
+    if (!container) {
+      console.error('❌ Container slides no encontrado');
+      return;
+    }
+    
+    container.innerHTML = '<p class="loading">Cargando slides...</p>';
+    
+    const snap = await db.collection('hero_slides').orderBy('order', 'asc').get();
+    
+    if (snap.empty) {
+      container.innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px;">No hay slides. Agregá el primero.</p>';
+      return;
+    }
+    
+    const slidesHTML = snap.docs.map((doc, index) => {
       const s = doc.data();
-      return `<div class="slide-admin-card"><div style="display:flex;gap:20px;align-items:flex-start;">
-        <img src="${s.imageUrl||'https://via.placeholder.com/150x100'}" style="width:150px;height:100px;object-fit:cover;border-radius:8px;">
-        <div style="flex:1;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-          <h4 style="margin:0;color:var(--orange);">Slide ${index+1}</h4>
-          <div style="display:flex;gap:10px;">
-            <button onclick="editSlide('${doc.id}')" class="btn-sm" style="background:#2196F3;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;">✏️</button>
-            <button onclick="deleteSlide('${doc.id}')" class="btn-sm" style="background:#ff4444;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;">🗑️</button>
-          </div></div>
-          <p style="margin:5px 0;"><strong>Título:</strong> ${s.title}</p>
-          <p style="margin:5px 0;"><strong>Subtítulo:</strong> ${s.subtitle}</p>
-        </div></div></div>`;
+      return `
+        <div class="slide-admin-card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,106,0,0.2);border-radius:12px;padding:20px;margin-bottom:15px;">
+          <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;">
+            <img src="${s.imageUrl || 'https://via.placeholder.com/150x100'}" style="width:150px;height:100px;object-fit:cover;border-radius:8px;">
+            <div style="flex:1;min-width:200px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <h4 style="margin:0;color:var(--orange);">Slide ${index + 1}</h4>
+                <div style="display:flex;gap:10px;">
+                  <button onclick="editSlide('${doc.id}')" style="background:#2196F3;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">✏️ Editar</button>
+                  <button onclick="deleteSlide('${doc.id}')" style="background:#ff4444;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">🗑️ Eliminar</button>
+                </div>
+              </div>
+              <p style="margin:5px 0;"><strong>Título:</strong> ${s.title || 'Sin título'}</p>
+              <p style="margin:5px 0;"><strong>Subtítulo:</strong> ${s.subtitle || 'Sin subtítulo'}</p>
+              <p style="margin:5px 0;"><strong>Texto botón:</strong> ${s.buttonText || 'Sin texto'}</p>
+            </div>
+          </div>
+        </div>
+      `;
     }).join('');
-  }catch(e){container.innerHTML = '<p style="color:#ff4444">Error</p>';}
+    
+    container.innerHTML = slidesHTML;
+    console.log('✅ Slides cargados:', snap.size);
+    
+  } catch (error) {
+    console.error('❌ Error cargando slides:', error);
+    document.getElementById('slidesContainer').innerHTML = '<p style="color:#ff4444">Error: ' + error.message + '</p>';
+  }
 }
-window.addSlide = function(){
-  const title = prompt('Título:'); if(!title) return;
-  const subtitle = prompt('Subtítulo:')||'';
-  const imageUrl = prompt('URL imagen (opcional):')||'';
-  db.collection('hero_slides').add({title,subtitle,imageUrl,active:true,order:firebase.firestore.FieldValue.increment(1)}).then(()=>{alert('✅ Slide agregado');loadSlides();});
-};
-window.editSlide = async(id)=>{
-  const doc=await db.collection('hero_slides').doc(id).get(); if(!doc.exists)return;
-  const s=doc.data();
-  const title=prompt('Título:',s.title); if(!title)return;
-  const subtitle=prompt('Subtítulo:',s.subtitle)||'';
-  const imageUrl=prompt('URL imagen:',s.imageUrl)||'';
-  await db.collection('hero_slides').doc(id).update({title,subtitle,imageUrl});
-  alert('✅ Actualizado');loadSlides();
-};
-window.deleteSlide = async(id)=>{if(confirm('¿Eliminar?')){await db.collection('hero_slides').doc(id).delete();loadSlides();}};
 
+window.addSlide = async function() {
+  const title = prompt('Título del slide:');
+  if (!title) return;
+  
+  const subtitle = prompt('Subtítulo:') || '';
+  const buttonText = prompt('Texto del botón:') || 'Contactar';
+  const imageUrl = prompt('URL de la imagen (opcional):') || '';
+  
+  try {
+    await db.collection('hero_slides').add({
+      title,
+      subtitle,
+      buttonText,
+      imageUrl,
+      active: true,
+      order: firebase.firestore.FieldValue.increment(1),
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
+    alert('✅ Slide agregado correctamente');
+    loadSlides();
+    
+  } catch (error) {
+    console.error('❌ Error agregando slide:', error);
+    alert('❌ Error: ' + error.message);
+  }
+};
+
+window.editSlide = async function(id) {
+  const doc = await db.collection('hero_slides').doc(id).get();
+  if (!doc.exists) {
+    alert('❌ Slide no encontrado');
+    return;
+  }
+  
+  const s = doc.data();
+  const title = prompt('Título:', s.title);
+  if (!title) return;
+  
+  const subtitle = prompt('Subtítulo:', s.subtitle) || '';
+  const buttonText = prompt('Texto del botón:', s.buttonText) || '';
+  const imageUrl = prompt('URL de imagen:', s.imageUrl) || '';
+  
+  try {
+    await db.collection('hero_slides').doc(id).update({
+      title,
+      subtitle,
+      buttonText,
+      imageUrl,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
+    alert('✅ Slide actualizado');
+    loadSlides();
+    
+  } catch (error) {
+    console.error('❌ Error actualizando slide:', error);
+    alert('❌ Error: ' + error.message);
+  }
+};
+
+window.deleteSlide = async function(id) {
+  if (!confirm('¿Eliminar este slide?')) return;
+  
+  try {
+    await db.collection('hero_slides').doc(id).delete();
+    alert('✅ Slide eliminado');
+    loadSlides();
+    
+  } catch (error) {
+    console.error('❌ Error eliminando slide:', error);
+    alert('❌ Error: ' + error.message);
+  }
+};
+
+// ========================================
 // SERVICIOS
-window.toggleServiceForm = ()=> document.getElementById('serviceForm').style.display = 'block';
-async function loadServices(){
-  const list=document.getElementById('adminServicesList'); list.innerHTML='<p class="loading">Cargando...</p>';
-  try{
-    const snap=await db.collection('services').get();
-    if(snap.empty){list.innerHTML='<p style="color:var(--muted);text-align:center;">Sin servicios</p>';return;}
-    list.innerHTML=snap.docs.map(d=>{const s=d.data();return `<div class="service-admin-card"><div style="font-size:2.5rem">${s.icon}</div><div style="flex:1"><h4 style="margin:0 0 5px;color:var(--orange)">${s.title}</h4><p style="margin:0;color:var(--muted);font-size:14px">${s.description}</p></div><div style="display:flex;gap:8px"><button onclick="editService('${d.id}')" class="btn-sm" style="background:#2196F3;color:white;border:none;padding:8px;border-radius:6px">✏️</button><button onclick="deleteService('${d.id}')" class="btn-sm" style="background:#ff4444;color:white;border:none;padding:8px;border-radius:6px">🗑️</button></div></div>`}).join('');
-  }catch(e){list.innerHTML='<p style="color:#ff4444">Error</p>';}
-}
-document.getElementById('serviceFormEl')?.addEventListener('submit',async e=>{
-  e.preventDefault();
-  const data={icon:document.getElementById('serviceIcon').value,title:document.getElementById('serviceTitle').value,description:document.getElementById('serviceDesc').value};
-  const id=document.getElementById('serviceId').value;
-  try{id?await db.collection('services').doc(id).update(data):await db.collection('services').add(data);alert('✅ Guardado');resetServiceForm();loadServices();}catch(err){alert('❌ '+err.message);}
-});
-window.editService=async(id)=>{const doc=await db.collection('services').doc(id).get();if(!doc.exists)return;const s=doc.data();document.getElementById('serviceId').value=id;document.getElementById('serviceIcon').value=s.icon;document.getElementById('serviceTitle').value=s.title;document.getElementById('serviceDesc').value=s.description;document.getElementById('serviceForm').style.display='block';};
-window.deleteService=async(id)=>{if(confirm('¿Eliminar?')){await db.collection('services').doc(id).delete();loadServices();}};
-function resetServiceForm(){document.getElementById('serviceFormEl').reset();document.getElementById('serviceId').value='';document.getElementById('serviceForm').style.display='none';}
+// ========================================
 
-// PRODUCTOS
-window.toggleProductForm = ()=> document.getElementById('productForm').style.display='block';
-async function uploadImage(file){
-  if(!file||!file.type.startsWith('image/'))return showUploadStatus('❌ Solo imágenes','error');
-  if(file.size>5*1024*1024)return showUploadStatus('❌ Máx 5MB','error');
-  const ref=storage.ref(`products/${Date.now()}_${file.name}`);const task=ref.put(file);
-  document.getElementById('uploadProgress').classList.add('show');showUploadStatus('📤 Subiendo...','info');
-  task.on('state_changed',snap=>{document.getElementById('progressFill').style.width=(snap.bytesTransferred/snap.totalBytes)*100+'%';},
-  err=>showUploadStatus('❌ '+err.message,'error'),async()=>{currentImageURL=await task.snapshot.ref.getDownloadURL();showUploadStatus('✅ Lista','success');document.getElementById('imagePreview').src=currentImageURL;document.getElementById('imagePreview').style.display='block';document.getElementById('uploadPlaceholder').style.display='none';});
-}
-function showUploadStatus(msg,type){const el=document.getElementById('uploadStatus');el.textContent=msg;el.style.color=type==='error'?'#ff4444':type==='success'?'#4CAF50':'#888';}
-document.getElementById('prodImage')?.addEventListener('change',e=>uploadImage(e.target.files[0]));
-const dropZone=document.getElementById('uploadArea');
-dropZone?.addEventListener('dragover',e=>{e.preventDefault();dropZone.style.borderColor='var(--orange)';});
-dropZone?.addEventListener('dragleave',()=>dropZone.style.borderColor='rgba(255,106,0,0.2)');
-dropZone?.addEventListener('drop',e=>{e.preventDefault();dropZone.style.borderColor='rgba(255,106,0,0.2)';if(e.dataTransfer.files[0])uploadImage(e.dataTransfer.files[0]);});
-document.getElementById('publishForm')?.addEventListener('submit',async e=>{
-  e.preventDefault();const btn=document.getElementById('saveBtn');btn.disabled=true;btn.textContent='Guardando...';
-  const data={title:document.getElementById('prodName').value,price:Number(document.getElementById('prodPrice').value),category:document.getElementById('prodCategory').value,description:document.getElementById('prodDesc').value,imageUrl:currentImageURL,inStock:document.getElementById('prodStock').checked,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
-  const id=document.getElementById('prodId').value;
-  try{id?await db.collection('products').doc(id).update(data):(data.createdAt=firebase.firestore.FieldValue.serverTimestamp(),await db.collection('products').add(data));alert('✅ Guardado');resetProductForm();loadAdminProducts();}catch(err){alert('❌ '+err.message);}finally{btn.disabled=false;btn.textContent='💾 Guardar';}
-});
-function resetProductForm(){document.getElementById('publishForm').reset();document.getElementById('prodId').value='';document.getElementById('imagePreview').style.display='none';document.getElementById('uploadPlaceholder').style.display='block';document.getElementById('uploadProgress').classList.remove('show');document.getElementById('progressFill').style.width='0%';document.getElementById('uploadStatus').textContent='';currentImageURL='';}
-async function loadAdminProducts(){
-  const list=document.getElementById('adminProductsList');list.innerHTML='<p class="loading">Cargando...</p>';
-  try{const snap=await db.collection('products').orderBy('createdAt','desc').get();if(snap.empty){list.innerHTML='<p style="text-align:center;color:var(--muted)">Sin productos</p>';return;}
-  list.innerHTML=snap.docs.map(d=>{const p=d.data();return `<div class="product-admin-card"><img src="${p.imageUrl||'https://via.placeholder.com/80'}" class="product-admin-img"><div style="flex:1"><h4 style="margin:0 0 5px">${p.title}</h4><p style="margin:0;color:var(--orange);font-weight:700">$${Number(p.price).toLocaleString('es-AR')}</p><p style="margin:5px 0 0;font-size:13px;color:var(--muted)">${p.category} • ${p.inStock?'<span style="color:#4CAF50">Stock</span>':'<span style="color:#ff4444">Sin stock</span>'}</p></div><div style="display:flex;gap:8px"><button onclick="editProduct('${d.id}')" class="btn-sm" style="background:#2196F3;color:white;border:none;padding:8px;border-radius:6px">✏️</button><button onclick="deleteProduct('${d.id}')" class="btn-sm" style="background:#ff4444;color:white;border:none;padding:8px;border-radius:6px">🗑️</button></div></div>`}).join('');
-  }catch(e){list.innerHTML='<p style="color:#ff4444">Error</p>';}
-}
-window.editProduct=async(id)=>{const doc=await db.collection('products').doc(id).get();if(!doc.exists)return;const p=doc.data();document.getElementById('prodId').value=id;document.getElementById('prodName').value=p.title;document.getElementById('prodPrice').value=p.price;document.getElementById('prodCategory').value=p.category;document.getElementById('prodDesc').value=p.description||'';document.getElementById('prodStock').checked=p.inStock;if(p.imageUrl){currentImageURL=p.imageUrl;document.getElementById('imagePreview').src=p.imageUrl;document.getElementById('imagePreview').style.display='block';document.getElementById('uploadPlaceholder').style.display='none';}document.getElementById('productForm').style.display='block';window.scrollTo({top:0,behavior:'smooth'});};
-window.deleteProduct=async(id)=>{if(confirm('¿Eliminar?')){await db.collection('products').doc(id).delete();loadAdminProducts();}};
+window.toggleServiceForm = function() {
+  const form = document.getElementById('serviceForm');
+  if (form) {
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  }
+};
 
+async function loadServices() {
+  console.log('🛠️ Cargando servicios...');
+  
+  try {
+    const list = document.getElementById('adminServicesList');
+    if (!list) return;
+    
+    list.innerHTML = '<p class="loading">Cargando...</p>';
+    
+    const snap = await db.collection('services').get();
+    
+    if (snap.empty) {
+      list.innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px;">Sin servicios</p>';
+      return;
+    }
+    
+    list.innerHTML = snap.docs.map(doc => {
+      const s = doc.data();
+      return `
+        <div class="service-admin-card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,106,0,0.15);border-radius:12px;padding:20px;margin-bottom:15px;display:flex;gap:15px;align-items:center;">
+          <div style="font-size:3rem;">${s.icon || '🔧'}</div>
+          <div style="flex:1;">
+            <h4 style="margin:0 0 5px;color:var(--orange);">${s.title}</h4>
+            <p style="margin:0;color:var(--muted);font-size:14px;">${s.description || ''}</p>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button onclick="editService('${doc.id}')" style="background:#2196F3;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">✏️</button>
+            <button onclick="deleteService('${doc.id}')" style="background:#ff4444;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">🗑️</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    console.log('✅ Servicios cargados:', snap.size);
+    
+  } catch (error) {
+    console.error('❌ Error cargando servicios:', error);
+  }
+}
+
+// Formulario de servicios
+const serviceForm = document.getElementById('serviceFormEl');
+if (serviceForm) {
+  serviceForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const id = document.getElementById('serviceId').value;
+    const data = {
+      icon: document.getElementById('serviceIcon').value,
+      title: document.getElementById('serviceTitle').value,
+      description: document.getElementById('serviceDesc').value,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    try {
+      if (id) {
+        await db.collection('services').doc(id).update(data);
+        alert('✅ Servicio actualizado');
+      } else {
+        await db.collection('services').add({
+          ...data,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        alert('✅ Servicio agregado');
+      }
+      
+      resetServiceForm();
+      loadServices();
+      
+    } catch (error) {
+      console.error('❌ Error guardando servicio:', error);
+      alert('❌ Error: ' + error.message);
+    }
+  });
+}
+
+window.editService = async function(id) {
+  const doc = await db.collection('services').doc(id).get();
+  if (!doc.exists) return;
+  
+  const s = doc.data();
+  document.getElementById('serviceId').value = id;
+  document.getElementById('serviceIcon').value = s.icon || '';
+  document.getElementById('serviceTitle').value = s.title || '';
+  document.getElementById('serviceDesc').value = s.description || '';
+  document.getElementById('serviceForm').style.display = 'block';
+};
+
+window.deleteService = async function(id) {
+  if (!confirm('¿Eliminar este servicio?')) return;
+  
+  try {
+    await db.collection('services').doc(id).delete();
+    alert('✅ Servicio eliminado');
+    loadServices();
+  } catch (error) {
+    alert('❌ Error: ' + error.message);
+  }
+};
+
+function resetServiceForm() {
+  document.getElementById('serviceFormEl').reset();
+  document.getElementById('serviceId').value = '';
+  document.getElementById('serviceForm').style.display = 'none';
+}
+
+// ========================================
+// PRODUCTOS (CON SUBIDA DE IMÁGENES)
+// ========================================
+
+window.toggleProductForm = function() {
+  const form = document.getElementById('productForm');
+  if (form) {
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  }
+};
+
+// Configurar subida de imágenes
+const imageInput = document.getElementById('prodImage');
+if (imageInput) {
+  imageInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) uploadImage(file);
+  });
+}
+
+async function uploadImage(file) {
+  console.log('📸 Subiendo imagen:', file.name);
+  
+  if (!file.type.startsWith('image/')) {
+    alert('❌ Solo se permiten imágenes');
+    return;
+  }
+  
+  if (file.size > 5 * 1024 * 1024) {
+    alert('❌ La imagen no puede superar 5MB');
+    return;
+  }
+  
+  try {
+    const storageRef = storage.ref(`products/${Date.now()}_${file.name}`);
+    uploadTask = storageRef.put(file);
+    
+    document.getElementById('uploadProgress').classList.add('show');
+    document.getElementById('uploadStatus').textContent = '📤 Subiendo...';
+    
+    uploadTask.on('state_changed', 
+      snapshot => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        document.getElementById('progressFill').style.width = progress + '%';
+      },
+      error => {
+        console.error('❌ Error subiendo:', error);
+        document.getElementById('uploadStatus').textContent = '❌ Error: ' + error.message;
+      },
+      async () => {
+        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+        currentImageURL = downloadURL;
+        
+        document.getElementById('imagePreview').src = downloadURL;
+        document.getElementById('imagePreview').style.display = 'block';
+        document.getElementById('uploadPlaceholder').style.display = 'none';
+        document.getElementById('uploadStatus').textContent = '✅ Imagen subida';
+        document.getElementById('uploadProgress').classList.remove('show');
+        
+        console.log('✅ Imagen subida:', downloadURL);
+      }
+    );
+    
+  } catch (error) {
+    console.error('❌ Error en upload:', error);
+    alert('❌ Error al subir imagen: ' + error.message);
+  }
+}
+
+// Formulario de productos
+const productForm = document.getElementById('publishForm');
+if (productForm) {
+  productForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+    
+    const id = document.getElementById('prodId').value;
+    const data = {
+      title: document.getElementById('prodName').value,
+      price: parseFloat(document.getElementById('prodPrice').value) || 0,
+      category: document.getElementById('prodCategory').value,
+      description: document.getElementById('prodDesc').value,
+      imageUrl: currentImageURL,
+      inStock: document.getElementById('prodStock').checked,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    try {
+      if (id) {
+        await db.collection('products').doc(id).update(data);
+        alert('✅ Producto actualizado');
+      } else {
+        data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+        await db.collection('products').add(data);
+        alert('✅ Producto agregado');
+      }
+      
+      resetProductForm();
+      loadAdminProducts();
+      
+    } catch (error) {
+      console.error('❌ Error guardando producto:', error);
+      alert('❌ Error: ' + error.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '💾 Guardar';
+    }
+  });
+}
+
+async function loadAdminProducts() {
+  console.log('📦 Cargando productos...');
+  
+  try {
+    const list = document.getElementById('adminProductsList');
+    if (!list) return;
+    
+    list.innerHTML = '<p class="loading">Cargando...</p>';
+    
+    const snap = await db.collection('products').orderBy('createdAt', 'desc').get();
+    
+    if (snap.empty) {
+      list.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px;">Sin productos</p>';
+      return;
+    }
+    
+    list.innerHTML = snap.docs.map(doc => {
+      const p = doc.data();
+      return `
+        <div class="product-admin-card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,106,0,0.1);border-radius:12px;padding:20px;margin-bottom:15px;display:flex;gap:15px;align-items:center;">
+          <img src="${p.imageUrl || 'https://via.placeholder.com/80'}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;">
+          <div style="flex:1;">
+            <h4 style="margin:0 0 5px;color:white;">${p.title}</h4>
+            <p style="margin:0;color:var(--orange);font-weight:700;">$${Number(p.price).toLocaleString('es-AR')}</p>
+            <p style="margin:5px 0 0;font-size:13px;color:var(--muted);">${p.category} • ${p.inStock ? '<span style="color:#4CAF50">En stock</span>' : '<span style="color:#ff4444">Sin stock</span>'}</p>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="editProduct('${doc.id}')" style="background:#2196F3;color:white;border:none;padding:8px;border-radius:6px;cursor:pointer;">✏️</button>
+            <button onclick="deleteProduct('${doc.id}')" style="background:#ff4444;color:white;border:none;padding:8px;border-radius:6px;cursor:pointer;">🗑️</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    console.log('✅ Productos cargados:', snap.size);
+    
+  } catch (error) {
+    console.error('❌ Error cargando productos:', error);
+  }
+}
+
+window.editProduct = async function(id) {
+  const doc = await db.collection('products').doc(id).get();
+  if (!doc.exists) return;
+  
+  const p = doc.data();
+  document.getElementById('prodId').value = id;
+  document.getElementById('prodName').value = p.title || '';
+  document.getElementById('prodPrice').value = p.price || '';
+  document.getElementById('prodCategory').value = p.category || '';
+  document.getElementById('prodDesc').value = p.description || '';
+  document.getElementById('prodStock').checked = p.inStock !== false;
+  
+  if (p.imageUrl) {
+    currentImageURL = p.imageUrl;
+    document.getElementById('imagePreview').src = p.imageUrl;
+    document.getElementById('imagePreview').style.display = 'block';
+    document.getElementById('uploadPlaceholder').style.display = 'none';
+  }
+  
+  document.getElementById('productForm').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+window.deleteProduct = async function(id) {
+  if (!confirm('¿Eliminar este producto?')) return;
+  
+  try {
+    await db.collection('products').doc(id).delete();
+    alert('✅ Producto eliminado');
+    loadAdminProducts();
+  } catch (error) {
+    alert('❌ Error: ' + error.message);
+  }
+};
+
+function resetProductForm() {
+  document.getElementById('publishForm').reset();
+  document.getElementById('prodId').value = '';
+  document.getElementById('imagePreview').style.display = 'none';
+  document.getElementById('uploadPlaceholder').style.display = 'block';
+  document.getElementById('uploadProgress').classList.remove('show');
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('uploadStatus').textContent = '';
+  currentImageURL = '';
+  document.getElementById('productForm').style.display = 'none';
+}
+
+// ========================================
 // CONTACTO
-async function loadContactInfo(){try{const doc=await db.collection('site_config').doc('contact').get();if(doc.exists){const c=doc.data();document.getElementById('contactAddress').value=c.address||'';document.getElementById('contactPhone').value=c.phone||'';document.getElementById('contactHours').value=c.hours||'';document.getElementById('contactEmail').value=c.email||'';}}catch(e){}}
-document.getElementById('contactForm')?.addEventListener('submit',async e=>{e.preventDefault();try{await db.collection('site_config').doc('contact').set({address:document.getElementById('contactAddress').value,phone:document.getElementById('contactPhone').value,hours:document.getElementById('contactHours').value,email:document.getElementById('contactEmail').value,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});alert('✅ Guardado');}catch(err){alert('❌ '+err.message);}});
+// ========================================
 
-// USUARIOS
-async function loadUsers(){const tb=document.getElementById('usersTable');tb.innerHTML='<tr><td colspan="4" class="loading">Cargando...</td></tr>';try{const snap=await db.collection('users').orderBy('createdAt','desc').get();if(snap.empty){tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted)">Sin usuarios</td></tr>';return;}tb.innerHTML=snap.docs.map(d=>{const u=d.data();const date=u.createdAt?u.createdAt.toDate().toLocaleDateString('es-AR'):'Reciente';return `<tr><td>${u.name||'-'}</td><td>${u.email}</td><td>${date}</td><td><span style="color:#4CAF50">Activo</span></td></tr>`}).join('');}catch(e){tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:#ff4444">Error</td></tr>';}}
+async function loadContactInfo() {
+  try {
+    const doc = await db.collection('site_config').doc('contact').get();
+    if (doc.exists) {
+      const c = doc.data();
+      document.getElementById('contactAddress').value = c.address || '';
+      document.getElementById('contactPhone').value = c.phone || '';
+      document.getElementById('contactHours').value = c.hours || '';
+      document.getElementById('contactEmail').value = c.email || '';
+    }
+  } catch (error) {
+    console.error('Error cargando contacto:', error);
+  }
+}
 
-document.addEventListener('DOMContentLoaded', loadDashboard);
-// CARGAR SETTINGS DEL FOOTER CUANDO SE ENTRA A ESA SECCIÓN
+const contactForm = document.getElementById('contactForm');
+if (contactForm) {
+  contactForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    try {
+      await db.collection('site_config').doc('contact').set({
+        address: document.getElementById('contactAddress').value,
+        phone: document.getElementById('contactPhone').value,
+        hours: document.getElementById('contactHours').value,
+        email: document.getElementById('contactEmail').value,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      
+      alert('✅ Información de contacto guardada');
+    } catch (error) {
+      alert('❌ Error: ' + error.message);
+    }
+  });
+}
+
+// ========================================
+// FOOTER
+// ========================================
+
+window.saveFooterSettings = async function() {
+  try {
+    const servicesText = document.getElementById('footerServicesList')?.value || '';
+    const storeText = document.getElementById('footerStoreList')?.value || '';
+    
+    const data = {
+      description: document.getElementById('footerDesc')?.value || '',
+      social: {
+        facebook: document.getElementById('socialFacebook')?.value || '',
+        instagram: document.getElementById('socialInstagram')?.value || '',
+        tiktok: document.getElementById('socialTiktok')?.value || '',
+        telegram: document.getElementById('socialTelegram')?.value || ''
+      },
+      services: servicesText.split(',').map(s => s.trim()).filter(s => s),
+      store: storeText.split(',').map(s => s.trim()).filter(s => s),
+      contact: {
+        address: document.getElementById('contactAddress')?.value || '',
+        hours: document.getElementById('contactHours')?.value || '',
+        phone: document.getElementById('contactPhone')?.value || '',
+        email: document.getElementById('contactEmail')?.value || ''
+      },
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    await db.collection('site_config').doc('footer').set(data, { merge: true });
+    alert('✅ Footer guardado correctamente');
+    
+  } catch (e) {
+    alert('❌ Error: ' + e.message);
+  }
+};
+
 async function loadFooterSettings() {
   try {
     const doc = await db.collection('site_config').doc('footer').get();
@@ -146,11 +747,9 @@ async function loadFooterSettings() {
     if (doc.exists) {
       const data = doc.data();
       
-      // Cargar descripción
       const footerDescEl = document.getElementById('footerDesc');
       if (footerDescEl) footerDescEl.value = data.description || '';
       
-      // Cargar redes sociales
       if (data.social) {
         const fbEl = document.getElementById('socialFacebook');
         const igEl = document.getElementById('socialInstagram');
@@ -163,18 +762,12 @@ async function loadFooterSettings() {
         if (tgEl) tgEl.value = data.social.telegram || '';
       }
       
-      // Cargar servicios y tienda
       const servicesEl = document.getElementById('footerServicesList');
       const storeEl = document.getElementById('footerStoreList');
       
-      if (servicesEl && data.services) {
-        servicesEl.value = data.services.join(', ');
-      }
-      if (storeEl && data.store) {
-        storeEl.value = data.store.join(', ');
-      }
+      if (servicesEl && data.services) servicesEl.value = data.services.join(', ');
+      if (storeEl && data.store) storeEl.value = data.store.join(', ');
       
-      // Cargar contacto
       if (data.contact) {
         const addrEl = document.getElementById('contactAddress');
         const hoursEl = document.getElementById('contactHours');
@@ -192,39 +785,55 @@ async function loadFooterSettings() {
   }
 }
 
-// MODIFICAR showSection PARA CARGAR FOOTER SETTINGS
-const originalShowSection = window.showSection;
-window.showSection = function(id, btn) {
-  // Llamar a la función original si existe
-  if (originalShowSection) {
-    originalShowSection(id, btn);
-  } else {
-    // Si no existe, hacer el cambio básico
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    if (btn) btn.classList.add('active');
-  }
-  
-  // Cargar footer settings si es la sección de footer
-  if (id === 'footer') {
-    setTimeout(loadFooterSettings, 100);
-  }
-};
-// ========== IMEI HISTORY FUNCTIONS ==========
+// ========================================
+// USUARIOS
+// ========================================
 
-// Cargar historial IMEI en admin
-async function loadIMEIHistoryAdmin() {
+async function loadUsers() {
+  const tb = document.getElementById('usersTable');
+  if (!tb) return;
+  
+  tb.innerHTML = '<tr><td colspan="4" class="loading">Cargando...</td></tr>';
+  
+  try {
+    const snap = await db.collection('users').orderBy('createdAt', 'desc').get();
+    
+    if (snap.empty) {
+      tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted)">Sin usuarios</td></tr>';
+      return;
+    }
+    
+    tb.innerHTML = snap.docs.map(doc => {
+      const u = doc.data();
+      const date = u.createdAt?.toDate()?.toLocaleDateString('es-AR') || 'Reciente';
+      return `
+        <tr>
+          <td>${u.name || '-'}</td>
+          <td>${u.email}</td>
+          <td>${date}</td>
+          <td><span style="color:#4CAF50">Activo</span></td>
+        </tr>
+      `;
+    }).join('');
+    
+  } catch (e) {
+    console.error('Error cargando usuarios:', e);
+    tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#ff4444">Error</td></tr>';
+  }
+}
+
+// ========================================
+// IMEI HISTORY
+// ========================================
+
+window.loadIMEIHistoryAdmin = async function() {
   const tb = document.getElementById('imeiHistoryTable');
   if (!tb) return;
   
   tb.innerHTML = '<tr><td colspan="8" class="loading">Cargando...</td></tr>';
   
   try {
-    const snap = await db.collection('imei_history')
-      .orderBy('timestamp', 'desc')
-      .limit(100)
-      .get();
+    const snap = await db.collection('imei_history').orderBy('timestamp', 'desc').limit(100).get();
     
     if (snap.empty) {
       tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted)">Sin consultas registradas</td></tr>';
@@ -264,9 +873,8 @@ async function loadIMEIHistoryAdmin() {
     console.error('Error cargando IMEI history:', e);
     tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#ff4444">Error al cargar: ' + e.message + '</td></tr>';
   }
-}
+};
 
-// Actualizar estadísticas de IMEI
 function updateIMEIStats(checks) {
   const total = checks.length;
   const clean = checks.filter(h => h.result?.blacklist === 'Clean').length;
@@ -275,15 +883,14 @@ function updateIMEIStats(checks) {
   const totalEl = document.getElementById('totalChecks');
   const cleanEl = document.getElementById('cleanChecks');
   const blacklistEl = document.getElementById('blacklistChecks');
-  const totalChecksEl = document.getElementById('totalIMEIChecks');
+  const totalIMEIChecksEl = document.getElementById('totalIMEIChecks');
   
   if (totalEl) totalEl.textContent = total;
   if (cleanEl) cleanEl.textContent = clean;
   if (blacklistEl) blacklistEl.textContent = blacklist;
-  if (totalChecksEl) totalChecksEl.textContent = total;
+  if (totalIMEIChecksEl) totalIMEIChecksEl.textContent = total;
 }
 
-// Ver detalles de una consulta IMEI
 window.viewIMEIDetails = async function(id) {
   try {
     const doc = await db.collection('imei_history').doc(id).get();
@@ -296,7 +903,7 @@ window.viewIMEIDetails = async function(id) {
     const result = h.result || {};
     
     const details = `
- DETALLES DE CONSULTA IMEI
+DETALLES DE CONSULTA IMEI
 ━━━━━━━━━━━━━━━━━━━━━━
 📱 IMEI/Serial: ${h.imei}
 🔢 Tipo: ${h.searchType?.toUpperCase() || 'IMEI'}
@@ -318,7 +925,7 @@ window.viewIMEIDetails = async function(id) {
 🛡️ Blacklist: ${result.blacklist || 'Unknown'}
 🔓 SIM Lock: ${result.simLock || 'N/A'}
 📡 Carrier: ${result.carrier || 'N/A'}
- Find My iPhone: ${result.fmi || 'N/A'}
+Find My iPhone: ${result.fmi || 'N/A'}
 ⚙️ KG Status: ${result.kgStatus || 'N/A'}
 🔐 Knox: ${result.knox || 'N/A'}
 
@@ -330,10 +937,6 @@ window.viewIMEIDetails = async function(id) {
 📅 Purchase Date: ${result.purchaseDate || 'N/A'}
 🏪 Sold By: ${result.soldBy || 'N/A'}
 🔄 Replacement: ${result.replacement || 'N/A'}
-
-📍 ORIGEN
-━━━━━━━━━━━━━━━━━━━━━━
-🌍 CSC: ${result.csc || 'N/A'}
     `;
     
     alert(details);
@@ -343,52 +946,23 @@ window.viewIMEIDetails = async function(id) {
   }
 };
 
-// Modificar showSection para cargar IMEI history
-const originalShowSection = window.showSection;
-window.showSection = function(id, btn) {
-  // Llamar a la función original si existe
-  if (originalShowSection) {
-    originalShowSection(id, btn);
-  } else {
-    // Si no existe, hacer el cambio básico
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    if (btn) btn.classList.add('active');
-  }
-  
-  // Cargar secciones específicas
-  if (id === 'footer') {
-    setTimeout(loadFooterSettings, 100);
-  } else if (id === 'imei') {
-    setTimeout(loadIMEIHistoryAdmin, 100);
-  } else if (id === 'dashboard') {
-    setTimeout(loadDashboard, 100);
-  } else if (id === 'productos') {
-    setTimeout(loadAdminProducts, 100);
-  } else if (id === 'servicios') {
-    setTimeout(loadServices, 100);
-  } else if (id === 'usuarios') {
-    setTimeout(loadUsers, 100);
+// ========================================
+// UTILIDADES
+// ========================================
+
+window.logout = function() {
+  if (confirm('¿Cerrar sesión?')) {
+    firebase.auth().signOut().then(() => {
+      window.location.href = 'login.html';
+    });
   }
 };
 
-// Actualizar loadDashboard para incluir stats de IMEI
-const originalLoadDashboard = window.loadDashboard;
-window.loadDashboard = async function() {
-  // Llamar a la función original si existe
-  if (originalLoadDashboard) {
-    await originalLoadDashboard();
-  }
-  
-  // Agregar stats de IMEI
-  try {
-    const imeiSnap = await db.collection('imei_history').get();
-    const totalIMEIChecksEl = document.getElementById('totalIMEIChecks');
-    if (totalIMEIChecksEl) {
-      totalIMEIChecksEl.textContent = imeiSnap.size;
-    }
-  } catch (e) {
-    console.error('Error cargando stats IMEI:', e);
+window.toggleSidebar = function() {
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar) {
+    sidebar.classList.toggle('open');
   }
 };
+
+console.log('✅ admin.js cargado correctamente');
