@@ -1,49 +1,43 @@
 // ========================================
 // CELL SPACE - PANEL DE ADMINISTRACIÓN
-// Versión Completa y Corregida
+// Imágenes vía ImgBB (Gratis)
 // ========================================
 
-console.log('🔧 Cargando panel de administración...');
+console.log('🔧 Cargando panel...');
+
+// CONFIGURACIÓN IMGBB
+const IMGBB_API_KEY = 'c9ed363f2cb81f1525d363f714b0d499';
 
 // VARIABLES GLOBALES
 let currentImageURL = '';
-let uploadTask = null;
 
 // ========================================
-// INICIALIZACIÓN Y AUTENTICACIÓN
+// INICIALIZACIÓN
 // ========================================
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('✅ DOM cargado');
 
-  // ESCUCHAR ESTADO DE AUTH (Espera a Firebase)
   firebase.auth().onAuthStateChanged((user) => {
-    console.log('🔍 Estado de Auth:', user ? user.email : 'No logueado');
+    console.log('🔍 Auth:', user ? user.email : 'No logueado');
 
     if (user) {
-      // Usuario logueado
       if (user.email === 'nahuel0123encinas@gmail.com') {
-        console.log('✅ Admin verificado:', user.email);
+        console.log('✅ Admin:', user.email);
         document.getElementById('adminEmail').textContent = user.email;
-        
-        // Iniciar el panel
         setupNavigation();
         loadDashboard();
-        loadContactInfo(); // Precargar contacto
+        loadContactInfo();
       } else {
-        // No es admin
-        console.warn('⚠️ No eres admin:', user.email);
-        alert('⚠️ Acceso restringido. Solo administradores.');
+        alert('⚠️ Acceso restringido');
         window.location.href = 'login.html';
       }
     } else {
-      // No logueado
-      console.warn('⚠️ Usuario no logueado');
       window.location.href = 'login.html';
     }
   });
 
-  // Vincular formularios manualmente por si el event listener falla
+  // Vincular formularios
   const serviceForm = document.getElementById('serviceFormEl');
   if (serviceForm) serviceForm.addEventListener('submit', window.saveService);
   
@@ -59,54 +53,36 @@ document.addEventListener('DOMContentLoaded', () => {
 // ========================================
 
 function setupNavigation() {
-  console.log('🔧 Configurando navegación...');
-  
-  const navLinks = document.querySelectorAll('.nav-link');
-  navLinks.forEach(link => {
+  document.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', function(e) {
       const href = this.getAttribute('href');
-      
-      // Si es enlace externo o función inline, dejarlo pasar
       if (href === '#' || href.includes('admin.html') || href.includes('index.html')) return;
-      
       e.preventDefault();
-      const sectionId = href.substring(1);
-      console.log('📍 Navegando a:', sectionId);
-      window.showSection(sectionId, this);
+      window.showSection(href.substring(1), this);
     });
   });
 }
 
 window.showSection = function(sectionId, btnElement) {
-  console.log(' Mostrando sección:', sectionId);
-  
-  // Ocultar todas las secciones
-  document.querySelectorAll('.section').forEach(section => {
-    section.classList.remove('active');
-    section.style.display = 'none';
+  document.querySelectorAll('.section').forEach(s => {
+    s.classList.remove('active');
+    s.style.display = 'none';
   });
   
-  // Remover active de links
-  document.querySelectorAll('.nav-link').forEach(link => {
-    link.classList.remove('active');
-  });
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
   
-  // Mostrar sección
-  const targetSection = document.getElementById(sectionId);
-  if (targetSection) {
-    targetSection.classList.add('active');
-    targetSection.style.display = 'block';
-    
-    // Cargar datos según sección
+  const target = document.getElementById(sectionId);
+  if (target) {
+    target.classList.add('active');
+    target.style.display = 'block';
     loadSectionData(sectionId);
   }
   
-  // Activar botón
   if (btnElement) btnElement.classList.add('active');
 };
 
-function loadSectionData(sectionId) {
-  switch(sectionId) {
+function loadSectionData(id) {
+  switch(id) {
     case 'dashboard': loadDashboard(); break;
     case 'hero': window.loadSlides(); break;
     case 'servicios': window.loadServices(); break;
@@ -119,8 +95,7 @@ function loadSectionData(sectionId) {
 }
 
 window.toggleSidebar = function() {
-  const sidebar = document.getElementById('sidebar');
-  if (sidebar) sidebar.classList.toggle('open');
+  document.getElementById('sidebar')?.classList.toggle('open');
 };
 
 // ========================================
@@ -129,50 +104,40 @@ window.toggleSidebar = function() {
 
 window.loadDashboard = async function() {
   try {
-    const productsSnap = await db.collection('products').get();
-    document.getElementById('totalProducts').textContent = productsSnap.size;
+    const products = await db.collection('products').get();
+    document.getElementById('totalProducts').textContent = products.size;
     
-    const usersSnap = await db.collection('users').get();
-    document.getElementById('totalUsers').textContent = usersSnap.size;
+    const users = await db.collection('users').get();
+    document.getElementById('totalUsers').textContent = users.size;
     
-    const servicesSnap = await db.collection('services').get();
-    document.getElementById('totalServices').textContent = servicesSnap.size;
+    const services = await db.collection('services').get();
+    document.getElementById('totalServices').textContent = services.size;
     
-    // Contar IMEI si la colección existe
     try {
-        const imeiSnap = await db.collection('imei_history').get();
-        const totalIMEIEl = document.getElementById('totalIMEIChecks');
-        if(totalIMEIEl) totalIMEIEl.textContent = imeiSnap.size;
-    } catch(e) { console.log('Colección IMEI no existe aún'); }
+      const imei = await db.collection('imei_history').get();
+      const el = document.getElementById('totalIMEIChecks');
+      if(el) el.textContent = imei.size;
+    } catch(e) {}
 
-    // Actividad reciente (Productos + Usuarios)
     const recent = [];
-    productsSnap.docs.slice(-5).forEach(d => {
-        const data = d.data();
-        recent.push({
-            title: `📦 ${data.title}`,
-            date: data.createdAt?.toDate() || new Date()
-        });
+    products.docs.slice(-5).forEach(d => {
+      const data = d.data();
+      recent.push({ title: `📦 ${data.title}`, date: data.createdAt?.toDate() || new Date() });
     });
-    
     recent.sort((a, b) => b.date - a.date);
     
-    const html = recent.map(item => `
+    document.getElementById('recentActivity').innerHTML = recent.map(item => `
       <div style="padding:10px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;">
         <span style="color:white;font-size:14px;">${item.title}</span>
         <span style="color:var(--muted);font-size:12px;">${item.date.toLocaleString('es-AR')}</span>
       </div>
-    `).join('');
+    `).join('') || '<p style="color:var(--muted);padding:20px;text-align:center;">Sin actividad</p>';
     
-    document.getElementById('recentActivity').innerHTML = html || '<p style="color:var(--muted);padding:20px;text-align:center;">Sin actividad reciente</p>';
-    
-  } catch (error) {
-    console.error('❌ Error dashboard:', error);
-  }
+  } catch (error) { console.error('❌ Dashboard:', error); }
 };
 
 // ========================================
-// CARRUSEL / SLIDES
+// CARRUSEL
 // ========================================
 
 window.loadSlides = async function() {
@@ -183,7 +148,7 @@ window.loadSlides = async function() {
     const snap = await db.collection('hero_slides').orderBy('order', 'asc').get();
     
     if (snap.empty) {
-      container.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px;">No hay slides.</p>';
+      container.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px;">Sin slides</p>';
       return;
     }
     
@@ -202,17 +167,14 @@ window.loadSlides = async function() {
           </div>
         </div>`;
     }).join('');
-    
-  } catch (error) {
-    console.error('❌ Error slides:', error);
-  }
+  } catch (e) { console.error(e); }
 };
 
 window.addSlide = async function() {
   const title = prompt('Título:');
   if (!title) return;
   const subtitle = prompt('Subtítulo:') || '';
-  const imageUrl = prompt('URL Imagen:') || '';
+  const imageUrl = prompt('URL Imagen (ImgBB):') || '';
   
   try {
     await db.collection('hero_slides').add({
@@ -244,7 +206,7 @@ window.editSlide = async function(id) {
 };
 
 window.deleteSlide = async function(id) {
-  if (!confirm('¿Eliminar slide?')) return;
+  if (!confirm('¿Eliminar?')) return;
   try {
     await db.collection('hero_slides').doc(id).delete();
     window.loadSlides();
@@ -258,7 +220,7 @@ window.deleteSlide = async function(id) {
 window.toggleServiceForm = function() {
   const form = document.getElementById('serviceForm');
   form.style.display = form.style.display === 'none' ? 'block' : 'none';
-  document.getElementById('serviceId').value = ''; // Limpiar ID al abrir
+  document.getElementById('serviceId').value = '';
 };
 
 window.loadServices = async function() {
@@ -298,21 +260,18 @@ window.saveService = async function(e) {
   const title = document.getElementById('serviceTitle').value;
   const desc = document.getElementById('serviceDesc').value;
   
-  if (!title) { alert('⚠️ El título es obligatorio'); return; }
+  if (!title) { alert('⚠️ Título obligatorio'); return; }
   
-  const data = {
-    icon, title, description: desc,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
+  const data = { icon, title, description: desc, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
   
   try {
     if (id) {
       await db.collection('services').doc(id).update(data);
-      alert('✅ Servicio actualizado');
+      alert('✅ Actualizado');
     } else {
       data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       await db.collection('services').add(data);
-      alert('✅ Servicio agregado');
+      alert('✅ Agregado');
     }
     window.resetServiceForm();
     window.loadServices();
@@ -333,7 +292,7 @@ window.editService = async function(id) {
 };
 
 window.deleteService = async function(id) {
-  if (!confirm('¿Eliminar servicio?')) return;
+  if (!confirm('¿Eliminar?')) return;
   try {
     await db.collection('services').doc(id).delete();
     window.loadServices();
@@ -347,13 +306,13 @@ window.resetServiceForm = function() {
 };
 
 // ========================================
-// PRODUCTOS
+// PRODUCTOS - CON IMGBB
 // ========================================
 
 window.toggleProductForm = function() {
   const form = document.getElementById('productForm');
   form.style.display = form.style.display === 'none' ? 'block' : 'none';
-  window.resetProductForm(); // Limpiar al abrir
+  window.resetProductForm();
 };
 
 window.loadAdminProducts = async function() {
@@ -386,40 +345,48 @@ window.loadAdminProducts = async function() {
   } catch (e) { console.error(e); }
 };
 
-// Configurar input de imagen
-document.getElementById('prodImage')?.addEventListener('change', function(e) {
+// SUBIDA A IMGBB
+document.getElementById('prodImage')?.addEventListener('change', async function(e) {
   const file = e.target.files[0];
-  if (file) window.uploadImage(file);
-});
-
-window.uploadImage = async function(file) {
+  if (!file) return;
+  
   if (!file.type.startsWith('image/')) { alert('❌ Solo imágenes'); return; }
-  if (file.size > 5 * 1024 * 1024) { alert('❌ Máximo 5MB'); return; }
+  if (file.size > 32 * 1024 * 1024) { alert('❌ Máximo 32MB'); return; }
   
   document.getElementById('uploadProgress').classList.add('show');
-  document.getElementById('uploadStatus').textContent = '📤 Subiendo...';
+  document.getElementById('uploadStatus').textContent = '📤 Subiendo a ImgBB...';
   
   try {
-    const ref = storage.ref(`products/${Date.now()}_${file.name}`);
-    uploadTask = ref.put(file);
+    const formData = new FormData();
+    formData.append('image', file);
     
-    uploadTask.on('state_changed',
-      snap => {
-        const p = (snap.bytesTransferred / snap.totalBytes) * 100;
-        document.getElementById('progressFill').style.width = p + '%';
-      },
-      err => { document.getElementById('uploadStatus').textContent = '❌ Error'; },
-      async () => {
-        currentImageURL = await uploadTask.snapshot.ref.getDownloadURL();
-        document.getElementById('imagePreview').src = currentImageURL;
-        document.getElementById('imagePreview').style.display = 'block';
-        document.getElementById('uploadPlaceholder').style.display = 'none';
-        document.getElementById('uploadStatus').textContent = '✅ Lista';
-        document.getElementById('uploadProgress').classList.remove('show');
-      }
-    );
-  } catch (e) { alert('❌ ' + e.message); }
-};
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+      method: 'POST',
+      body: formData
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      currentImageURL = data.data.url;
+      
+      document.getElementById('imagePreview').src = currentImageURL;
+      document.getElementById('imagePreview').style.display = 'block';
+      document.getElementById('uploadPlaceholder').style.display = 'none';
+      document.getElementById('uploadStatus').textContent = '✅ Lista';
+      document.getElementById('uploadProgress').classList.remove('show');
+      
+      console.log('✅ Imagen subida:', currentImageURL);
+    } else {
+      throw new Error('Error en ImgBB');
+    }
+    
+  } catch (error) {
+    console.error('❌ Error:', error);
+    document.getElementById('uploadStatus').textContent = '❌ Error';
+    alert('❌ Error al subir: ' + error.message);
+  }
+});
 
 window.saveProduct = async function(e) {
   if (e) e.preventDefault();
@@ -450,9 +417,7 @@ window.saveProduct = async function(e) {
     window.resetProductForm();
     window.loadAdminProducts();
   } catch (err) { alert('❌ ' + err.message); }
-  finally {
-    btn.disabled = false; btn.textContent = '💾 Guardar';
-  }
+  finally { btn.disabled = false; btn.textContent = '💾 Guardar'; }
 };
 
 window.editProduct = async function(id) {
@@ -479,7 +444,7 @@ window.editProduct = async function(id) {
 };
 
 window.deleteProduct = async function(id) {
-  if (!confirm('¿Eliminar producto?')) return;
+  if (!confirm('¿Eliminar?')) return;
   try {
     await db.collection('products').doc(id).delete();
     window.loadAdminProducts();
@@ -516,6 +481,7 @@ async function loadContactInfo() {
 
 window.saveContact = async function(e) {
   if (e) e.preventDefault();
+  
   try {
     await db.collection('site_config').doc('contact').set({
       address: document.getElementById('contactAddress').value,
@@ -661,24 +627,3 @@ window.logout = function() {
 };
 
 console.log('✅ admin.js cargado correctamente');
-// TEST DE FIREBASE
-console.log('🔍 Verificando Firebase...');
-console.log('📦 App:', firebase.apps?.length > 0 ? 'OK' : 'ERROR');
-console.log('🗄️ Firestore:', typeof db !== 'undefined' ? 'OK' : 'ERROR');
-console.log('👤 Usuario:', firebase.auth().currentUser?.email || 'NO LOGUEADO');
-
-// Test de escritura
-window.testFirebaseWrite = async function() {
-  try {
-    console.log('🧪 Probando escritura en Firebase...');
-    await db.collection('test_collection').doc('test').set({
-      message: 'Si ves esto, Firebase escribe correctamente',
-      timestamp: new Date()
-    });
-    console.log('✅ ¡Firebase ESCRIBE correctamente!');
-    alert('✅ Firebase funciona correctamente');
-  } catch (error) {
-    console.error('❌ ERROR DE ESCRITURA:', error);
-    alert('❌ Firebase NO puede escribir. Revisá las reglas de seguridad.\n\nError: ' + error.message);
-  }
-};
