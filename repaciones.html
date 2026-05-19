@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema Técnico - Cell Space</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/reparaciones.css">
+  
+  <!-- Firebase Compat -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="tech-header">
+    <a href="index.html" class="back-btn">← Volver al inicio</a>
+    <div class="header-content">
+      <h1>Sistema <span>Técnico</span></h1>
+      <p>Seguimiento de reparaciones en tiempo real</p>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <div class="tabs-container">
+    <button class="tab-btn active" data-tab="track">🔍 Rastrear equipo</button>
+    <button class="tab-btn" data-tab="new">📝 Nueva orden</button>
+    <button class="tab-btn" data-tab="ai">🤖 Diagnóstico IA</button>
+  </div>
+
+  <!-- CONTENIDO -->
+  <main class="tech-content">
+    
+    <!-- RASTREAR -->
+    <section id="track" class="tab-content active">
+      <div class="card">
+        <h2>Rastrear mi equipo</h2>
+        <p class="subtitle">Ingresá el número de orden para ver el estado de tu reparación.</p>
+        
+        <div class="search-box">
+          <input type="text" id="orderInput" placeholder="Ej: TS-2024-0001" maxlength="15">
+          <button onclick="trackOrder()"> Buscar</button>
+        </div>
+        <p class="hint">💡 Probá con: TS-2024-0001, TS-2024-0002</p>
+        
+        <div id="trackResult" class="result-container"></div>
+      </div>
+    </section>
+
+    <!-- NUEVA ORDEN -->
+    <section id="new" class="tab-content">
+      <div class="card">
+        <h2>Nueva Orden de Reparación</h2>
+        <p class="subtitle">Completá los datos para iniciar el seguimiento.</p>
+        
+        <form id="newOrderForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Nombre del Cliente</label>
+              <input type="text" id="clientName" placeholder="Nombre completo" required>
+            </div>
+            <div class="form-group">
+              <label>Teléfono / WhatsApp</label>
+              <input type="tel" id="clientPhone" placeholder="3782-XXXXXX" required>
+            </div>
+            <div class="form-group">
+              <label>Dispositivo</label>
+              <input type="text" id="device" placeholder="Ej: iPhone 13, Samsung S23" required>
+            </div>
+            <div class="form-group">
+              <label>Falla Reportada</label>
+              <textarea id="fault" rows="3" placeholder="Describí el problema..." required></textarea>
+            </div>
+          </div>
+          <button type="submit" class="btn-submit"> Crear Orden y Rastrear</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- DIAGNÓSTICO IA -->
+    <section id="ai" class="tab-content">
+      <div class="card">
+        <h2>🤖 Diagnóstico Preliminar con IA</h2>
+        <p class="subtitle">Describí el problema y recibí una estimación instantánea.</p>
+        
+        <div class="ai-chat">
+          <textarea id="aiInput" placeholder="Ej: La pantalla no enciende pero vibra cuando conecto el cargador..."></textarea>
+          <button onclick="runAIDiagnosis()">Analizar Síntomas</button>
+        </div>
+        <div id="aiResult" class="ai-result"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/reparaciones.js"></script>
+</body>
+</html>
