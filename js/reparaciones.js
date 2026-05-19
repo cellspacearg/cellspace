@@ -1,82 +1,144 @@
 // ========================================
-// CELL SPACE - SISTEMA TÉCNICO
-// Rastreo, Órdenes y Diagnóstico IA
+// CELL SPACE - RASTREO DE REPARACIONES
+// Solo consulta de estado para clientes
 // ========================================
 
 document.addEventListener('DOMContentLoaded', () => {
-  setupTabs();
-  setupNewOrderForm();
-});
-
-// TABS
-function setupTabs() {
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById(btn.dataset.tab).classList.add('active');
+  console.log('✅ Sistema de rastreo cargado');
+  
+  // Permitir buscar con Enter
+  const input = document.getElementById('orderInput');
+  if (input) {
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') trackOrder();
     });
-  });
-}
+  }
+});
 
 // RASTREAR ORDEN
 async function trackOrder() {
-  const input = document.getElementById('orderInput').value.trim();
+  const input = document.getElementById('orderInput');
   const resultDiv = document.getElementById('trackResult');
+  const orderId = input.value.trim().toUpperCase();
   
-  if (!input) return alert('️ Ingresá un número de orden');
+  if (!orderId) {
+    resultDiv.innerHTML = '<p class="error">⚠️ Por favor ingresá un número de orden</p>';
+    input.focus();
+    return;
+  }
   
-  resultDiv.innerHTML = '<p class="loading"> Buscando orden...</p>';
+  resultDiv.innerHTML = '<p class="loading">🔍 Buscando orden...</p>';
   
   try {
-    const snap = await db.collection('repair_orders').where('orderId', '==', input).get();
+    const snap = await db.collection('repair_orders')
+      .where('orderId', '==', orderId)
+      .get();
     
     if (snap.empty) {
-      resultDiv.innerHTML = '<p class="error" style="color:#ff4444;margin-top:20px;">❌ Orden no encontrada. Verificá el número.</p>';
+      resultDiv.innerHTML = `
+        <div class="error">
+          <p style="font-size:1.2rem;margin:0 0 10px 0;">❌ Orden no encontrada</p>
+          <p style="margin:0;font-size:0.95rem;">
+            Verificá el número de orden o contactanos por WhatsApp<br>
+            <small>Número buscado: <strong>${orderId}</strong></small>
+          </p>
+        </div>
+      `;
       return;
     }
     
     const order = snap.docs[0].data();
     renderOrderResult(order, resultDiv);
+    
   } catch (e) {
-    resultDiv.innerHTML = `<p class="error" style="color:#ff4444;margin-top:20px;">❌ Error: ${e.message}</p>`;
+    console.error('Error:', e);
+    resultDiv.innerHTML = `
+      <div class="error">
+        <p style="font-size:1.2rem;margin:0 0 10px 0;">❌ Error al consultar</p>
+        <p style="margin:0;font-size:0.95rem;">
+          Intentá de nuevo en unos segundos<br>
+          <small>${e.message}</small>
+        </p>
+      </div>
+    `;
   }
 }
 
 function renderOrderResult(order, container) {
   const statusColor = getStatusColor(order.status);
-  const stepsHTML = order.steps ? order.steps.map((step, i) => `
-    <div class="timeline-item ${step.done ? 'done' : ''} ${!step.done && i === order.steps.findIndex(s => !s.done) ? 'active' : ''}">
-      <div class="timeline-dot"></div>
-      <span>${step.name}</span>
-    </div>
-  `).join('') : '';
+  
+  // Generar timeline de pasos
+  const stepsHTML = order.steps && order.steps.length > 0 
+    ? order.steps.map((step, index) => {
+        const isDone = step.done === true;
+        const isActive = !isDone && index === order.steps.findIndex(s => s.done !== true);
+        const className = isDone ? 'done' : (isActive ? 'active' : '');
+        
+        return `
+          <div class="timeline-item ${className}">
+            <div class="timeline-dot"></div>
+            <span>${step.name || step}</span>
+          </div>
+        `;
+      }).join('')
+    : '<p style="color:var(--muted);text-align:center;">Sin pasos definidos</p>';
+  
+  const clientInfo = order.clientPhone ? `📱 ${order.clientPhone}` : '';
+  const technicianInfo = order.technician ? order.technician : 'Asignando...';
+  const budgetText = order.budget ? `$${Number(order.budget).toLocaleString('es-AR')}` : 'A confirmar';
   
   container.innerHTML = `
     <div class="order-card">
       <div class="order-header">
         <div>
           <h3>${order.orderId}</h3>
-          <p class="date">${order.createdAt?.toDate().toLocaleDateString('es-AR') || 'Fecha no disponible'}</p>
+          <p class="date">
+            📅 ${order.createdAt?.toDate ? order.createdAt.toDate().toLocaleDateString('es-AR') : 'Fecha no disponible'}
+          </p>
         </div>
-        <span class="status-badge" style="background:${statusColor}20;color:${statusColor};border:1px solid ${statusColor}40">${order.status}</span>
+        <span class="status-badge" style="background:${statusColor}20;color:${statusColor};border:2px solid ${statusColor}">
+          ${order.status || 'Pendiente'}
+        </span>
       </div>
       
       <div class="info-grid">
-        <div class="info-box">👤 <span>Cliente</span><strong>${order.clientName}</strong></div>
-        <div class="info-box">📱 <span>Equipo</span><strong>${order.device}</strong></div>
-        <div class="info-box"> <span>Técnico</span><strong>${order.technician || 'Asignando...'}</strong></div>
-        <div class="info-box"> <span>Presupuesto</span><strong>$${Number(order.budget).toLocaleString('es-AR')}</strong></div>
+        <div class="info-box">
+          <span>👤 Cliente</span>
+          <strong>${order.clientName || 'No disponible'}</strong>
+        </div>
+        <div class="info-box">
+          <span>📱 Equipo</span>
+          <strong>${order.device || 'No disponible'}</strong>
+        </div>
+        <div class="info-box">
+          <span>🔧 Técnico</span>
+          <strong>${technicianInfo}</strong>
+        </div>
+        <div class="info-box">
+          <span>💰 Presupuesto</span>
+          <strong>${budgetText}</strong>
+        </div>
       </div>
       
+      ${order.fault ? `
       <div class="fault-box">
-        <strong>Falla reportada:</strong> ${order.fault}
+        <strong>📋 Falla reportada:</strong>
+        ${order.fault}
       </div>
+      ` : ''}
       
-      <h4 style="color:white;margin:20px 0 15px;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;">Estado del proceso</h4>
+      <h4 class="timeline-title">📊 Estado del proceso</h4>
       <div class="timeline">
         ${stepsHTML}
+      </div>
+      
+      <div style="margin-top:25px;padding:15px;background:rgba(255,106,0,0.1);border-radius:10px;text-align:center;">
+        <p style="margin:0 0 10px 0;color:var(--muted);">¿Tenés dudas sobre tu reparación?</p>
+        <a href="https://wa.me/5493782437674?text=Hola!%20Consulta%20por%20mi%20orden%20${order.orderId}" 
+           target="_blank"
+           style="display:inline-block;padding:10px 25px;background:#25D366;color:white;text-decoration:none;border-radius:25px;font-weight:600;">
+          💬 Consultar por WhatsApp
+        </a>
       </div>
     </div>
   `;
@@ -84,88 +146,13 @@ function renderOrderResult(order, container) {
 
 function getStatusColor(status) {
   const map = {
-    'Recibido': '#4CAF50', 'Revisando': '#2196F3', 'Esperando repuesto': '#FF9800',
-    'En reparación': '#9C27B0', 'Pruebas': '#00BCD4', 'Listo': '#4CAF50', 'Entregado': '#888'
+    'Recibido': '#4CAF50',
+    'Revisando': '#2196F3',
+    'Esperando repuesto': '#FF9800',
+    'En reparación': '#9C27B0',
+    'Pruebas': '#00BCD4',
+    'Listo': '#4CAF50',
+    'Entregado': '#888'
   };
   return map[status] || 'var(--orange)';
-}
-
-// NUEVA ORDEN
-function setupNewOrderForm() {
-  document.getElementById('newOrderForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const data = {
-      orderId: `TS-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
-      clientName: document.getElementById('clientName').value,
-      clientPhone: document.getElementById('clientPhone').value,
-      device: document.getElementById('device').value,
-      fault: document.getElementById('fault').value,
-      technician: '',
-      budget: 0,
-      status: 'Recibido',
-      steps: [
-        { name: 'Recibido', done: true },
-        { name: 'Revisando', done: false },
-        { name: 'Esperando repuesto', done: false },
-        { name: 'En reparación', done: false },
-        { name: 'Pruebas', done: false },
-        { name: 'Listo', done: false }
-      ],
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-    
-    try {
-      await db.collection('repair_orders').add(data);
-      alert(`✅ Orden creada: ${data.orderId}\n\nGuardá este número para rastrear el estado.`);
-      document.getElementById('newOrderForm').reset();
-      document.getElementById('orderInput').value = data.orderId;
-      trackOrder();
-    } catch (err) {
-      alert('❌ Error al crear orden: ' + err.message);
-    }
-  });
-}
-
-// DIAGNÓSTICO IA (Simulado)
-function runAIDiagnosis() {
-  const input = document.getElementById('aiInput').value.toLowerCase();
-  const resultDiv = document.getElementById('aiResult');
-  
-  if (!input) return alert('⚠️ Describí el problema primero');
-  
-  resultDiv.innerHTML = '<p class="loading">🤖 Analizando síntomas...</p>';
-  
-  setTimeout(() => {
-    let diagnosis = '', cost = '', time = '';
-    
-    if (input.includes('pantalla') || input.includes('display') || input.includes('tacto')) {
-      diagnosis = '📱 Posible daño en pantalla/display. Se requiere revisión de flex, conectores y backlight.';
-      cost = '$15.000 - $45.000'; time = '24-48 hs';
-    } else if (input.includes('batería') || input.includes('carga') || input.includes('no enciende') || input.includes('apaga')) {
-      diagnosis = '🔋 Problema de batería, puerto de carga o circuito de encendido. Verificar celda y flex.';
-      cost = '$8.000 - $25.000'; time = '12-24 hs';
-    } else if (input.includes('software') || input.includes('lento') || input.includes('reinicia') || input.includes('loop')) {
-      diagnosis = '💻 Falla de software/crash. Se recomienda backup + reinstalación de sistema o DFU.';
-      cost = '$5.000 - $10.000'; time = '2-4 hs';
-    } else if (input.includes('agua') || input.includes('líquido') || input.includes('mojado')) {
-      diagnosis = ' Daño por líquido. Requiere limpieza ultrasónica inmediata y revisión de corrosión.';
-      cost = '$10.000 - $30.000'; time = '48-72 hs';
-    } else {
-      diagnosis = '🔍 Síntoma no reconocido automáticamente. Se recomienda traer el equipo para diagnóstico presencial gratuito.';
-      cost = 'A definir'; time = 'A definir';
-    }
-    
-    resultDiv.innerHTML = `
-      <div class="ai-response">
-        <h4>📋 Diagnóstico Preliminar</h4>
-        <p>${diagnosis}</p>
-        <div class="ai-details">
-          <span>💰 Estimado: <strong>${cost}</strong></span>
-          <span>⏱️ Tiempo: <strong>${time}</strong></span>
-        </div>
-        <button class="btn-secondary" onclick="document.querySelector('[data-tab=new]').click()">📝 Crear orden con estos datos</button>
-      </div>
-    `;
-  }, 1500);
 }
