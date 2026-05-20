@@ -1,520 +1,826 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel de Administración - Cell Space</title>
-  <link rel="icon" type="image/png" href="assets/logo.png">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/admin.css">
+// ========================================
+// CELL SPACE - PANEL DE ADMINISTRACIÓN
+// Versión Completa con Técnicos y Posts
+// ========================================
+
+console.log('🔧 Cargando panel...');
+
+// CONFIGURACIÓN IMGBB
+const IMGBB_API_KEY = 'c9ed363f2cb81f1525d363f714b0d499';
+
+// VARIABLES GLOBALES
+let currentImageURL = '';
+
+// ========================================
+// INICIALIZACIÓN
+// ========================================
+
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('✅ DOM cargado');
+
+  firebase.auth().onAuthStateChanged((user) => {
+    console.log('🔍 Auth:', user ? user.email : 'No logueado');
+
+    if (user) {
+      if (user.email === 'nahuel0123encinas@gmail.com') {
+        console.log('✅ Admin:', user.email);
+        document.getElementById('adminEmail').textContent = user.email;
+        setupNavigation();
+        loadDashboard();
+        loadContactInfo();
+      } else {
+        alert('⚠️ Acceso restringido');
+        window.location.href = 'login.html';
+      }
+    } else {
+      window.location.href = 'login.html';
+    }
+  });
+
+  // Vincular formularios
+  const serviceForm = document.getElementById('serviceFormEl');
+  if (serviceForm) serviceForm.addEventListener('submit', window.saveService);
   
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
-</head>
-<body>
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <a href="index.html" style="text-decoration:none;">
-        <img src="assets/logo.png" class="sidebar-logo" onerror="this.style.display='none'">
-      </a>
-      <h2>CELL SPACE</h2>
-      <p style="color:#666;font-size:12px;">Panel de Control</p>
-    </div>
-    <nav class="sidebar-nav">
-      <a href="#dashboard" class="nav-link active" onclick="showSection('dashboard', this)">📊 Dashboard</a>
-      <a href="#hero" class="nav-link" onclick="showSection('hero', this)">🎠 Carrusel</a>
-      <a href="#servicios" class="nav-link" onclick="showSection('servicios', this)">🔧 Servicios</a>
-      <a href="#productos" class="nav-link" onclick="showSection('productos', this)">📦 Productos</a>
-      <a href="#posts" class="nav-link" onclick="showSection('posts', this)">📢 Publicaciones</a>
-      <a href="#tecnicos" class="nav-link" onclick="showSection('tecnicos', this)">👨‍ Técnicos</a>
-      <a href="#contacto" class="nav-link" onclick="showSection('contacto', this)">📍 Contacto</a>
-      <a href="#footer" class="nav-link" onclick="showSection('footer', this)">📄 Footer</a>
-      <a href="#imei" class="nav-link" onclick="showSection('imei', this)">🔍 IMEI History</a>
-      <a href="#usuarios" class="nav-link" onclick="showSection('usuarios', this)">👥 Usuarios</a>
-      <a href="index.html" target="_blank" class="nav-link">🌐 Ver Sitio</a>
-      <a href="#" class="nav-link" onclick="logout()" style="margin-top:auto;color:#ff4444;">🚪 Cerrar Sesión</a>
-    </nav>
-  </aside>
-
-  <!-- MAIN CONTENT -->
-  <main class="main-content">
-    <header class="top-bar">
-      <button class="menu-toggle" onclick="toggleSidebar()">☰ Menú</button>
-      <h1>Panel de Administración</h1>
-      <div class="user-info">
-        <span id="adminEmail">Cargando...</span>
-      </div>
-    </header>
-
-    <!-- DASHBOARD -->
-    <section id="dashboard" class="section active">
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon">📦</div>
-          <div class="stat-info">
-            <h3>Total Productos</h3>
-            <p id="totalProducts">0</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">👥</div>
-          <div class="stat-info">
-            <h3>Usuarios</h3>
-            <p id="totalUsers">0</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">🔧</div>
-          <div class="stat-info">
-            <h3>Servicios</h3>
-            <p id="totalServices">0</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">🔍</div>
-          <div class="stat-info">
-            <h3>Consultas IMEI</h3>
-            <p id="totalIMEIChecks">0</p>
-          </div>
-        </div>
-      </div>
-      <div class="recent-activity">
-        <h2>📈 Actividad Reciente</h2>
-        <div id="recentActivity" class="activity-list">
-          <p class="loading">Cargando...</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- CARRUSEL -->
-    <section id="hero" class="section">
-      <div class="section-header">
-        <h2>🎠 Carrusel/Hero</h2>
-        <button class="btn btn-primary" onclick="addSlide()">+ Agregar Slide</button>
-      </div>
-      <div id="slidesContainer" class="slides-list">
-        <p class="loading">Cargando...</p>
-      </div>
-    </section>
-
-    <!-- SERVICIOS -->
-    <section id="servicios" class="section">
-      <div class="section-header">
-        <h2>🔧 Servicios</h2>
-        <button class="btn btn-primary" onclick="toggleServiceForm()">+ Nuevo Servicio</button>
-      </div>
+  const productForm = document.getElementById('publishForm');
+  if (productForm) productForm.addEventListener('submit', window.saveProduct);
+  
+  const contactForm = document.getElementById('contactForm');
+  if (contactForm) contactForm.addEventListener('submit', window.saveContact);
+  
+  const postForm = document.getElementById('publishPostForm');
+  if (postForm) postForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    try {
+      await db.collection('technician_posts').add({
+        title: document.getElementById('postTitle').value,
+        description: document.getElementById('postDesc').value,
+        category: document.getElementById('postCategory').value,
+        isPremium: document.getElementById('postIsPremium').value === 'true',
+        imageUrl: document.getElementById('postImage').value || '',
+        videoUrl: document.getElementById('postVideo').value || '',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
       
-      <div id="serviceForm" class="form-container" style="display:none;">
-        <form id="serviceFormEl" class="form">
-          <input type="hidden" id="serviceId">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Icono (emoji)</label>
-              <input type="text" id="serviceIcon" placeholder="ej: 🔧" required>
-            </div>
-            <div class="form-group">
-              <label>Título</label>
-              <input type="text" id="serviceTitle" placeholder="ej: Reparación de Celulares" required>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Descripción</label>
-            <textarea id="serviceDesc" placeholder="Descripción del servicio..." rows="3" required></textarea>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Tiempo estimado</label>
-              <input type="text" id="serviceTime" placeholder="ej: 30 min - 2 hs">
-            </div>
-            <div class="form-group">
-              <label>Precio (opcional)</label>
-              <input type="number" id="servicePrice" placeholder="0">
-            </div>
-          </div>
-          <div class="form-actions">
-            <button type="button" class="btn btn-secondary" onclick="resetServiceForm()">Cancelar</button>
-            <button type="submit" class="btn btn-primary">💾 Guardar</button>
-          </div>
-        </form>
-      </div>
+      alert('✅ Publicado exitosamente');
+      document.getElementById('publishPostForm').reset();
+      document.getElementById('postForm').style.display = 'none';
+      loadPostsAdmin();
       
-      <div class="services-admin-grid" id="adminServicesList">
-        <p class="loading">Cargando...</p>
-      </div>
-    </section>
+    } catch (error) {
+      alert('❌ Error: ' + error.message);
+    }
+  });
+});
 
-    <!-- PRODUCTOS -->
-    <section id="productos" class="section">
-      <div class="section-header">
-        <h2>📦 Productos</h2>
-        <button class="btn btn-primary" onclick="toggleProductForm()">+ Nuevo Producto</button>
+// ========================================
+// NAVEGACIÓN
+// ========================================
+
+function setupNavigation() {
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+      const href = this.getAttribute('href');
+      if (href === '#' || href.includes('admin.html') || href.includes('index.html')) return;
+      e.preventDefault();
+      window.showSection(href.substring(1), this);
+    });
+  });
+}
+
+window.showSection = function(sectionId, btnElement) {
+  document.querySelectorAll('.section').forEach(s => {
+    s.classList.remove('active');
+    s.style.display = 'none';
+  });
+  
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  
+  const target = document.getElementById(sectionId);
+  if (target) {
+    target.classList.add('active');
+    target.style.display = 'block';
+    loadSectionData(sectionId);
+  }
+  
+  if (btnElement) btnElement.classList.add('active');
+};
+
+function loadSectionData(id) {
+  switch(id) {
+    case 'dashboard': loadDashboard(); break;
+    case 'hero': window.loadSlides(); break;
+    case 'servicios': window.loadServices(); break;
+    case 'productos': window.loadAdminProducts(); break;
+    case 'contacto': loadContactInfo(); break;
+    case 'footer': window.loadFooterSettings(); break;
+    case 'imei': window.loadIMEIHistoryAdmin(); break;
+    case 'usuarios': window.loadUsers(); break;
+    case 'posts': window.loadPostsAdmin(); break;
+    case 'tecnicos': window.loadTechniciansAdmin(); break;
+  }
+}
+
+window.toggleSidebar = function() {
+  document.getElementById('sidebar')?.classList.toggle('open');
+};
+
+// ========================================
+// DASHBOARD
+// ========================================
+
+window.loadDashboard = async function() {
+  try {
+    const products = await db.collection('products').get();
+    document.getElementById('totalProducts').textContent = products.size;
+    
+    const users = await db.collection('users').get();
+    document.getElementById('totalUsers').textContent = users.size;
+    
+    const services = await db.collection('services').get();
+    document.getElementById('totalServices').textContent = services.size;
+    
+    try {
+      const imei = await db.collection('imei_history').get();
+      const el = document.getElementById('totalIMEIChecks');
+      if(el) el.textContent = imei.size;
+    } catch(e) {}
+
+    const recent = [];
+    products.docs.slice(-5).forEach(d => {
+      const data = d.data();
+      recent.push({ title: `📦 ${data.title}`, date: data.createdAt?.toDate() || new Date() });
+    });
+    recent.sort((a, b) => b.date - a.date);
+    
+    document.getElementById('recentActivity').innerHTML = recent.map(item => `
+      <div style="padding:10px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;">
+        <span style="color:white;font-size:14px;">${item.title}</span>
+        <span style="color:var(--muted);font-size:12px;">${item.date.toLocaleString('es-AR')}</span>
       </div>
+    `).join('') || '<p style="color:var(--muted);padding:20px;text-align:center;">Sin actividad</p>';
+    
+  } catch (error) { console.error('❌ Dashboard:', error); }
+};
+
+// ========================================
+// CARRUSEL
+// ========================================
+
+window.loadSlides = async function() {
+  try {
+    const container = document.getElementById('slidesContainer');
+    container.innerHTML = '<p class="loading">Cargando...</p>';
+    
+    const snap = await db.collection('hero_slides').orderBy('order', 'asc').get();
+    
+    if (snap.empty) {
+      container.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px;">Sin slides</p>';
+      return;
+    }
+    
+    container.innerHTML = snap.docs.map((doc, i) => {
+      const s = doc.data();
+      return `
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,106,0,0.2);border-radius:12px;padding:15px;margin-bottom:15px;display:flex;gap:15px;align-items:center;">
+          <img src="${s.imageUrl || 'https://via.placeholder.com/100'}" style="width:100px;height:60px;object-fit:cover;border-radius:6px;">
+          <div style="flex:1;">
+            <h4 style="margin:0;color:var(--orange);">${s.title}</h4>
+            <p style="margin:5px 0 0;font-size:13px;color:var(--muted);">${s.subtitle || ''}</p>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="window.editSlide('${doc.id}')" style="background:#2196F3;color:white;border:none;padding:6px 10px;border-radius:4px;cursor:pointer;">✏️</button>
+            <button onclick="window.deleteSlide('${doc.id}')" style="background:#ff4444;color:white;border:none;padding:6px 10px;border-radius:4px;cursor:pointer;">🗑️</button>
+          </div>
+        </div>`;
+    }).join('');
+  } catch (e) { console.error(e); }
+};
+
+window.addSlide = async function() {
+  const title = prompt('Título:');
+  if (!title) return;
+  const subtitle = prompt('Subtítulo:') || '';
+  const imageUrl = prompt('URL Imagen (ImgBB):') || '';
+  
+  try {
+    await db.collection('hero_slides').add({
+      title, subtitle, imageUrl,
+      active: true,
+      order: firebase.firestore.FieldValue.increment(1),
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    alert('✅ Slide agregado');
+    window.loadSlides();
+  } catch (e) { alert('❌ ' + e.message); }
+};
+
+window.editSlide = async function(id) {
+  const doc = await db.collection('hero_slides').doc(id).get();
+  if (!doc.exists) return;
+  const s = doc.data();
+  
+  const title = prompt('Título:', s.title);
+  if (!title) return;
+  const subtitle = prompt('Subtítulo:', s.subtitle) || '';
+  const imageUrl = prompt('URL Imagen:', s.imageUrl) || '';
+  
+  try {
+    await db.collection('hero_slides').doc(id).update({ title, subtitle, imageUrl });
+    alert('✅ Actualizado');
+    window.loadSlides();
+  } catch (e) { alert('❌ ' + e.message); }
+};
+
+window.deleteSlide = async function(id) {
+  if (!confirm('¿Eliminar?')) return;
+  try {
+    await db.collection('hero_slides').doc(id).delete();
+    window.loadSlides();
+  } catch (e) { alert('❌ ' + e.message); }
+};
+
+// ========================================
+// SERVICIOS
+// ========================================
+
+window.toggleServiceForm = function() {
+  const form = document.getElementById('serviceForm');
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  document.getElementById('serviceId').value = '';
+};
+
+window.loadServices = async function() {
+  const list = document.getElementById('adminServicesList');
+  list.innerHTML = '<p class="loading">Cargando...</p>';
+  
+  try {
+    const snap = await db.collection('services').get();
+    if (snap.empty) {
+      list.innerHTML = '<p style="text-align:center;color:var(--muted);">Sin servicios</p>';
+      return;
+    }
+    
+    list.innerHTML = snap.docs.map(doc => {
+      const s = doc.data();
+      return `
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,106,0,0.1);border-radius:10px;padding:15px;margin-bottom:10px;display:flex;align-items:center;gap:15px;">
+          <span style="font-size:2rem;">${s.icon || '🔧'}</span>
+          <div style="flex:1;">
+            <h4 style="margin:0;color:var(--orange);">${s.title}</h4>
+            <p style="margin:5px 0 0;font-size:13px;color:var(--muted);">${s.description || ''}</p>
+            <p style="margin:5px 0 0;font-size:12px;color:var(--muted);">⏱️ ${s.time || 'N/A'} • 💰 ${s.price ? '$'+s.price : 'Consultar'}</p>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="window.editService('${doc.id}')" style="background:#2196F3;color:white;border:none;padding:6px 10px;border-radius:4px;cursor:pointer;">✏️</button>
+            <button onclick="window.deleteService('${doc.id}')" style="background:#ff4444;color:white;border:none;padding:6px 10px;border-radius:4px;cursor:pointer;">🗑️</button>
+          </div>
+        </div>`;
+    }).join('');
+  } catch (e) { console.error(e); }
+};
+
+window.saveService = async function(e) {
+  if (e) e.preventDefault();
+  
+  const id = document.getElementById('serviceId').value;
+  const icon = document.getElementById('serviceIcon').value;
+  const title = document.getElementById('serviceTitle').value;
+  const desc = document.getElementById('serviceDesc').value;
+  const time = document.getElementById('serviceTime').value;
+  const price = document.getElementById('servicePrice').value;
+  
+  if (!title) { alert('⚠️ Título obligatorio'); return; }
+  
+  const data = { 
+    icon, 
+    title, 
+    description: desc,
+    time: time || '',
+    price: price ? parseFloat(price) : 0,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp() 
+  };
+  
+  try {
+    if (id) {
+      await db.collection('services').doc(id).update(data);
+      alert('✅ Actualizado');
+    } else {
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection('services').add(data);
+      alert('✅ Agregado');
+    }
+    window.resetServiceForm();
+    window.loadServices();
+  } catch (err) { alert('❌ ' + err.message); }
+};
+
+window.editService = async function(id) {
+  const doc = await db.collection('services').doc(id).get();
+  if (!doc.exists) return;
+  const s = doc.data();
+  
+  document.getElementById('serviceId').value = id;
+  document.getElementById('serviceIcon').value = s.icon || '';
+  document.getElementById('serviceTitle').value = s.title || '';
+  document.getElementById('serviceDesc').value = s.description || '';
+  document.getElementById('serviceTime').value = s.time || '';
+  document.getElementById('servicePrice').value = s.price || '';
+  document.getElementById('serviceForm').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+window.deleteService = async function(id) {
+  if (!confirm('¿Eliminar?')) return;
+  try {
+    await db.collection('services').doc(id).delete();
+    window.loadServices();
+  } catch (e) { alert('❌ ' + e.message); }
+};
+
+window.resetServiceForm = function() {
+  document.getElementById('serviceFormEl').reset();
+  document.getElementById('serviceId').value = '';
+  document.getElementById('serviceForm').style.display = 'none';
+};
+// ========================================
+// PRODUCTOS - CON TODOS LOS CAMPOS NUEVOS
+// ========================================
+
+window.toggleProductForm = function() {
+  const form = document.getElementById('productForm');
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  if (form.style.display === 'block') {
+    window.resetProductForm();
+  }
+};
+
+window.resetProductForm = function() {
+  document.getElementById('publishForm').reset();
+  document.getElementById('prodId').value = '';
+  document.getElementById('imagePreview').style.display = 'none';
+  document.getElementById('uploadPlaceholder').style.display = 'block';
+  document.getElementById('uploadProgress').classList.remove('show');
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('uploadStatus').textContent = '';
+  currentImageURL = '';
+};
+
+// SUBIDA DE IMAGEN CON IMGBB
+const imageInput = document.getElementById('prodImage');
+if (imageInput) {
+  imageInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) window.uploadImage(file);
+  });
+}
+
+window.uploadImage = async function(file) {
+  if (!file.type.startsWith('image/')) {
+    alert('❌ Solo se permiten imágenes');
+    return;
+  }
+  
+  if (file.size > 32 * 1024 * 1024) {
+    alert('❌ La imagen no puede superar 32MB');
+    return;
+  }
+  
+  document.getElementById('uploadProgress').classList.add('show');
+  document.getElementById('uploadStatus').textContent = '📤 Subiendo a ImgBB...';
+  
+  try {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+      method: 'POST',
+      body: formData
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      currentImageURL = data.data.url;
       
-      <div id="productForm" class="form-container" style="display:none;">
-        <form id="publishForm" class="form">
-          <input type="hidden" id="prodId">
-          
-          <!-- Información Básica -->
-          <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;margin-bottom:20px;">
-            <h3 style="color:var(--orange);margin:0 0 15px;font-size:1.1rem;">📋 Información Básica</h3>
-            <div class="form-group" style="margin-bottom:15px;">
-              <label>Nombre del Producto *</label>
-              <input type="text" id="prodName" placeholder="Ej: iPhone 13 Pro 128GB" required>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Categoría *</label>
-                <select id="prodCategory" required>
-                  <option value="Celulares">Celulares</option>
-                  <option value="Accesorios">Accesorios</option>
-                  <option value="PC/Laptop">PC / Laptop</option>
-                  <option value="Consolas">Consolas</option>
-                  <option value="Servicios">Servicios</option>
-                  <option value="Estaciones de Soldado">Estaciones de Soldado</option>
-                  <option value="Herramientas">Herramientas</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Marca</label>
-                <input type="text" id="prodBrand" placeholder="Ej: Apple, Samsung, Quick">
-              </div>
-              <div class="form-group">
-                <label>SKU</label>
-                <input type="text" id="prodSku" placeholder="Código único">
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Descripción Completa</label>
-              <textarea id="prodDesc" rows="4" placeholder="Descripción detallada, características, especificaciones..."></textarea>
-            </div>
-          </div>
-          
-          <!-- Precios -->
-          <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;margin-bottom:20px;">
-            <h3 style="color:var(--orange);margin:0 0 15px;font-size:1.1rem;">💰 Precios</h3>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Precio Lista $</label>
-                <input type="number" id="prodPriceList" placeholder="0.00" min="0" step="0.01">
-                <small style="color:var(--muted);display:block;margin-top:5px;">Precio original/tachado</small>
-              </div>
-              <div class="form-group">
-                <label>Precio Transferencia $ *</label>
-                <input type="number" id="prodPriceTransfer" placeholder="0.00" min="0" step="0.01" required>
-                <small style="color:var(--muted);display:block;margin-top:5px;">Precio final con transferencia</small>
-              </div>
-              <div class="form-group">
-                <label>Precio Normal $</label>
-                <input type="number" id="prodPrice" placeholder="0.00" min="0" step="0.01">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Cuotas</label>
-                <input type="text" id="prodInstallments" placeholder="Ej: 3 cuotas fijas de $250.297,50">
-              </div>
-              <div class="form-group">
-                <label>Garantía</label>
-                <input type="text" id="prodWarranty" placeholder="Ej: 6 meses de garantía">
-              </div>
-            </div>
-          </div>
-          
-          <!-- Imagen -->
-          <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;margin-bottom:20px;">
-            <h3 style="color:var(--orange);margin:0 0 15px;font-size:1.1rem;">🖼️ Imagen</h3>
-            <div class="form-group">
-              <div class="upload-area" id="uploadArea">
-                <input type="file" id="prodImage" accept="image/*">
-                <img id="imagePreview" class="preview-img">
-                <div id="uploadPlaceholder">
-                  <p>📸 Click o arrastra una imagen</p>
-                  <span>Máx 5MB • JPG/PNG</span>
-                </div>
-                <div class="progress" id="uploadProgress">
-                  <div class="progress-fill" id="progressFill"></div>
-                </div>
-                <p id="uploadStatus" class="upload-status"></p>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Inventario -->
-          <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;margin-bottom:20px;">
-            <h3 style="color:var(--orange);margin:0 0 15px;font-size:1.1rem;">📦 Inventario</h3>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Stock Disponible</label>
-                <input type="number" id="prodStockQuantity" placeholder="0" min="0">
-              </div>
-              <div class="form-group">
-                <label class="checkbox-label" style="margin-top:30px;">
-                  <input type="checkbox" id="prodStock" checked>
-                  <span>Producto en stock (disponible)</span>
-                </label>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Botones -->
-          <div class="form-actions">
-            <button type="button" class="btn btn-secondary" onclick="resetProductForm()">Cancelar</button>
-            <button type="submit" class="btn btn-primary" id="saveBtn">💾 Guardar Producto</button>
-          </div>
-        </form>
-      </div>
+      document.getElementById('imagePreview').src = currentImageURL;
+      document.getElementById('imagePreview').style.display = 'block';
+      document.getElementById('uploadPlaceholder').style.display = 'none';
+      document.getElementById('uploadStatus').textContent = '✅ Lista';
+      document.getElementById('uploadProgress').classList.remove('show');
       
-      <div class="products-admin-grid" id="adminProductsList">
-        <p class="loading">Cargando...</p>
-      </div>
-    </section>
+      console.log('✅ Imagen subida:', currentImageURL);
+    } else {
+      throw new Error('Error en ImgBB');
+    }
+    
+  } catch (error) {
+    console.error('❌ Error:', error);
+    document.getElementById('uploadStatus').textContent = '❌ Error';
+    alert('❌ Error al subir: ' + error.message);
+  }
+};
 
-    <!-- PUBLICACIONES (ZONA TÉCNICOS) -->
-    <section id="posts" class="section">
-      <div class="section-header">
-        <h2>📢 Publicar Contenido Técnico</h2>
-        <button class="btn btn-primary" onclick="togglePostForm()">+ Nueva Publicación</button>
-      </div>
+// GUARDAR PRODUCTO CON TODOS LOS CAMPOS
+window.saveProduct = async function(e) {
+  if (e) e.preventDefault();
+  
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+  
+  const id = document.getElementById('prodId').value;
+  
+  const data = {
+    title: document.getElementById('prodName').value,
+    category: document.getElementById('prodCategory').value,
+    brand: document.getElementById('prodBrand')?.value || '',
+    sku: document.getElementById('prodSku')?.value || '',
+    description: document.getElementById('prodDesc').value || '',
+    priceList: parseFloat(document.getElementById('prodPriceList')?.value) || 0,
+    priceTransfer: parseFloat(document.getElementById('prodPriceTransfer')?.value) || 0,
+    price: parseFloat(document.getElementById('prodPrice')?.value) || 0,
+    installments: document.getElementById('prodInstallments')?.value || '',
+    warranty: document.getElementById('prodWarranty')?.value || '',
+    imageUrl: currentImageURL || '',
+    inStock: document.getElementById('prodStock').checked,
+    stock: parseInt(document.getElementById('prodStockQuantity')?.value) || 0,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  
+  try {
+    if (id) {
+      await db.collection('products').doc(id).update(data);
+      alert('✅ Producto actualizado correctamente');
+    } else {
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection('products').add(data);
+      alert('✅ Producto agregado correctamente');
+    }
+    window.resetProductForm();
+    window.loadAdminProducts();
+    document.getElementById('productForm').style.display = 'none';
+  } catch (error) {
+    console.error('❌ Error:', error);
+    alert('❌ Error al guardar: ' + error.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Guardar';
+  }
+};
+
+// CARGAR PRODUCTOS
+window.loadAdminProducts = async function() {
+  const list = document.getElementById('adminProductsList');
+  list.innerHTML = '<p class="loading">Cargando...</p>';
+  
+  try {
+    const snap = await db.collection('products').orderBy('createdAt', 'desc').get();
+    
+    if (snap.empty) {
+      list.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px;">Sin productos</p>';
+      return;
+    }
+    
+    list.innerHTML = snap.docs.map(doc => {
+      const p = doc.data();
+      const stockText = p.inStock ? `✓ Stock: ${p.stock || 0}` : '✗ Sin stock';
+      const stockColor = p.inStock ? '#4CAF50' : '#ff4444';
       
-      <div id="postForm" class="form-container" style="display:none;">
-        <form id="publishPostForm" class="form">
-          <div class="form-group">
-            <label>Título</label>
-            <input type="text" id="postTitle" required>
+      return `
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,106,0,0.1);border-radius:12px;padding:20px;margin-bottom:15px;display:flex;gap:15px;align-items:center;">
+          <img src="${p.imageUrl || 'https://via.placeholder.com/80'}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;">
+          <div style="flex:1;">
+            <h4 style="margin:0;color:white;">${p.title}</h4>
+            <p style="margin:5px 0 0;color:var(--muted);font-size:0.9rem;">${p.brand || ''} ${p.category ? '• ' + p.category : ''}</p>
+            <p style="margin:5px 0 0;color:var(--orange);font-weight:700;">$${Number(p.priceTransfer || p.price).toLocaleString('es-AR')}</p>
+            <p style="margin:5px 0 0;font-size:0.85rem;color:${stockColor};">${stockText}</p>
           </div>
-          <div class="form-group">
-            <label>Descripción / Contenido</label>
-            <textarea id="postDesc" rows="4" required></textarea>
+          <div style="display:flex;gap:8px;">
+            <button onclick="window.editProduct('${doc.id}')" style="background:#2196F3;color:white;border:none;padding:8px;border-radius:6px;cursor:pointer;">✏️</button>
+            <button onclick="window.deleteProduct('${doc.id}')" style="background:#ff4444;color:white;border:none;padding:8px;border-radius:6px;cursor:pointer;">🗑️</button>
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Categoría</label>
-              <select id="postCategory">
-                <option value="Hardware">Hardware</option>
-                <option value="Software">Software</option>
-                <option value="Reparación">Reparación</option>
-                <option value="Consejos">Consejos</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>¿Es contenido Premium?</label>
-              <select id="postIsPremium">
-                <option value="false">No (Gratis)</option>
-                <option value="true">Sí (👑 Premium)</option>
-              </select>
-            </div>
+        </div>
+      `;
+    }).join('');
+  } catch (error) {
+    console.error('❌ Error cargando productos:', error);
+    list.innerHTML = '<p style="color:#ff4444;text-align:center;padding:20px;">Error al cargar productos</p>';
+  }
+};
+
+// EDITAR PRODUCTO
+window.editProduct = async function(id) {
+  const doc = await db.collection('products').doc(id).get();
+  if (!doc.exists) {
+    alert('❌ Producto no encontrado');
+    return;
+  }
+  
+  const p = doc.data();
+  
+  document.getElementById('prodId').value = id;
+  document.getElementById('prodName').value = p.title || '';
+  document.getElementById('prodCategory').value = p.category || '';
+  document.getElementById('prodBrand').value = p.brand || '';
+  document.getElementById('prodSku').value = p.sku || '';
+  document.getElementById('prodDesc').value = p.description || '';
+  document.getElementById('prodPriceList').value = p.priceList || '';
+  document.getElementById('prodPriceTransfer').value = p.priceTransfer || '';
+  document.getElementById('prodPrice').value = p.price || '';
+  document.getElementById('prodInstallments').value = p.installments || '';
+  document.getElementById('prodWarranty').value = p.warranty || '';
+  document.getElementById('prodStockQuantity').value = p.stock || 0;
+  document.getElementById('prodStock').checked = p.inStock !== false;
+  
+  if (p.imageUrl) {
+    currentImageURL = p.imageUrl;
+    document.getElementById('imagePreview').src = p.imageUrl;
+    document.getElementById('imagePreview').style.display = 'block';
+    document.getElementById('uploadPlaceholder').style.display = 'none';
+  }
+  
+  document.getElementById('productForm').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+// ELIMINAR PRODUCTO
+window.deleteProduct = async function(id) {
+  if (!confirm('¿Estás seguro de eliminar este producto?')) return;
+  try {
+    await db.collection('products').doc(id).delete();
+    alert('✅ Producto eliminado');
+    window.loadAdminProducts();
+  } catch (e) {
+    alert('❌ Error: ' + e.message);
+  }
+};
+
+// ========================================
+// GESTIÓN DE TÉCNICOS Y PUBLICACIONES
+// ========================================
+
+// --- PUBLICACIONES ---
+
+window.togglePostForm = function() {
+  const form = document.getElementById('postForm');
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+};
+
+window.loadPostsAdmin = async function() {
+  const list = document.getElementById('postsList');
+  if (!list) return;
+  
+  try {
+    const snap = await db.collection('technician_posts').orderBy('createdAt', 'desc').get();
+    
+    if (snap.empty) {
+      list.innerHTML = '<p style="text-align:center;color:var(--muted)">Sin publicaciones</p>';
+      return;
+    }
+    
+    list.innerHTML = snap.docs.map(doc => {
+      const p = doc.data();
+      return `
+        <div style="background:rgba(255,255,255,0.03);padding:15px;border-radius:10px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <h4 style="margin:0;color:var(--orange);">${p.title}</h4>
+            <small style="color:var(--muted)">${p.category} • ${p.isPremium ? '👑 Premium' : 'Gratis'}</small>
           </div>
-          <div class="form-group">
-            <label>URL de Imagen (ImgBB)</label>
-            <input type="text" id="postImage" placeholder="Pegá el link de la imagen aquí">
-          </div>
-          <div class="form-group">
-            <label>URL de Video (Opcional)</label>
-            <input type="text" id="postVideo" placeholder="Link de YouTube o similar">
-          </div>
-          <div class="form-actions">
-            <button type="button" class="btn btn-secondary" onclick="document.getElementById('postForm').style.display='none'">Cancelar</button>
-            <button type="submit" class="btn btn-primary">💾 Publicar</button>
-          </div>
-        </form>
-      </div>
+          <button onclick="window.deletePost('${doc.id}')" style="background:#ff4444;color:white;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;">🗑️</button>
+        </div>
+      `;
+    }).join('');
+    
+  } catch (error) { console.error(error); }
+};
+
+window.deletePost = async function(id) {
+  if (confirm('¿Eliminar esta publicación?')) {
+    await db.collection('technician_posts').doc(id).delete();
+    loadPostsAdmin();
+  }
+};
+
+// --- TÉCNICOS ---
+
+window.loadTechniciansAdmin = async function() {
+  const tb = document.getElementById('techniciansTable');
+  if (!tb) return;
+  
+  tb.innerHTML = '<tr><td colspan="5" class="loading">Cargando...</td></tr>';
+  
+  try {
+    const snap = await db.collection('technicians').get();
+    
+    if (snap.empty) {
+      tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted)">Sin técnicos registrados</td></tr>';
+      return;
+    }
+    
+    tb.innerHTML = snap.docs.map(doc => {
+      const t = doc.data();
+      const isPrem = t.isPremium;
+      return `
+        <tr>
+          <td>${t.name}</td>
+          <td>${t.email}</td>
+          <td>${t.specialty}</td>
+          <td>
+            <span style="color:${isPrem ? 'var(--gold)' : 'var(--muted)'}; font-weight:bold;">
+              ${isPrem ? '👑 PREMIUM' : 'Básico'}
+            </span>
+          </td>
+          <td>
+            <button onclick="window.toggleTechPremium('${doc.id}', ${!isPrem})" 
+                    style="background:${isPrem ? '#ff4444' : 'var(--gold)'};color:${isPrem ? 'white' : 'black'};border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-weight:bold;">
+              ${isPrem ? 'Quitar Premium' : 'Dar Premium'}
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+    
+  } catch (error) { console.error(error); }
+};
+
+window.toggleTechPremium = async function(docId, makePremium) {
+  const action = makePremium ? 'dar Premium' : 'quitar Premium';
+  if (!confirm(`¿Seguro que querés ${action} a este técnico?`)) return;
+  
+  try {
+    await db.collection('technicians').doc(docId).update({
+      isPremium: makePremium
+    });
+    alert(`✅ Técnico actualizado a ${makePremium ? 'Premium' : 'Básico'}`);
+    loadTechniciansAdmin();
+  } catch (error) {
+    alert('❌ Error: ' + error.message);
+  }
+};
+
+// ========================================
+// CONTACTO
+// ========================================
+
+async function loadContactInfo() {
+  try {
+    const doc = await db.collection('site_config').doc('contact').get();
+    if (doc.exists) {
+      const c = doc.data();
+      document.getElementById('contactAddress').value = c.address || '';
+      document.getElementById('contactPhone').value = c.phone || '';
+      document.getElementById('contactHours').value = c.hours || '';
+      document.getElementById('contactEmail').value = c.email || '';
+    }
+  } catch (e) { console.error(e); }
+}
+
+window.saveContact = async function(e) {
+  if (e) e.preventDefault();
+  
+  try {
+    await db.collection('site_config').doc('contact').set({
+      address: document.getElementById('contactAddress').value,
+      phone: document.getElementById('contactPhone').value,
+      hours: document.getElementById('contactHours').value,
+      email: document.getElementById('contactEmail').value,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    alert('✅ Contacto guardado');
+  } catch (err) { alert('❌ ' + err.message); }
+};
+
+// ========================================
+// FOOTER
+// ========================================
+
+window.saveFooterSettings = async function() {
+  try {
+    const servicesText = document.getElementById('footerServicesList')?.value || '';
+    const storeText = document.getElementById('footerStoreList')?.value || '';
+    
+    await db.collection('site_config').doc('footer').set({
+      description: document.getElementById('footerDesc')?.value || '',
+      social: {
+        facebook: document.getElementById('socialFacebook')?.value || '',
+        instagram: document.getElementById('socialInstagram')?.value || '',
+        tiktok: document.getElementById('socialTiktok')?.value || '',
+        telegram: document.getElementById('socialTelegram')?.value || ''
+      },
+      services: servicesText.split(',').map(s => s.trim()).filter(s => s),
+      store: storeText.split(',').map(s => s.trim()).filter(s => s),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    alert('✅ Footer guardado');
+  } catch (e) { alert('❌ ' + e.message); }
+};
+
+window.loadFooterSettings = async function() {
+  try {
+    const doc = await db.collection('site_config').doc('footer').get();
+    if (doc.exists) {
+      const d = doc.data();
+      const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val || ''; };
       
-      <div id="postsList" class="slides-list">
-        <p class="loading">Cargando publicaciones...</p>
-      </div>
-    </section>
+      setVal('footerDesc', d.description);
+      if(d.social) {
+        setVal('socialFacebook', d.social.facebook);
+        setVal('socialInstagram', d.social.instagram);
+        setVal('socialTiktok', d.social.tiktok);
+        setVal('socialTelegram', d.social.telegram);
+      }
+      setVal('footerServicesList', d.services?.join(', '));
+      setVal('footerStoreList', d.store?.join(', '));
+    }
+  } catch (e) { console.error(e); }
+};
 
-    <!-- GESTIÓN DE TÉCNICOS -->
-    <section id="tecnicos" class="section">
-      <div class="section-header">
-        <h2>👨‍ Gestión de Técnicos</h2>
-        <button class="btn btn-primary" onclick="loadTechniciansAdmin()">🔄 Actualizar</button>
-      </div>
-      
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Email</th>
-              <th>Especialidad</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="techniciansTable">
-            <tr><td colspan="5" class="loading">Cargando...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+// ========================================
+// USUARIOS
+// ========================================
 
-    <!-- CONTACTO -->
-    <section id="contacto" class="section">
-      <h2>📍 Información de Contacto</h2>
-      <div class="form-container">
-        <form id="contactForm" class="form">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Dirección</label>
-              <input type="text" id="contactAddress" placeholder="Saladas, Corrientes">
-            </div>
-            <div class="form-group">
-              <label>WhatsApp</label>
-              <input type="text" id="contactPhone" placeholder="3782-437674">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Horario</label>
-              <input type="text" id="contactHours" placeholder="Lunes a Sábados 9:00 - 20:00">
-            </div>
-            <div class="form-group">
-              <label>Email</label>
-              <input type="email" id="contactEmail" placeholder="info@cellspace.com">
-            </div>
-          </div>
-          <div class="form-actions">
-            <button type="button" onclick="window.saveContact(event)" class="btn btn-primary">💾 Guardar Cambios</button>
-          </div>
-        </form>
-      </div>
-    </section>
+window.loadUsers = async function() {
+  const tb = document.getElementById('usersTable');
+  tb.innerHTML = '<tr><td colspan="4" class="loading">Cargando...</td></tr>';
+  
+  try {
+    const snap = await db.collection('users').orderBy('createdAt', 'desc').get();
+    if (snap.empty) {
+      tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted)">Sin usuarios</td></tr>';
+      return;
+    }
+    
+    tb.innerHTML = snap.docs.map(d => {
+      const u = d.data();
+      return `<tr>
+        <td>${u.name || '-'}</td>
+        <td>${u.email}</td>
+        <td>${u.createdAt?.toDate().toLocaleDateString('es-AR') || 'Reciente'}</td>
+        <td><span style="color:#4CAF50">Activo</span></td>
+      </tr>`;
+    }).join('');
+  } catch (e) { console.error(e); }
+};
 
-    <!-- FOOTER -->
-    <section id="footer" class="section">
-      <h2>📄 Configuración del Footer</h2>
-      
-      <div class="form-container">
-        <h3>Descripción del Negocio</h3>
-        <div class="form-group">
-          <textarea id="footerDesc" rows="3" placeholder="Descripción que aparece en el footer"></textarea>
-        </div>
-      </div>
+// ========================================
+// IMEI HISTORY
+// ========================================
 
-      <div class="form-container">
-        <h3>🔗 Redes Sociales</h3>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Facebook URL</label>
-            <input type="text" id="socialFacebook" placeholder="https://facebook.com/tu pagina">
-          </div>
-          <div class="form-group">
-            <label>Instagram URL</label>
-            <input type="text" id="socialInstagram" placeholder="https://instagram.com/tu pagina">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>TikTok URL</label>
-            <input type="text" id="socialTiktok" placeholder="https://tiktok.com/@tu usuario">
-          </div>
-          <div class="form-group">
-            <label>Telegram URL</label>
-            <input type="text" id="socialTelegram" placeholder="https://t.me/tu usuario">
-          </div>
-        </div>
-      </div>
+window.loadIMEIHistoryAdmin = async function() {
+  const tb = document.getElementById('imeiHistoryTable');
+  tb.innerHTML = '<tr><td colspan="8" class="loading">Cargando...</td></tr>';
+  
+  try {
+    const snap = await db.collection('imei_history').orderBy('timestamp', 'desc').limit(50).get();
+    if (snap.empty) {
+      tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted)">Sin consultas</td></tr>';
+      return;
+    }
+    
+    tb.innerHTML = snap.docs.map(d => {
+      const h = d.data();
+      const date = h.timestamp?.toDate().toLocaleString('es-AR');
+      const r = h.result || {};
+      return `<tr>
+        <td>${date}</td>
+        <td><strong>${h.imei}</strong></td>
+        <td>${h.searchType || 'IMEI'}</td>
+        <td>${r.brand || '-'}</td>
+        <td>${r.model || '-'}</td>
+        <td><span style="color:${r.blacklist==='Clean'?'#4CAF50':'#ff4444'}">${r.blacklist || '-'}</span></td>
+        <td>${h.userEmail?.split('@')[0] || '-'}</td>
+        <td><button onclick="window.viewIMEIDetails('${d.id}')" style="background:#2196F3;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">👁️</button></td>
+      </tr>`;
+    }).join('');
+  } catch (e) { console.error(e); }
+};
 
-      <div class="form-container">
-        <h3>📋 Servicios del Footer</h3>
-        <p style="color:var(--muted);font-size:13px;margin-bottom:15px;">Separá los servicios por comas (,)</p>
-        <div class="form-group">
-          <textarea id="footerServicesList" rows="3" placeholder="Reparación de pantallas, Cambio de batería, Recuperación de datos..."></textarea>
-        </div>
-      </div>
+window.viewIMEIDetails = async function(id) {
+  try {
+    const doc = await db.collection('imei_history').doc(id).get();
+    if (!doc.exists) return alert('No encontrado');
+    const h = doc.data();
+    const r = h.result || {};
+    alert(`
+📋 DETALLES IMEI
+IMEI: ${h.imei}
+Marca: ${r.brand || '-'}
+Modelo: ${r.model || '-'}
+Estado: ${r.blacklist || '-'}
+Fecha: ${h.timestamp?.toDate().toLocaleString('es-AR')}
+    `);
+  } catch (e) { alert('Error: ' + e.message); }
+};
 
-      <div class="form-container">
-        <h3>🛍️ Categorías de Tienda</h3>
-        <p style="color:var(--muted);font-size:13px;margin-bottom:15px;">Separá las categorías por comas (,)</p>
-        <div class="form-group">
-          <textarea id="footerStoreList" rows="3" placeholder="Celulares, Accesorios, Auriculares, Gaming, Repuestos..."></textarea>
-        </div>
-      </div>
+// ========================================
+// UTILIDADES
+// ========================================
 
-      <div class="form-actions">
-        <button type="button" onclick="window.saveFooterSettings()" class="btn btn-primary">💾 Guardar Footer</button>
-      </div>
-    </section>
+window.logout = function() {
+  if (confirm('¿Cerrar sesión?')) {
+    firebase.auth().signOut().then(() => window.location.href = 'login.html');
+  }
+};
 
-    <!-- IMEI HISTORY -->
-    <section id="imei" class="section">
-      <div class="section-header">
-        <h2>🔍 Historial de Consultas IMEI</h2>
-        <button class="btn btn-primary" onclick="loadIMEIHistoryAdmin()">🔄 Actualizar</button>
-      </div>
-      
-      <div class="stats-grid" style="margin-bottom:30px;">
-        <div class="stat-card">
-          <div class="stat-icon">🔍</div>
-          <div class="stat-info">
-            <h3>Total Consultas</h3>
-            <p id="totalChecks">0</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">✅</div>
-          <div class="stat-info">
-            <h3>IMEI Clean</h3>
-            <p id="cleanChecks">0</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">⚠️</div>
-          <div class="stat-info">
-            <h3>IMEI Blacklist</h3>
-            <p id="blacklistChecks">0</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>IMEI/Serial</th>
-              <th>Tipo</th>
-              <th>Marca</th>
-              <th>Modelo</th>
-              <th>Estado</th>
-              <th>Usuario</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="imeiHistoryTable">
-            <tr><td colspan="8" class="loading">Cargando...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- USUARIOS -->
-    <section id="usuarios" class="section">
-      <h2>👥 Usuarios Registrados</h2>
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Email</th>
-              <th>Fecha Registro</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody id="usersTable">
-            <tr><td colspan="4" class="loading">Cargando...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </main>
-
-  <script src="js/config.js"></script>
-  <script src="js/admin.js"></script>
-</body>
-</html>
+console.log('✅ admin.js cargado correctamente');
