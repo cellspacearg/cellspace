@@ -1,6 +1,5 @@
 // ========================================
-// CELL SPACE - ZONA TÉCNICA
-// Lógica de permisos y contenido
+// CELL SPACE - ZONA TÉCNICA (Modificado para Admin)
 // ========================================
 
 let isPremiumUser = false;
@@ -12,7 +11,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (user) {
       currentUserDocId = user.email.split('@')[0];
       
-      // Verificar si es técnico y su estado
+      // 🚀 VERIFICACIÓN ESPECIAL PARA ADMIN
+      if (user.email === 'nahuel0123encinas@gmail.com') {
+        console.log('✅ Acceso Admin Detectado: Super Usuario');
+        isPremiumUser = true; // El admin ve TODO (Premium incluido)
+        
+        document.getElementById('techName').textContent = 'ADMIN (Nahuel)';
+        document.getElementById('premiumBadge').style.display = 'inline-block'; // Mostrar corona
+        document.body.classList.add('is-premium');
+        
+        loadContent(); // Cargar todo el contenido
+        setupTabs();
+        return; // Salir de la función, no hace falta buscar en la colección
+      }
+
+      // Lógica normal para técnicos registrados
       try {
         const doc = await db.collection('technicians').doc(currentUserDocId).get();
         
@@ -43,17 +56,13 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// Cargar contenido
+// Cargar contenido (Gratis o Premium según permisos)
 async function loadContent(filter = 'all') {
   const grid = document.getElementById('contentGrid');
   grid.innerHTML = '<p class="loading">Cargando contenido...</p>';
   
   try {
     let query = db.collection('technician_posts');
-    
-    // Si el filtro es 'free', buscamos solo no premium
-    // Si es 'premium', buscamos solo premium (pero si el usuario no es premium, no debe verlos o verlos bloqueados)
-    // Mejor traemos todo y filtramos en JS para manejo de UI
     
     const snap = await query.orderBy('createdAt', 'desc').get();
     
@@ -67,11 +76,11 @@ async function loadContent(filter = 'all') {
     snap.forEach(doc => {
       const post = doc.data();
       
-      // Filtros
+      // Filtros de pestañas
       if (filter === 'free' && post.isPremium) return;
       if (filter === 'premium' && !post.isPremium) return;
       
-      // Renderizado
+      // Si es premium y NO sos premium (ni admin), está bloqueado
       const isLocked = post.isPremium && !isPremiumUser;
       
       html += `
@@ -114,7 +123,7 @@ async function loadContent(filter = 'all') {
   }
 }
 
-// Tabs
+// Pestañas (Todo / Gratis / Premium)
 function setupTabs() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', function() {
