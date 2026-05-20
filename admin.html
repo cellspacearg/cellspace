@@ -135,72 +135,133 @@
       </div>
     </section>
 
-    <!-- PRODUCTOS -->
-    <section id="productos" class="section">
-      <div class="section-header">
-        <h2>📦 Productos</h2>
-        <button class="btn btn-primary" onclick="toggleProductForm()">+ Nuevo Producto</button>
+<!-- PRODUCTOS -->
+<section id="productos" class="section">
+  <div class="section-header">
+    <h2>📦 Productos</h2>
+    <button class="btn btn-primary" onclick="toggleProductForm()">+ Nuevo Producto</button>
+  </div>
+  
+  <!-- FORMULARIO MEJORADO -->
+  <div id="productForm" class="form-container" style="display:none;">
+    <form id="publishForm" class="form">
+      <input type="hidden" id="prodId">
+      
+      <!-- Información Básica -->
+      <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;margin-bottom:20px;">
+        <h3 style="color:var(--orange);margin:0 0 15px;font-size:1.1rem;">📋 Información Básica</h3>
+        <div class="form-group" style="margin-bottom:15px;">
+          <label>Nombre del Producto *</label>
+          <input type="text" id="prodName" placeholder="Ej: iPhone 13 Pro 128GB" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Categoría *</label>
+            <select id="prodCategory" required>
+              <option value="Celulares">Celulares</option>
+              <option value="Accesorios">Accesorios</option>
+              <option value="PC/Laptop">PC / Laptop</option>
+              <option value="Consolas">Consolas</option>
+              <option value="Servicios">Servicios</option>
+              <option value="Estaciones de Soldado">Estaciones de Soldado</option>
+              <option value="Herramientas">Herramientas</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Marca</label>
+            <input type="text" id="prodBrand" placeholder="Ej: Apple, Samsung, Quick">
+          </div>
+          <div class="form-group">
+            <label>SKU</label>
+            <input type="text" id="prodSku" placeholder="Código único">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Descripción Completa</label>
+          <textarea id="prodDesc" rows="4" placeholder="Descripción detallada, características, especificaciones..."></textarea>
+        </div>
       </div>
       
-      <div id="productForm" class="form-container" style="display:none;">
-        <form id="publishForm" class="form">
-          <input type="hidden" id="prodId">
+      <!-- Precios -->
+      <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;margin-bottom:20px;">
+        <h3 style="color:var(--orange);margin:0 0 15px;font-size:1.1rem;">💰 Precios</h3>
+        <div class="form-row">
           <div class="form-group">
-            <label>Nombre del Producto</label>
-            <input type="text" id="prodName" placeholder="ej: iPhone 13 128GB" required>
+            <label>Precio Lista $</label>
+            <input type="number" id="prodPriceList" placeholder="0.00" min="0" step="0.01">
+            <small style="color:var(--muted);display:block;margin-top:5px;">Precio original/tachado</small>
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Precio ($)</label>
-              <input type="number" id="prodPrice" placeholder="0" min="0" required>
+          <div class="form-group">
+            <label>Precio Transferencia $ *</label>
+            <input type="number" id="prodPriceTransfer" placeholder="0.00" min="0" step="0.01" required>
+            <small style="color:var(--muted);display:block;margin-top:5px;">Precio final con transferencia</small>
+          </div>
+          <div class="form-group">
+            <label>Precio Normal $</label>
+            <input type="number" id="prodPrice" placeholder="0.00" min="0" step="0.01">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Cuotas</label>
+            <input type="text" id="prodInstallments" placeholder="Ej: 3 cuotas fijas de $250.297,50">
+          </div>
+          <div class="form-group">
+            <label>Garantía</label>
+            <input type="text" id="prodWarranty" placeholder="Ej: 6 meses de garantía">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Imagen -->
+      <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;margin-bottom:20px;">
+        <h3 style="color:var(--orange);margin:0 0 15px;font-size:1.1rem;">🖼️ Imagen</h3>
+        <div class="form-group">
+          <div class="upload-area" id="uploadArea">
+            <input type="file" id="prodImage" accept="image/*">
+            <img id="imagePreview" class="preview-img">
+            <div id="uploadPlaceholder">
+              <p>📸 Click o arrastra una imagen</p>
+              <span>Máx 5MB • JPG/PNG</span>
             </div>
-            <div class="form-group">
-              <label>Categoría</label>
-              <select id="prodCategory">
-                <option value="Celulares">Celulares</option>
-                <option value="Accesorios">Accesorios</option>
-                <option value="PC/Laptop">PC / Laptop</option>
-                <option value="Consolas">Consolas</option>
-                <option value="Servicios">Servicios</option>
-              </select>
+            <div class="progress" id="uploadProgress">
+              <div class="progress-fill" id="progressFill"></div>
             </div>
+            <p id="uploadStatus" class="upload-status"></p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Inventario -->
+      <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;margin-bottom:20px;">
+        <h3 style="color:var(--orange);margin:0 0 15px;font-size:1.1rem;">📦 Inventario</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Stock Disponible</label>
+            <input type="number" id="prodStockQuantity" placeholder="0" min="0">
           </div>
           <div class="form-group">
-            <label>Descripción</label>
-            <textarea id="prodDesc" placeholder="Descripción del producto..." rows="3"></textarea>
-          </div>
-          <div class="form-group">
-            <label>Imagen</label>
-            <div class="upload-area" id="uploadArea">
-              <input type="file" id="prodImage" accept="image/*">
-              <img id="imagePreview" class="preview-img">
-              <div id="uploadPlaceholder">
-                <p>📸 Click o arrastra una imagen</p>
-                <span>Máx 5MB • JPG/PNG</span>
-              </div>
-              <div class="progress" id="uploadProgress">
-                <div class="progress-fill" id="progressFill"></div>
-              </div>
-              <p id="uploadStatus" class="upload-status"></p>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="checkbox-label">
+            <label class="checkbox-label" style="margin-top:30px;">
               <input type="checkbox" id="prodStock" checked>
-              <span>Producto en stock</span>
+              <span>Producto en stock (disponible)</span>
             </label>
           </div>
-          <div class="form-actions">
-            <button type="button" class="btn btn-secondary" onclick="resetProductForm()">Cancelar</button>
-            <button type="submit" class="btn btn-primary" id="saveBtn">💾 Guardar</button>
-          </div>
-        </form>
+        </div>
       </div>
       
-      <div class="products-admin-grid" id="adminProductsList">
-        <p class="loading">Cargando...</p>
+      <!-- Botones -->
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" onclick="resetProductForm()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="saveBtn">💾 Guardar Producto</button>
       </div>
-    </section>
+    </form>
+  </div>
+  
+  <!-- Lista de Productos (sin cambios) -->
+  <div class="products-admin-grid" id="adminProductsList">
+    <p class="loading">Cargando...</p>
+  </div>
+</section>
 
     <!-- CONTACTO -->
     <section id="contacto" class="section">
