@@ -16,30 +16,35 @@
 <body>
   <div class="particles" id="particles"></div>
 
-  <!-- NAVBAR -->
-  <nav class="nav">
-    <div class="nav-left">
-      <a href="index.html" class="nav-logo-link">
-        <img src="assets/logo.png" class="nav-logo" alt="Logo" onerror="this.style.display='none'">
-      </a>
-      <div>
-        <div class="nav-brand">CELL SPACE</div>
-        <div class="nav-subtitle">ARGENTINA</div>
-      </div>
+<!-- NAVBAR - VERSIÓN CORREGIDA Y LIMPIA -->
+<nav class="nav">
+  <div class="nav-left">
+    <a href="index.html" class="nav-logo-link">
+      <img src="assets/logo.png" class="nav-logo" alt="Logo" onerror="this.style.display='none'">
+    </a>
+    <div>
+      <div class="nav-brand">CELL SPACE</div>
+      <div class="nav-subtitle">ARGENTINA</div>
     </div>
-    <div class="nav-right">
-      <a href="reparaciones.html" class="nav-link">🔧 Reparaciones</a>
-      <a href="index.html" class="nav-link active">Inicio</a>
-      <a href="index.html#servicios">Servicios</a>
-      <a href="tienda.html" class="nav-link">Tienda</a>
-      <a href="imei-checker.html" class="nav-link">🔍 IMEI Checker</a>
-      <!-- Buscá esto en tu index.html: -->
-<div class="nav-right">
-  <a href="reparaciones.html" class="nav-link">🔧 Reparaciones</a>
-  <a href="index.html" class="nav-link active">Inicio</a>
-  <a href="index.html#servicios">Servicios</a>
-  <a href="tienda.html" class="nav-link">Tienda</a>
-  <a href="imei-checker.html" class="nav-link">🔍 IMEI Checker</a>
+  </div>
+  
+  <div class="nav-right">
+    <a href="reparaciones.html" class="nav-link">🔧 Reparaciones</a>
+    <a href="index.html" class="nav-link active">Inicio</a>
+    <a href="index.html#servicios" class="nav-link">Servicios</a>
+    <a href="tienda.html" class="nav-link">Tienda</a>
+    <a href="imei-checker.html" class="nav-link">🔍 IMEI Checker</a>
+    <a href="technician-zone.html" class="nav-link">👨‍🔧 Zona Técnico</a>
+    
+    <button class="cart-header-btn" onclick="toggleCart()">
+      🛒 <span id="cartCountHeader">0</span>
+    </button>
+    
+    <a href="login.html" id="loginLink" class="btn-small">Ingresar</a>
+    <button id="adminLink" class="btn-small" style="display:none;" onclick="window.location.href='admin.html'">⚙️ Panel</button>
+    <button id="logoutBtn" class="btn-small" style="display:none;" onclick="logout()">Salir</button>
+  </div>
+</nav>
   
   <!-- 👇 AGREGÁ ESTA LÍNEA 👇 -->
   <a href="technician-zone.html" class="nav-link">👨‍🔧 Zona Técnico</a>
