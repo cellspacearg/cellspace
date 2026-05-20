@@ -1,6 +1,7 @@
 // ========================================
 // CELL SPACE - PANEL DE ADMINISTRACIÓN
 // Imágenes vía ImgBB (Gratis)
+// Versión Completa Actualizada
 // ========================================
 
 console.log('🔧 Cargando panel...');
@@ -306,52 +307,47 @@ window.resetServiceForm = function() {
 };
 
 // ========================================
-// PRODUCTOS - CON IMGBB
+// PRODUCTOS - CON TODOS LOS CAMPOS NUEVOS
 // ========================================
 
 window.toggleProductForm = function() {
   const form = document.getElementById('productForm');
   form.style.display = form.style.display === 'none' ? 'block' : 'none';
-  window.resetProductForm();
+  if (form.style.display === 'block') {
+    window.resetProductForm();
+  }
 };
 
-window.loadAdminProducts = async function() {
-  const list = document.getElementById('adminProductsList');
-  list.innerHTML = '<p class="loading">Cargando...</p>';
-  
-  try {
-    const snap = await db.collection('products').orderBy('createdAt', 'desc').get();
-    if (snap.empty) {
-      list.innerHTML = '<p style="text-align:center;color:var(--muted);">Sin productos</p>';
-      return;
-    }
-    
-    list.innerHTML = snap.docs.map(doc => {
-      const p = doc.data();
-      return `
-        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,106,0,0.1);border-radius:10px;padding:15px;margin-bottom:10px;display:flex;gap:15px;align-items:center;">
-          <img src="${p.imageUrl || 'https://via.placeholder.com/80'}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;">
-          <div style="flex:1;">
-            <h4 style="margin:0;color:white;">${p.title}</h4>
-            <p style="margin:5px 0 0;color:var(--orange);font-weight:bold;">$${Number(p.price).toLocaleString('es-AR')}</p>
-            <p style="margin:5px 0 0;font-size:12px;color:var(--muted);">${p.category} • ${p.inStock ? 'Stock' : 'Agotado'}</p>
-          </div>
-          <div style="display:flex;gap:8px;">
-            <button onclick="window.editProduct('${doc.id}')" style="background:#2196F3;color:white;border:none;padding:6px 10px;border-radius:4px;cursor:pointer;">✏️</button>
-            <button onclick="window.deleteProduct('${doc.id}')" style="background:#ff4444;color:white;border:none;padding:6px 10px;border-radius:4px;cursor:pointer;">🗑️</button>
-          </div>
-        </div>`;
-    }).join('');
-  } catch (e) { console.error(e); }
+window.resetProductForm = function() {
+  document.getElementById('publishForm').reset();
+  document.getElementById('prodId').value = '';
+  document.getElementById('imagePreview').style.display = 'none';
+  document.getElementById('uploadPlaceholder').style.display = 'block';
+  document.getElementById('uploadProgress').classList.remove('show');
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('uploadStatus').textContent = '';
+  currentImageURL = '';
 };
 
-// SUBIDA A IMGBB
-document.getElementById('prodImage')?.addEventListener('change', async function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
+// SUBIDA DE IMAGEN CON IMGBB
+const imageInput = document.getElementById('prodImage');
+if (imageInput) {
+  imageInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) window.uploadImage(file);
+  });
+}
+
+window.uploadImage = async function(file) {
+  if (!file.type.startsWith('image/')) {
+    alert('❌ Solo se permiten imágenes');
+    return;
+  }
   
-  if (!file.type.startsWith('image/')) { alert('❌ Solo imágenes'); return; }
-  if (file.size > 32 * 1024 * 1024) { alert('❌ Máximo 32MB'); return; }
+  if (file.size > 32 * 1024 * 1024) {
+    alert('❌ La imagen no puede superar 32MB');
+    return;
+  }
   
   document.getElementById('uploadProgress').classList.add('show');
   document.getElementById('uploadStatus').textContent = '📤 Subiendo a ImgBB...';
@@ -386,50 +382,118 @@ document.getElementById('prodImage')?.addEventListener('change', async function(
     document.getElementById('uploadStatus').textContent = '❌ Error';
     alert('❌ Error al subir: ' + error.message);
   }
-});
+};
 
+// GUARDAR PRODUCTO CON TODOS LOS CAMPOS NUEVOS
 window.saveProduct = async function(e) {
   if (e) e.preventDefault();
   
   const btn = document.getElementById('saveBtn');
-  btn.disabled = true; btn.textContent = 'Guardando...';
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
   
   const id = document.getElementById('prodId').value;
+  
   const data = {
     title: document.getElementById('prodName').value,
-    price: parseFloat(document.getElementById('prodPrice').value) || 0,
     category: document.getElementById('prodCategory').value,
-    description: document.getElementById('prodDesc').value,
-    imageUrl: currentImageURL,
+    brand: document.getElementById('prodBrand')?.value || '',
+    sku: document.getElementById('prodSku')?.value || '',
+    description: document.getElementById('prodDesc').value || '',
+    priceList: parseFloat(document.getElementById('prodPriceList')?.value) || 0,
+    priceTransfer: parseFloat(document.getElementById('prodPriceTransfer')?.value) || 0,
+    price: parseFloat(document.getElementById('prodPrice')?.value) || 0,
+    installments: document.getElementById('prodInstallments')?.value || '',
+    warranty: document.getElementById('prodWarranty')?.value || '',
+    imageUrl: currentImageURL || '',
     inStock: document.getElementById('prodStock').checked,
+    stock: parseInt(document.getElementById('prodStockQuantity')?.value) || 0,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
   
   try {
     if (id) {
       await db.collection('products').doc(id).update(data);
-      alert('✅ Producto actualizado');
+      alert('✅ Producto actualizado correctamente');
     } else {
       data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       await db.collection('products').add(data);
-      alert('✅ Producto agregado');
+      alert('✅ Producto agregado correctamente');
     }
     window.resetProductForm();
     window.loadAdminProducts();
-  } catch (err) { alert('❌ ' + err.message); }
-  finally { btn.disabled = false; btn.textContent = '💾 Guardar'; }
+    document.getElementById('productForm').style.display = 'none';
+  } catch (error) {
+    console.error('❌ Error:', error);
+    alert('❌ Error al guardar: ' + error.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Guardar';
+  }
 };
 
+// CARGAR PRODUCTOS CON INFO MEJORADA
+window.loadAdminProducts = async function() {
+  const list = document.getElementById('adminProductsList');
+  list.innerHTML = '<p class="loading">Cargando...</p>';
+  
+  try {
+    const snap = await db.collection('products').orderBy('createdAt', 'desc').get();
+    
+    if (snap.empty) {
+      list.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px;">Sin productos</p>';
+      return;
+    }
+    
+    list.innerHTML = snap.docs.map(doc => {
+      const p = doc.data();
+      const stockText = p.inStock ? `✓ Stock: ${p.stock || 0}` : '✗ Sin stock';
+      const stockColor = p.inStock ? '#4CAF50' : '#ff4444';
+      
+      return `
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,106,0,0.1);border-radius:12px;padding:20px;margin-bottom:15px;display:flex;gap:15px;align-items:center;">
+          <img src="${p.imageUrl || 'https://via.placeholder.com/80'}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;">
+          <div style="flex:1;">
+            <h4 style="margin:0;color:white;">${p.title}</h4>
+            <p style="margin:5px 0 0;color:var(--muted);font-size:0.9rem;">${p.brand || ''} ${p.category ? '• ' + p.category : ''}</p>
+            <p style="margin:5px 0 0;color:var(--orange);font-weight:700;">$${Number(p.priceTransfer || p.price).toLocaleString('es-AR')}</p>
+            <p style="margin:5px 0 0;font-size:0.85rem;color:${stockColor};">${stockText}</p>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="window.editProduct('${doc.id}')" style="background:#2196F3;color:white;border:none;padding:8px;border-radius:6px;cursor:pointer;">✏️</button>
+            <button onclick="window.deleteProduct('${doc.id}')" style="background:#ff4444;color:white;border:none;padding:8px;border-radius:6px;cursor:pointer;">🗑️</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (error) {
+    console.error('❌ Error cargando productos:', error);
+    list.innerHTML = '<p style="color:#ff4444;text-align:center;padding:20px;">Error al cargar productos</p>';
+  }
+};
+
+// EDITAR PRODUCTO (CARGA TODOS LOS CAMPOS NUEVOS)
 window.editProduct = async function(id) {
   const doc = await db.collection('products').doc(id).get();
-  if (!doc.exists) return;
+  if (!doc.exists) {
+    alert('❌ Producto no encontrado');
+    return;
+  }
+  
   const p = doc.data();
   
   document.getElementById('prodId').value = id;
-  document.getElementById('prodName').value = p.title;
-  document.getElementById('prodPrice').value = p.price;
-  document.getElementById('prodCategory').value = p.category;
+  document.getElementById('prodName').value = p.title || '';
+  document.getElementById('prodCategory').value = p.category || '';
+  document.getElementById('prodBrand').value = p.brand || '';
+  document.getElementById('prodSku').value = p.sku || '';
   document.getElementById('prodDesc').value = p.description || '';
+  document.getElementById('prodPriceList').value = p.priceList || '';
+  document.getElementById('prodPriceTransfer').value = p.priceTransfer || '';
+  document.getElementById('prodPrice').value = p.price || '';
+  document.getElementById('prodInstallments').value = p.installments || '';
+  document.getElementById('prodWarranty').value = p.warranty || '';
+  document.getElementById('prodStockQuantity').value = p.stock || 0;
   document.getElementById('prodStock').checked = p.inStock !== false;
   
   if (p.imageUrl) {
@@ -443,23 +507,16 @@ window.editProduct = async function(id) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
+// ELIMINAR PRODUCTO
 window.deleteProduct = async function(id) {
-  if (!confirm('¿Eliminar?')) return;
+  if (!confirm('¿Estás seguro de eliminar este producto?')) return;
   try {
     await db.collection('products').doc(id).delete();
+    alert('✅ Producto eliminado');
     window.loadAdminProducts();
-  } catch (e) { alert('❌ ' + e.message); }
-};
-
-window.resetProductForm = function() {
-  document.getElementById('publishForm').reset();
-  document.getElementById('prodId').value = '';
-  document.getElementById('imagePreview').style.display = 'none';
-  document.getElementById('uploadPlaceholder').style.display = 'block';
-  document.getElementById('uploadProgress').classList.remove('show');
-  document.getElementById('progressFill').style.width = '0%';
-  document.getElementById('uploadStatus').textContent = '';
-  currentImageURL = '';
+  } catch (e) {
+    alert('❌ Error: ' + e.message);
+  }
 };
 
 // ========================================
