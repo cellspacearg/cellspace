@@ -19,8 +19,9 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <a href="index.html" style="text-decoration:none;">
-        <!-- Logo temporal si no tenés el archivo -->
-        <div style="width:50px;height:50px;background:linear-gradient(135deg, #FF6A00, #ff8533);border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:20px;">CS</div>
+        <!-- TU LOGO REAL -->
+        <img src="assets/logo.png" class="sidebar-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+        <div style="width:50px;height:50px;background:linear-gradient(135deg, #FF6A00, #ff8533);border-radius:12px;display:none;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:20px;">CS</div>
       </a>
       <h2>CELL SPACE</h2>
       <p style="color:#666;font-size:12px;">Panel de Control</p>
@@ -51,13 +52,434 @@
       </div>
     </header>
 
-    <!-- SECCIONES (Dashboard, Servicios, Productos, etc.) -->
-    <!-- Acá va todo el contenido de las secciones que ya tenías -->
-    <!-- ... (tu código HTML de las secciones) ... -->
-    
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="section active">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-info">
+            <h3>Total Productos</h3>
+            <p id="totalProducts">0</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-info">
+            <h3>Usuarios</h3>
+            <p id="totalUsers">0</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔧</div>
+          <div class="stat-info">
+            <h3>Servicios</h3>
+            <p id="totalServices">0</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔍</div>
+          <div class="stat-info">
+            <h3>Consultas IMEI</h3>
+            <p id="totalIMEIChecks">0</p>
+          </div>
+        </div>
+      </div>
+      <div class="recent-activity">
+        <h2>📈 Actividad Reciente</h2>
+        <div id="recentActivity" class="activity-list">
+          <p class="loading">Cargando...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CARRUSEL -->
+    <section id="hero" class="section">
+      <div class="section-header">
+        <h2>🎠 Carrusel/Hero</h2>
+        <button class="btn btn-primary" onclick="addSlide()">+ Agregar Slide</button>
+      </div>
+      <div id="slidesContainer" class="slides-list">
+        <p class="loading">Cargando...</p>
+      </div>
+    </section>
+
+    <!-- SERVICIOS -->
+    <section id="servicios" class="section">
+      <div class="section-header">
+        <h2>🔧 Servicios</h2>
+        <button class="btn btn-primary" onclick="toggleServiceForm()">+ Nuevo Servicio</button>
+      </div>
+      
+      <div id="serviceForm" class="form-container" style="display:none;">
+        <form id="serviceFormEl" class="form">
+          <input type="hidden" id="serviceId">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Icono (emoji)</label>
+              <input type="text" id="serviceIcon" placeholder="ej: 🔧" required>
+            </div>
+            <div class="form-group">
+              <label>Título</label>
+              <input type="text" id="serviceTitle" placeholder="ej: Reparación de Celulares" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Descripción</label>
+            <textarea id="serviceDesc" placeholder="Descripción del servicio..." rows="3" required></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tiempo estimado</label>
+              <input type="text" id="serviceTime" placeholder="ej: 30 min - 2 hs">
+            </div>
+            <div class="form-group">
+              <label>Precio (opcional)</label>
+              <input type="number" id="servicePrice" placeholder="0">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="resetServiceForm()">Cancelar</button>
+            <button type="submit" class="btn btn-primary">💾 Guardar</button>
+          </div>
+        </form>
+      </div>
+      
+      <div class="services-admin-grid" id="adminServicesList">
+        <p class="loading">Cargando...</p>
+      </div>
+    </section>
+
+    <!-- PRODUCTOS -->
+    <section id="productos" class="section">
+      <div class="section-header">
+        <h2>📦 Productos</h2>
+        <button class="btn btn-primary" onclick="toggleProductForm()">+ Nuevo Producto</button>
+      </div>
+      
+      <div id="productForm" class="form-container" style="display:none;">
+        <form id="publishForm" class="form">
+          <input type="hidden" id="prodId">
+          
+          <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;margin-bottom:20px;">
+            <h3 style="color:var(--orange);margin:0 0 15px;font-size:1.1rem;">📋 Información Básica</h3>
+            <div class="form-group" style="margin-bottom:15px;">
+              <label>Nombre del Producto *</label>
+              <input type="text" id="prodName" placeholder="Ej: iPhone 13 Pro 128GB" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Categoría *</label>
+                <select id="prodCategory" required>
+                  <option value="Celulares">Celulares</option>
+                  <option value="Accesorios">Accesorios</option>
+                  <option value="PC/Laptop">PC / Laptop</option>
+                  <option value="Consolas">Consolas</option>
+                  <option value="Servicios">Servicios</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Marca</label>
+                <input type="text" id="prodBrand" placeholder="Ej: Apple, Samsung">
+              </div>
+              <div class="form-group">
+                <label>SKU</label>
+                <input type="text" id="prodSku" placeholder="Código único">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Descripción Completa</label>
+              <textarea id="prodDesc" rows="4" placeholder="Descripción detallada..."></textarea>
+            </div>
+          </div>
+          
+          <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;margin-bottom:20px;">
+            <h3 style="color:var(--orange);margin:0 0 15px;font-size:1.1rem;">💰 Precios</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Precio Lista $</label>
+                <input type="number" id="prodPriceList" placeholder="0.00" min="0" step="0.01">
+              </div>
+              <div class="form-group">
+                <label>Precio Transferencia $ *</label>
+                <input type="number" id="prodPriceTransfer" placeholder="0.00" min="0" step="0.01" required>
+              </div>
+              <div class="form-group">
+                <label>Precio Normal $</label>
+                <input type="number" id="prodPrice" placeholder="0.00" min="0" step="0.01">
+              </div>
+            </div>
+          </div>
+          
+          <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;margin-bottom:20px;">
+            <h3 style="color:var(--orange);margin:0 0 15px;font-size:1.1rem;">🖼️ Imagen</h3>
+            <div class="form-group">
+              <div class="upload-area" id="uploadArea">
+                <input type="file" id="prodImage" accept="image/*">
+                <img id="imagePreview" class="preview-img">
+                <div id="uploadPlaceholder">
+                  <p>📸 Click o arrastra una imagen</p>
+                  <span>Máx 5MB • JPG/PNG</span>
+                </div>
+                <div class="progress" id="uploadProgress">
+                  <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p id="uploadStatus" class="upload-status"></p>
+              </div>
+            </div>
+          </div>
+          
+          <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;margin-bottom:20px;">
+            <h3 style="color:var(--orange);margin:0 0 15px;font-size:1.1rem;">📦 Inventario</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Stock Disponible</label>
+                <input type="number" id="prodStockQuantity" placeholder="0" min="0">
+              </div>
+              <div class="form-group">
+                <label class="checkbox-label" style="margin-top:30px;">
+                  <input type="checkbox" id="prodStock" checked>
+                  <span>Producto en stock (disponible)</span>
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="resetProductForm()">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="saveBtn">💾 Guardar Producto</button>
+          </div>
+        </form>
+      </div>
+      
+      <div class="products-admin-grid" id="adminProductsList">
+        <p class="loading">Cargando...</p>
+      </div>
+    </section>
+
+    <!-- PUBLICACIONES -->
+    <section id="posts" class="section">
+      <div class="section-header">
+        <h2>📢 Publicar Contenido Técnico</h2>
+        <button class="btn btn-primary" onclick="togglePostForm()">+ Nueva Publicación</button>
+      </div>
+      
+      <div id="postForm" class="form-container" style="display:none;">
+        <form id="publishPostForm" class="form">
+          <div class="form-group">
+            <label>Título</label>
+            <input type="text" id="postTitle" required>
+          </div>
+          <div class="form-group">
+            <label>Descripción / Contenido</label>
+            <textarea id="postDesc" rows="4" required></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Categoría</label>
+              <select id="postCategory">
+                <option value="Hardware">Hardware</option>
+                <option value="Software">Software</option>
+                <option value="Reparación">Reparación</option>
+                <option value="Consejos">Consejos</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>¿Es contenido Premium?</label>
+              <select id="postIsPremium">
+                <option value="false">No (Gratis)</option>
+                <option value="true">Sí (👑 Premium)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>URL de Imagen (ImgBB)</label>
+            <input type="text" id="postImage" placeholder="Pegá el link de la imagen aquí">
+          </div>
+          <div class="form-group">
+            <label>URL de Video (Opcional)</label>
+            <input type="text" id="postVideo" placeholder="Link de YouTube o similar">
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('postForm').style.display='none'">Cancelar</button>
+            <button type="submit" class="btn btn-primary">💾 Publicar</button>
+          </div>
+        </form>
+      </div>
+      
+      <div id="postsList" class="slides-list">
+        <p class="loading">Cargando publicaciones...</p>
+      </div>
+    </section>
+
+    <!-- TÉCNICOS -->
+    <section id="tecnicos" class="section">
+      <div class="section-header">
+        <h2>👨‍ Gestión de Técnicos</h2>
+        <button class="btn btn-primary" onclick="loadTechniciansAdmin()">🔄 Actualizar</button>
+      </div>
+      
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Especialidad</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="techniciansTable">
+            <tr><td colspan="5" class="loading">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CONTACTO -->
+    <section id="contacto" class="section">
+      <h2>📍 Información de Contacto</h2>
+      <div class="form-container">
+        <form id="contactForm" class="form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Dirección</label>
+              <input type="text" id="contactAddress" placeholder="Saladas, Corrientes">
+            </div>
+            <div class="form-group">
+              <label>WhatsApp</label>
+              <input type="text" id="contactPhone" placeholder="3782-437674">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Horario</label>
+              <input type="text" id="contactHours" placeholder="Lunes a Sábados 9:00 - 20:00">
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="contactEmail" placeholder="info@cellspace.com">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" onclick="window.saveContact(event)" class="btn btn-primary">💾 Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <section id="footer" class="section">
+      <h2>📄 Configuración del Footer</h2>
+      
+      <div class="form-container">
+        <h3>Descripción del Negocio</h3>
+        <div class="form-group">
+          <textarea id="footerDesc" rows="3" placeholder="Descripción que aparece en el footer"></textarea>
+        </div>
+      </div>
+
+      <div class="form-container">
+        <h3>🔗 Redes Sociales</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Facebook URL</label>
+            <input type="text" id="socialFacebook" placeholder="https://facebook.com/tu pagina">
+          </div>
+          <div class="form-group">
+            <label>Instagram URL</label>
+            <input type="text" id="socialInstagram" placeholder="https://instagram.com/tu pagina">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-container">
+        <h3>📋 Servicios del Footer</h3>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:15px;">Separá los servicios por comas (,)</p>
+        <div class="form-group">
+          <textarea id="footerServicesList" rows="3" placeholder="Reparación de pantallas, Cambio de batería..."></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" onclick="window.saveFooterSettings()" class="btn btn-primary">💾 Guardar Footer</button>
+      </div>
+    </section>
+
+    <!-- IMEI HISTORY -->
+    <section id="imei" class="section">
+      <div class="section-header">
+        <h2>🔍 Historial de Consultas IMEI</h2>
+        <button class="btn btn-primary" onclick="loadIMEIHistoryAdmin()">🔄 Actualizar</button>
+      </div>
+      
+      <div class="stats-grid" style="margin-bottom:30px;">
+        <div class="stat-card">
+          <div class="stat-icon">🔍</div>
+          <div class="stat-info">
+            <h3>Total Consultas</h3>
+            <p id="totalChecks">0</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-info">
+            <h3>IMEI Clean</h3>
+            <p id="cleanChecks">0</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-info">
+            <h3>IMEI Blacklist</h3>
+            <p id="blacklistChecks">0</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>IMEI/Serial</th>
+              <th>Tipo</th>
+              <th>Marca</th>
+              <th>Modelo</th>
+              <th>Estado</th>
+              <th>Usuario</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="imeiHistoryTable">
+            <tr><td colspan="8" class="loading">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- USUARIOS -->
+    <section id="usuarios" class="section">
+      <h2>👥 Usuarios Registrados</h2>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Fecha Registro</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="usersTable">
+            <tr><td colspan="4" class="loading">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </main>
 
-  <!-- SCRIPTS - SOLO ESTO, NADA MÁS -->
+  <!-- SCRIPTS -->
   <script src="js/config.js"></script>
   <script src="js/admin.js"></script>
 </body>
