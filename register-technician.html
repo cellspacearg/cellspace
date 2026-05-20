@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro Técnico - Cell Space</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/auth.css">
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card">
+      <h1>Registrarme como <span style="color:var(--gold)">Técnico</span></h1>
+      
+      <form id="registerTechnicianForm">
+        <div class="form-group">
+          <label>Nombre Completo</label>
+          <input type="text" id="techName" placeholder="Tu nombre" required>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="techEmail" placeholder="tu@email.com" required>
+        </div>
+        <div class="form-group">
+          <label>Especialidad</label>
+          <select id="techSpecialty" required>
+            <option value="">Seleccionar especialidad...</option>
+            <option value="Celulares">Celulares</option>
+            <option value="PC/Laptop">PC / Laptop</option>
+            <option value="Consolas">Consolas</option>
+            <option value="Hardware">Hardware</option>
+            <option value="Software">Software</option>
+            <option value="Microsoldadura">Microsoldadura</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Experiencia</label>
+          <select id="techExperience" required>
+            <option value="">Años de experiencia...</option>
+            <option value="0-1">0-1 años</option>
+            <option value="1-3">1-3 años</option>
+            <option value="3-5">3-5 años</option>
+            <option value="5+">Más de 5 años</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" id="techPassword" placeholder="Mínimo 6 caracteres" required>
+        </div>
+        <button type="submit" class="btn-primary">Solicitar Registro</button>
+      </form>
+      
+      <div class="auth-footer">
+        <p>¿Ya tenés cuenta? <a href="login.html">Iniciar sesión</a></p>
+        <p style="margin-top:15px; color:var(--muted); font-size:0.9rem;">
+          💡 Los técnicos premium acceden a contenido exclusivo
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script>
+    document.getElementById('registerTechnicianForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('techEmail').value;
+      const password = document.getElementById('techPassword').value;
+      const name = document.getElementById('techName').value;
+      const specialty = document.getElementById('techSpecialty').value;
+      const experience = document.getElementById('techExperience').value;
+      
+      try {
+        await firebase.auth().createUserWithEmailAndPassword(email, password);
+        
+        await firebase.firestore().collection('technicians').doc(email.split('@')[0]).set({
+          email,
+          name,
+          specialty,
+          experience,
+          userType: 'technician',
+          isPremium: false,
+          status: 'pending',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        alert('✅ Solicitud enviada. Un administrador aprobará tu cuenta.');
+        window.location.href = 'login.html';
+        
+      } catch (error) {
+        alert('❌ Error: ' + error.message);
+      }
+    });
+  </script>
+</body>
+</html>
