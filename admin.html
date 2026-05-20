@@ -1,6 +1,6 @@
 // ========================================
 // CELL SPACE - PANEL DE ADMINISTRACIÓN
-// Versión Completa con Técnicos y Posts
+// Versión Corregida y Optimizada
 // ========================================
 
 console.log('🔧 Cargando panel...');
@@ -15,8 +15,14 @@ let currentImageURL = '';
 // INICIALIZACIÓN
 // ========================================
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   console.log('✅ DOM cargado');
+
+  // Esperar a que Firebase esté listo
+  if (typeof firebase === 'undefined' || typeof db === 'undefined') {
+    console.error('❌ Firebase no está inicializado. Verificá config.js');
+    return;
+  }
 
   firebase.auth().onAuthStateChanged((user) => {
     console.log('🔍 Auth:', user ? user.email : 'No logueado');
@@ -24,7 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (user) {
       if (user.email === 'nahuel0123encinas@gmail.com') {
         console.log('✅ Admin:', user.email);
-        document.getElementById('adminEmail').textContent = user.email;
+        const emailEl = document.getElementById('adminEmail');
+        if (emailEl) emailEl.textContent = user.email;
         setupNavigation();
         loadDashboard();
         loadContactInfo();
@@ -37,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Vincular formularios
+  // Vincular formularios (con verificación de existencia)
   const serviceForm = document.getElementById('serviceFormEl');
   if (serviceForm) serviceForm.addEventListener('submit', window.saveService);
   
@@ -48,29 +55,28 @@ document.addEventListener('DOMContentLoaded', () => {
   if (contactForm) contactForm.addEventListener('submit', window.saveContact);
   
   const postForm = document.getElementById('publishPostForm');
-  if (postForm) postForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    try {
-      await db.collection('technician_posts').add({
-        title: document.getElementById('postTitle').value,
-        description: document.getElementById('postDesc').value,
-        category: document.getElementById('postCategory').value,
-        isPremium: document.getElementById('postIsPremium').value === 'true',
-        imageUrl: document.getElementById('postImage').value || '',
-        videoUrl: document.getElementById('postVideo').value || '',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      
-      alert('✅ Publicado exitosamente');
-      document.getElementById('publishPostForm').reset();
-      document.getElementById('postForm').style.display = 'none';
-      loadPostsAdmin();
-      
-    } catch (error) {
-      alert('❌ Error: ' + error.message);
-    }
-  });
+  if (postForm) {
+    postForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await db.collection('technician_posts').add({
+          title: document.getElementById('postTitle').value,
+          description: document.getElementById('postDesc').value,
+          category: document.getElementById('postCategory').value,
+          isPremium: document.getElementById('postIsPremium').value === 'true',
+          imageUrl: document.getElementById('postImage').value || '',
+          videoUrl: document.getElementById('postVideo').value || '',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        alert('✅ Publicado exitosamente');
+        document.getElementById('publishPostForm').reset();
+        document.getElementById('postForm').style.display = 'none';
+        loadPostsAdmin();
+      } catch (error) {
+        alert('❌ Error: ' + error.message);
+      }
+    });
+  }
 });
 
 // ========================================
@@ -109,15 +115,15 @@ window.showSection = function(sectionId, btnElement) {
 function loadSectionData(id) {
   switch(id) {
     case 'dashboard': loadDashboard(); break;
-    case 'hero': window.loadSlides(); break;
-    case 'servicios': window.loadServices(); break;
-    case 'productos': window.loadAdminProducts(); break;
-    case 'contacto': loadContactInfo(); break;
-    case 'footer': window.loadFooterSettings(); break;
-    case 'imei': window.loadIMEIHistoryAdmin(); break;
-    case 'usuarios': window.loadUsers(); break;
-    case 'posts': window.loadPostsAdmin(); break;
-    case 'tecnicos': window.loadTechniciansAdmin(); break;
+    case 'hero': window.loadSlides?.(); break;
+    case 'servicios': window.loadServices?.(); break;
+    case 'productos': window.loadAdminProducts?.(); break;
+    case 'contacto': loadContactInfo?.(); break;
+    case 'footer': window.loadFooterSettings?.(); break;
+    case 'imei': window.loadIMEIHistoryAdmin?.(); break;
+    case 'usuarios': window.loadUsers?.(); break;
+    case 'posts': window.loadPostsAdmin?.(); break;
+    case 'tecnicos': window.loadTechniciansAdmin?.(); break;
   }
 }
 
@@ -132,13 +138,16 @@ window.toggleSidebar = function() {
 window.loadDashboard = async function() {
   try {
     const products = await db.collection('products').get();
-    document.getElementById('totalProducts').textContent = products.size;
+    const totalEl = document.getElementById('totalProducts');
+    if (totalEl) totalEl.textContent = products.size;
     
     const users = await db.collection('users').get();
-    document.getElementById('totalUsers').textContent = users.size;
+    const usersEl = document.getElementById('totalUsers');
+    if (usersEl) usersEl.textContent = users.size;
     
     const services = await db.collection('services').get();
-    document.getElementById('totalServices').textContent = services.size;
+    const servicesEl = document.getElementById('totalServices');
+    if (servicesEl) servicesEl.textContent = services.size;
     
     try {
       const imei = await db.collection('imei_history').get();
@@ -153,12 +162,15 @@ window.loadDashboard = async function() {
     });
     recent.sort((a, b) => b.date - a.date);
     
-    document.getElementById('recentActivity').innerHTML = recent.map(item => `
-      <div style="padding:10px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;">
-        <span style="color:white;font-size:14px;">${item.title}</span>
-        <span style="color:var(--muted);font-size:12px;">${item.date.toLocaleString('es-AR')}</span>
-      </div>
-    `).join('') || '<p style="color:var(--muted);padding:20px;text-align:center;">Sin actividad</p>';
+    const activityEl = document.getElementById('recentActivity');
+    if (activityEl) {
+      activityEl.innerHTML = recent.map(item => `
+        <div style="padding:10px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;">
+          <span style="color:white;font-size:14px;">${item.title}</span>
+          <span style="color:var(--muted);font-size:12px;">${item.date.toLocaleString('es-AR')}</span>
+        </div>
+      `).join('') || '<p style="color:var(--muted);padding:20px;text-align:center;">Sin actividad</p>';
+    }
     
   } catch (error) { console.error('❌ Dashboard:', error); }
 };
@@ -170,6 +182,7 @@ window.loadDashboard = async function() {
 window.loadSlides = async function() {
   try {
     const container = document.getElementById('slidesContainer');
+    if (!container) return;
     container.innerHTML = '<p class="loading">Cargando...</p>';
     
     const snap = await db.collection('hero_slides').orderBy('order', 'asc').get();
@@ -179,7 +192,7 @@ window.loadSlides = async function() {
       return;
     }
     
-    container.innerHTML = snap.docs.map((doc, i) => {
+    container.innerHTML = snap.docs.map((doc) => {
       const s = doc.data();
       return `
         <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,106,0,0.2);border-radius:12px;padding:15px;margin-bottom:15px;display:flex;gap:15px;align-items:center;">
@@ -246,12 +259,14 @@ window.deleteSlide = async function(id) {
 
 window.toggleServiceForm = function() {
   const form = document.getElementById('serviceForm');
-  form.style.display = form.style.display === 'none' ? 'block' : 'none';
-  document.getElementById('serviceId').value = '';
+  if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  const idEl = document.getElementById('serviceId');
+  if (idEl) idEl.value = '';
 };
 
 window.loadServices = async function() {
   const list = document.getElementById('adminServicesList');
+  if (!list) return;
   list.innerHTML = '<p class="loading">Cargando...</p>';
   
   try {
@@ -283,12 +298,13 @@ window.loadServices = async function() {
 window.saveService = async function(e) {
   if (e) e.preventDefault();
   
-  const id = document.getElementById('serviceId').value;
-  const icon = document.getElementById('serviceIcon').value;
-  const title = document.getElementById('serviceTitle').value;
-  const desc = document.getElementById('serviceDesc').value;
-  const time = document.getElementById('serviceTime').value;
-  const price = document.getElementById('servicePrice').value;
+  const idEl = document.getElementById('serviceId');
+  const id = idEl ? idEl.value : '';
+  const icon = document.getElementById('serviceIcon')?.value || '';
+  const title = document.getElementById('serviceTitle')?.value || '';
+  const desc = document.getElementById('serviceDesc')?.value || '';
+  const time = document.getElementById('serviceTime')?.value || '';
+  const price = document.getElementById('servicePrice')?.value || '';
   
   if (!title) { alert('⚠️ Título obligatorio'); return; }
   
@@ -320,13 +336,21 @@ window.editService = async function(id) {
   if (!doc.exists) return;
   const s = doc.data();
   
-  document.getElementById('serviceId').value = id;
-  document.getElementById('serviceIcon').value = s.icon || '';
-  document.getElementById('serviceTitle').value = s.title || '';
-  document.getElementById('serviceDesc').value = s.description || '';
-  document.getElementById('serviceTime').value = s.time || '';
-  document.getElementById('servicePrice').value = s.price || '';
-  document.getElementById('serviceForm').style.display = 'block';
+  const idEl = document.getElementById('serviceId');
+  if (idEl) idEl.value = id;
+  const iconEl = document.getElementById('serviceIcon');
+  if (iconEl) iconEl.value = s.icon || '';
+  const titleEl = document.getElementById('serviceTitle');
+  if (titleEl) titleEl.value = s.title || '';
+  const descEl = document.getElementById('serviceDesc');
+  if (descEl) descEl.value = s.description || '';
+  const timeEl = document.getElementById('serviceTime');
+  if (timeEl) timeEl.value = s.time || '';
+  const priceEl = document.getElementById('servicePrice');
+  if (priceEl) priceEl.value = s.price || '';
+  
+  const form = document.getElementById('serviceForm');
+  if (form) form.style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
@@ -339,30 +363,46 @@ window.deleteService = async function(id) {
 };
 
 window.resetServiceForm = function() {
-  document.getElementById('serviceFormEl').reset();
-  document.getElementById('serviceId').value = '';
-  document.getElementById('serviceForm').style.display = 'none';
+  const formEl = document.getElementById('serviceFormEl');
+  if (formEl) formEl.reset();
+  const idEl = document.getElementById('serviceId');
+  if (idEl) idEl.value = '';
+  const form = document.getElementById('serviceForm');
+  if (form) form.style.display = 'none';
 };
+
 // ========================================
 // PRODUCTOS - CON TODOS LOS CAMPOS NUEVOS
 // ========================================
 
 window.toggleProductForm = function() {
   const form = document.getElementById('productForm');
-  form.style.display = form.style.display === 'none' ? 'block' : 'none';
-  if (form.style.display === 'block') {
-    window.resetProductForm();
+  if (form) {
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    if (form.style.display === 'block') {
+      window.resetProductForm();
+    }
   }
 };
 
 window.resetProductForm = function() {
-  document.getElementById('publishForm').reset();
-  document.getElementById('prodId').value = '';
-  document.getElementById('imagePreview').style.display = 'none';
-  document.getElementById('uploadPlaceholder').style.display = 'block';
-  document.getElementById('uploadProgress').classList.remove('show');
-  document.getElementById('progressFill').style.width = '0%';
-  document.getElementById('uploadStatus').textContent = '';
+  const form = document.getElementById('publishForm');
+  if (form) form.reset();
+  const idEl = document.getElementById('prodId');
+  if (idEl) idEl.value = '';
+  const preview = document.getElementById('imagePreview');
+  if (preview) {
+    preview.style.display = 'none';
+    preview.src = '';
+  }
+  const placeholder = document.getElementById('uploadPlaceholder');
+  if (placeholder) placeholder.style.display = 'block';
+  const progress = document.getElementById('uploadProgress');
+  if (progress) progress.classList.remove('show');
+  const progressFill = document.getElementById('progressFill');
+  if (progressFill) progressFill.style.width = '0%';
+  const status = document.getElementById('uploadStatus');
+  if (status) status.textContent = '';
   currentImageURL = '';
 };
 
@@ -386,8 +426,10 @@ window.uploadImage = async function(file) {
     return;
   }
   
-  document.getElementById('uploadProgress').classList.add('show');
-  document.getElementById('uploadStatus').textContent = '📤 Subiendo a ImgBB...';
+  const progress = document.getElementById('uploadProgress');
+  const status = document.getElementById('uploadStatus');
+  if (progress) progress.classList.add('show');
+  if (status) status.textContent = '📤 Subiendo a ImgBB...';
   
   try {
     const formData = new FormData();
@@ -403,11 +445,15 @@ window.uploadImage = async function(file) {
     if (data.success) {
       currentImageURL = data.data.url;
       
-      document.getElementById('imagePreview').src = currentImageURL;
-      document.getElementById('imagePreview').style.display = 'block';
-      document.getElementById('uploadPlaceholder').style.display = 'none';
-      document.getElementById('uploadStatus').textContent = '✅ Lista';
-      document.getElementById('uploadProgress').classList.remove('show');
+      const preview = document.getElementById('imagePreview');
+      const placeholder = document.getElementById('uploadPlaceholder');
+      if (preview) {
+        preview.src = currentImageURL;
+        preview.style.display = 'block';
+      }
+      if (placeholder) placeholder.style.display = 'none';
+      if (status) status.textContent = '✅ Lista';
+      if (progress) progress.classList.remove('show');
       
       console.log('✅ Imagen subida:', currentImageURL);
     } else {
@@ -416,7 +462,7 @@ window.uploadImage = async function(file) {
     
   } catch (error) {
     console.error('❌ Error:', error);
-    document.getElementById('uploadStatus').textContent = '❌ Error';
+    if (status) status.textContent = '❌ Error';
     alert('❌ Error al subir: ' + error.message);
   }
 };
@@ -426,24 +472,27 @@ window.saveProduct = async function(e) {
   if (e) e.preventDefault();
   
   const btn = document.getElementById('saveBtn');
-  btn.disabled = true;
-  btn.textContent = 'Guardando...';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+  }
   
-  const id = document.getElementById('prodId').value;
+  const idEl = document.getElementById('prodId');
+  const id = idEl ? idEl.value : '';
   
   const data = {
-    title: document.getElementById('prodName').value,
-    category: document.getElementById('prodCategory').value,
+    title: document.getElementById('prodName')?.value || '',
+    category: document.getElementById('prodCategory')?.value || '',
     brand: document.getElementById('prodBrand')?.value || '',
     sku: document.getElementById('prodSku')?.value || '',
-    description: document.getElementById('prodDesc').value || '',
+    description: document.getElementById('prodDesc')?.value || '',
     priceList: parseFloat(document.getElementById('prodPriceList')?.value) || 0,
     priceTransfer: parseFloat(document.getElementById('prodPriceTransfer')?.value) || 0,
     price: parseFloat(document.getElementById('prodPrice')?.value) || 0,
     installments: document.getElementById('prodInstallments')?.value || '',
     warranty: document.getElementById('prodWarranty')?.value || '',
     imageUrl: currentImageURL || '',
-    inStock: document.getElementById('prodStock').checked,
+    inStock: document.getElementById('prodStock')?.checked !== false,
     stock: parseInt(document.getElementById('prodStockQuantity')?.value) || 0,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
@@ -459,19 +508,23 @@ window.saveProduct = async function(e) {
     }
     window.resetProductForm();
     window.loadAdminProducts();
-    document.getElementById('productForm').style.display = 'none';
+    const form = document.getElementById('productForm');
+    if (form) form.style.display = 'none';
   } catch (error) {
     console.error('❌ Error:', error);
     alert('❌ Error al guardar: ' + error.message);
   } finally {
-    btn.disabled = false;
-    btn.textContent = '💾 Guardar';
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '💾 Guardar';
+    }
   }
 };
 
 // CARGAR PRODUCTOS
 window.loadAdminProducts = async function() {
   const list = document.getElementById('adminProductsList');
+  if (!list) return;
   list.innerHTML = '<p class="loading">Cargando...</p>';
   
   try {
@@ -519,29 +572,49 @@ window.editProduct = async function(id) {
   
   const p = doc.data();
   
-  document.getElementById('prodId').value = id;
-  document.getElementById('prodName').value = p.title || '';
-  document.getElementById('prodCategory').value = p.category || '';
-  document.getElementById('prodBrand').value = p.brand || '';
-  document.getElementById('prodSku').value = p.sku || '';
-  document.getElementById('prodDesc').value = p.description || '';
-  document.getElementById('prodPriceList').value = p.priceList || '';
-  document.getElementById('prodPriceTransfer').value = p.priceTransfer || '';
-  document.getElementById('prodPrice').value = p.price || '';
-  document.getElementById('prodInstallments').value = p.installments || '';
-  document.getElementById('prodWarranty').value = p.warranty || '';
-  document.getElementById('prodStockQuantity').value = p.stock || 0;
-  document.getElementById('prodStock').checked = p.inStock !== false;
+  const idEl = document.getElementById('prodId');
+  if (idEl) idEl.value = id;
+  const nameEl = document.getElementById('prodName');
+  if (nameEl) nameEl.value = p.title || '';
+  const catEl = document.getElementById('prodCategory');
+  if (catEl) catEl.value = p.category || '';
+  const brandEl = document.getElementById('prodBrand');
+  if (brandEl) brandEl.value = p.brand || '';
+  const skuEl = document.getElementById('prodSku');
+  if (skuEl) skuEl.value = p.sku || '';
+  const descEl = document.getElementById('prodDesc');
+  if (descEl) descEl.value = p.description || '';
+  const priceListEl = document.getElementById('prodPriceList');
+  if (priceListEl) priceListEl.value = p.priceList || '';
+  const priceTransEl = document.getElementById('prodPriceTransfer');
+  if (priceTransEl) priceTransEl.value = p.priceTransfer || '';
+  const priceEl = document.getElementById('prodPrice');
+  if (priceEl) priceEl.value = p.price || '';
+  const instEl = document.getElementById('prodInstallments');
+  if (instEl) instEl.value = p.installments || '';
+  const warEl = document.getElementById('prodWarranty');
+  if (warEl) warEl.value = p.warranty || '';
+  const stockQtyEl = document.getElementById('prodStockQuantity');
+  if (stockQtyEl) stockQtyEl.value = p.stock || 0;
+  const stockEl = document.getElementById('prodStock');
+  if (stockEl) stockEl.checked = p.inStock !== false;
   
   if (p.imageUrl) {
     currentImageURL = p.imageUrl;
-    document.getElementById('imagePreview').src = p.imageUrl;
-    document.getElementById('imagePreview').style.display = 'block';
-    document.getElementById('uploadPlaceholder').style.display = 'none';
+    const preview = document.getElementById('imagePreview');
+    const placeholder = document.getElementById('uploadPlaceholder');
+    if (preview) {
+      preview.src = p.imageUrl;
+      preview.style.display = 'block';
+    }
+    if (placeholder) placeholder.style.display = 'none';
   }
   
-  document.getElementById('productForm').style.display = 'block';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  const form = document.getElementById('productForm');
+  if (form) {
+    form.style.display = 'block';
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 };
 
 // ELIMINAR PRODUCTO
@@ -564,7 +637,7 @@ window.deleteProduct = async function(id) {
 
 window.togglePostForm = function() {
   const form = document.getElementById('postForm');
-  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none';
 };
 
 window.loadPostsAdmin = async function() {
@@ -623,9 +696,9 @@ window.loadTechniciansAdmin = async function() {
       const isPrem = t.isPremium;
       return `
         <tr>
-          <td>${t.name}</td>
-          <td>${t.email}</td>
-          <td>${t.specialty}</td>
+          <td>${t.name || '-'}</td>
+          <td>${t.email || '-'}</td>
+          <td>${t.specialty || '-'}</td>
           <td>
             <span style="color:${isPrem ? 'var(--gold)' : 'var(--muted)'}; font-weight:bold;">
               ${isPrem ? '👑 PREMIUM' : 'Básico'}
@@ -668,10 +741,14 @@ async function loadContactInfo() {
     const doc = await db.collection('site_config').doc('contact').get();
     if (doc.exists) {
       const c = doc.data();
-      document.getElementById('contactAddress').value = c.address || '';
-      document.getElementById('contactPhone').value = c.phone || '';
-      document.getElementById('contactHours').value = c.hours || '';
-      document.getElementById('contactEmail').value = c.email || '';
+      const addrEl = document.getElementById('contactAddress');
+      if (addrEl) addrEl.value = c.address || '';
+      const phoneEl = document.getElementById('contactPhone');
+      if (phoneEl) phoneEl.value = c.phone || '';
+      const hoursEl = document.getElementById('contactHours');
+      if (hoursEl) hoursEl.value = c.hours || '';
+      const emailEl = document.getElementById('contactEmail');
+      if (emailEl) emailEl.value = c.email || '';
     }
   } catch (e) { console.error(e); }
 }
@@ -681,10 +758,10 @@ window.saveContact = async function(e) {
   
   try {
     await db.collection('site_config').doc('contact').set({
-      address: document.getElementById('contactAddress').value,
-      phone: document.getElementById('contactPhone').value,
-      hours: document.getElementById('contactHours').value,
-      email: document.getElementById('contactEmail').value,
+      address: document.getElementById('contactAddress')?.value || '',
+      phone: document.getElementById('contactPhone')?.value || '',
+      hours: document.getElementById('contactHours')?.value || '',
+      email: document.getElementById('contactEmail')?.value || '',
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
     alert('✅ Contacto guardado');
@@ -742,6 +819,7 @@ window.loadFooterSettings = async function() {
 
 window.loadUsers = async function() {
   const tb = document.getElementById('usersTable');
+  if (!tb) return;
   tb.innerHTML = '<tr><td colspan="4" class="loading">Cargando...</td></tr>';
   
   try {
@@ -769,6 +847,7 @@ window.loadUsers = async function() {
 
 window.loadIMEIHistoryAdmin = async function() {
   const tb = document.getElementById('imeiHistoryTable');
+  if (!tb) return;
   tb.innerHTML = '<tr><td colspan="8" class="loading">Cargando...</td></tr>';
   
   try {
@@ -783,8 +862,8 @@ window.loadIMEIHistoryAdmin = async function() {
       const date = h.timestamp?.toDate().toLocaleString('es-AR');
       const r = h.result || {};
       return `<tr>
-        <td>${date}</td>
-        <td><strong>${h.imei}</strong></td>
+        <td>${date || '-'}</td>
+        <td><strong>${h.imei || '-'}</strong></td>
         <td>${h.searchType || 'IMEI'}</td>
         <td>${r.brand || '-'}</td>
         <td>${r.model || '-'}</td>
@@ -802,14 +881,7 @@ window.viewIMEIDetails = async function(id) {
     if (!doc.exists) return alert('No encontrado');
     const h = doc.data();
     const r = h.result || {};
-    alert(`
-📋 DETALLES IMEI
-IMEI: ${h.imei}
-Marca: ${r.brand || '-'}
-Modelo: ${r.model || '-'}
-Estado: ${r.blacklist || '-'}
-Fecha: ${h.timestamp?.toDate().toLocaleString('es-AR')}
-    `);
+    alert(`📋 DETALLES IMEI\nIMEI: ${h.imei}\nMarca: ${r.brand || '-'}\nModelo: ${r.model || '-'}\nEstado: ${r.blacklist || '-'}\nFecha: ${h.timestamp?.toDate().toLocaleString('es-AR') || '-'}`);
   } catch (e) { alert('Error: ' + e.message); }
 };
 
