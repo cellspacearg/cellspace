@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro Cliente - Cell Space</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/auth.css">
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card">
+      <h1>Registrarme como <span style="color:var(--orange)">Cliente</span></h1>
+      
+      <form id="registerClientForm">
+        <div class="form-group">
+          <label>Nombre Completo</label>
+          <input type="text" id="clientName" placeholder="Tu nombre" required>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="clientEmail" placeholder="tu@email.com" required>
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="tel" id="clientPhone" placeholder="3782-XXXXXX" required>
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" id="clientPassword" placeholder="Mínimo 6 caracteres" required>
+        </div>
+        <button type="submit" class="btn-primary">Crear Cuenta</button>
+      </form>
+      
+      <div class="auth-footer">
+        <p>¿Ya tenés cuenta? <a href="login.html">Iniciar sesión</a></p>
+        <p style="margin-top:15px;">¿Sos técnico? <a href="register-technician.html">Registrate como técnico</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script>
+    document.getElementById('registerClientForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('clientEmail').value;
+      const password = document.getElementById('clientPassword').value;
+      const name = document.getElementById('clientName').value;
+      const phone = document.getElementById('clientPhone').value;
+      
+      try {
+        await firebase.auth().createUserWithEmailAndPassword(email, password);
+        
+        await firebase.firestore().collection('clients').doc(email.split('@')[0]).set({
+          email,
+          name,
+          phone,
+          userType: 'client',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        alert('✅ Cuenta creada exitosamente. Ahora podés iniciar sesión.');
+        window.location.href = 'login.html';
+        
+      } catch (error) {
+        alert('❌ Error: ' + error.message);
+      }
+    });
+  </script>
+</body>
+</html>
