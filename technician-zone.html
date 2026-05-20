@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zona de Técnicos - Cell Space</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/technician.css">
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+  <!-- NAV -->
+  <nav class="tech-nav">
+    <div class="container">
+      <a href="index.html" class="logo">
+        <img src="assets/logo.png" alt="Cell Space" style="height:35px;">
+      </a>
+      <div class="tech-user-info">
+        <span id="techName">Cargando...</span>
+        <span id="premiumBadge" class="premium-badge" style="display:none;">👑 PREMIUM</span>
+        <button onclick="logout()" class="btn-logout">Cerrar Sesión</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="tech-hero">
+    <div class="container">
+      <h1>Zona de <span class="highlight">Técnicos</span></h1>
+      <p>Accedé a tutoriales, guías y contenido exclusivo</p>
+    </div>
+  </section>
+
+  <!-- TABS -->
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="all">Todo el Contenido</button>
+      <button class="tab-btn" data-tab="free">Gratis</button>
+      <button class="tab-btn premium-tab" data-tab="premium">👑 Premium</button>
+    </div>
+
+    <!-- CONTENT GRID -->
+    <div id="contentGrid" class="content-grid">
+      <p class="loading">Cargando contenido...</p>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/technician.js"></script>
+</body>
+</html>
