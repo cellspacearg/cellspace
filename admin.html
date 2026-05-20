@@ -41,6 +41,31 @@
       <a href="#" class="nav-link" onclick="logout()" style="margin-top:auto;color:#ff4444;">🚪 Cerrar Sesión</a>
     </nav>
   </aside>
+  <!-- TÉCNICOS -->
+<section id="tecnicos" class="section" style="display:none;">
+  <div class="section-header">
+    <h2>👨‍🔧 Gestión de Técnicos</h2>
+    <button class="btn btn-primary" onclick="loadTechniciansAdmin()">🔄 Actualizar Lista</button>
+  </div>
+  
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Especialidad</th>
+          <th>Experiencia</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="techniciansTable">
+        <tr><td colspan="6" class="loading">Cargando técnicos...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
 
   <!-- MAIN CONTENT -->
   <main class="main-content">
