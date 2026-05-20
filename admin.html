@@ -29,6 +29,8 @@
       <a href="#hero" class="nav-link" onclick="showSection('hero', this)">🎠 Carrusel</a>
       <a href="#servicios" class="nav-link" onclick="showSection('servicios', this)">🔧 Servicios</a>
       <a href="#productos" class="nav-link" onclick="showSection('productos', this)">📦 Productos</a>
+      <a href="#posts" class="nav-link" onclick="showSection('posts', this)">📢 Publicaciones</a>
+      <a href="#tecnicos" class="nav-link" onclick="showSection('tecnicos', this)">👨‍ Técnicos</a>
       <a href="#contacto" class="nav-link" onclick="showSection('contacto', this)">📍 Contacto</a>
       <a href="#footer" class="nav-link" onclick="showSection('footer', this)">📄 Footer</a>
       <a href="#imei" class="nav-link" onclick="showSection('imei', this)">🔍 IMEI History</a>
@@ -123,6 +125,16 @@
             <label>Descripción</label>
             <textarea id="serviceDesc" placeholder="Descripción del servicio..." rows="3" required></textarea>
           </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tiempo estimado</label>
+              <input type="text" id="serviceTime" placeholder="ej: 30 min - 2 hs">
+            </div>
+            <div class="form-group">
+              <label>Precio (opcional)</label>
+              <input type="number" id="servicePrice" placeholder="0">
+            </div>
+          </div>
           <div class="form-actions">
             <button type="button" class="btn btn-secondary" onclick="resetServiceForm()">Cancelar</button>
             <button type="submit" class="btn btn-primary">💾 Guardar</button>
@@ -135,133 +147,211 @@
       </div>
     </section>
 
-<!-- PRODUCTOS -->
-<section id="productos" class="section">
-  <div class="section-header">
-    <h2>📦 Productos</h2>
-    <button class="btn btn-primary" onclick="toggleProductForm()">+ Nuevo Producto</button>
-  </div>
-  
-  <!-- FORMULARIO MEJORADO -->
-  <div id="productForm" class="form-container" style="display:none;">
-    <form id="publishForm" class="form">
-      <input type="hidden" id="prodId">
-      
-      <!-- Información Básica -->
-      <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;margin-bottom:20px;">
-        <h3 style="color:var(--orange);margin:0 0 15px;font-size:1.1rem;">📋 Información Básica</h3>
-        <div class="form-group" style="margin-bottom:15px;">
-          <label>Nombre del Producto *</label>
-          <input type="text" id="prodName" placeholder="Ej: iPhone 13 Pro 128GB" required>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Categoría *</label>
-            <select id="prodCategory" required>
-              <option value="Celulares">Celulares</option>
-              <option value="Accesorios">Accesorios</option>
-              <option value="PC/Laptop">PC / Laptop</option>
-              <option value="Consolas">Consolas</option>
-              <option value="Servicios">Servicios</option>
-              <option value="Estaciones de Soldado">Estaciones de Soldado</option>
-              <option value="Herramientas">Herramientas</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Marca</label>
-            <input type="text" id="prodBrand" placeholder="Ej: Apple, Samsung, Quick">
-          </div>
-          <div class="form-group">
-            <label>SKU</label>
-            <input type="text" id="prodSku" placeholder="Código único">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Descripción Completa</label>
-          <textarea id="prodDesc" rows="4" placeholder="Descripción detallada, características, especificaciones..."></textarea>
-        </div>
+    <!-- PRODUCTOS -->
+    <section id="productos" class="section">
+      <div class="section-header">
+        <h2>📦 Productos</h2>
+        <button class="btn btn-primary" onclick="toggleProductForm()">+ Nuevo Producto</button>
       </div>
       
-      <!-- Precios -->
-      <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;margin-bottom:20px;">
-        <h3 style="color:var(--orange);margin:0 0 15px;font-size:1.1rem;">💰 Precios</h3>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Precio Lista $</label>
-            <input type="number" id="prodPriceList" placeholder="0.00" min="0" step="0.01">
-            <small style="color:var(--muted);display:block;margin-top:5px;">Precio original/tachado</small>
-          </div>
-          <div class="form-group">
-            <label>Precio Transferencia $ *</label>
-            <input type="number" id="prodPriceTransfer" placeholder="0.00" min="0" step="0.01" required>
-            <small style="color:var(--muted);display:block;margin-top:5px;">Precio final con transferencia</small>
-          </div>
-          <div class="form-group">
-            <label>Precio Normal $</label>
-            <input type="number" id="prodPrice" placeholder="0.00" min="0" step="0.01">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Cuotas</label>
-            <input type="text" id="prodInstallments" placeholder="Ej: 3 cuotas fijas de $250.297,50">
-          </div>
-          <div class="form-group">
-            <label>Garantía</label>
-            <input type="text" id="prodWarranty" placeholder="Ej: 6 meses de garantía">
-          </div>
-        </div>
-      </div>
-      
-      <!-- Imagen -->
-      <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;margin-bottom:20px;">
-        <h3 style="color:var(--orange);margin:0 0 15px;font-size:1.1rem;">🖼️ Imagen</h3>
-        <div class="form-group">
-          <div class="upload-area" id="uploadArea">
-            <input type="file" id="prodImage" accept="image/*">
-            <img id="imagePreview" class="preview-img">
-            <div id="uploadPlaceholder">
-              <p>📸 Click o arrastra una imagen</p>
-              <span>Máx 5MB • JPG/PNG</span>
+      <div id="productForm" class="form-container" style="display:none;">
+        <form id="publishForm" class="form">
+          <input type="hidden" id="prodId">
+          
+          <!-- Información Básica -->
+          <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;margin-bottom:20px;">
+            <h3 style="color:var(--orange);margin:0 0 15px;font-size:1.1rem;">📋 Información Básica</h3>
+            <div class="form-group" style="margin-bottom:15px;">
+              <label>Nombre del Producto *</label>
+              <input type="text" id="prodName" placeholder="Ej: iPhone 13 Pro 128GB" required>
             </div>
-            <div class="progress" id="uploadProgress">
-              <div class="progress-fill" id="progressFill"></div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Categoría *</label>
+                <select id="prodCategory" required>
+                  <option value="Celulares">Celulares</option>
+                  <option value="Accesorios">Accesorios</option>
+                  <option value="PC/Laptop">PC / Laptop</option>
+                  <option value="Consolas">Consolas</option>
+                  <option value="Servicios">Servicios</option>
+                  <option value="Estaciones de Soldado">Estaciones de Soldado</option>
+                  <option value="Herramientas">Herramientas</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Marca</label>
+                <input type="text" id="prodBrand" placeholder="Ej: Apple, Samsung, Quick">
+              </div>
+              <div class="form-group">
+                <label>SKU</label>
+                <input type="text" id="prodSku" placeholder="Código único">
+              </div>
             </div>
-            <p id="uploadStatus" class="upload-status"></p>
+            <div class="form-group">
+              <label>Descripción Completa</label>
+              <textarea id="prodDesc" rows="4" placeholder="Descripción detallada, características, especificaciones..."></textarea>
+            </div>
           </div>
-        </div>
+          
+          <!-- Precios -->
+          <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;margin-bottom:20px;">
+            <h3 style="color:var(--orange);margin:0 0 15px;font-size:1.1rem;">💰 Precios</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Precio Lista $</label>
+                <input type="number" id="prodPriceList" placeholder="0.00" min="0" step="0.01">
+                <small style="color:var(--muted);display:block;margin-top:5px;">Precio original/tachado</small>
+              </div>
+              <div class="form-group">
+                <label>Precio Transferencia $ *</label>
+                <input type="number" id="prodPriceTransfer" placeholder="0.00" min="0" step="0.01" required>
+                <small style="color:var(--muted);display:block;margin-top:5px;">Precio final con transferencia</small>
+              </div>
+              <div class="form-group">
+                <label>Precio Normal $</label>
+                <input type="number" id="prodPrice" placeholder="0.00" min="0" step="0.01">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Cuotas</label>
+                <input type="text" id="prodInstallments" placeholder="Ej: 3 cuotas fijas de $250.297,50">
+              </div>
+              <div class="form-group">
+                <label>Garantía</label>
+                <input type="text" id="prodWarranty" placeholder="Ej: 6 meses de garantía">
+              </div>
+            </div>
+          </div>
+          
+          <!-- Imagen -->
+          <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;margin-bottom:20px;">
+            <h3 style="color:var(--orange);margin:0 0 15px;font-size:1.1rem;">🖼️ Imagen</h3>
+            <div class="form-group">
+              <div class="upload-area" id="uploadArea">
+                <input type="file" id="prodImage" accept="image/*">
+                <img id="imagePreview" class="preview-img">
+                <div id="uploadPlaceholder">
+                  <p>📸 Click o arrastra una imagen</p>
+                  <span>Máx 5MB • JPG/PNG</span>
+                </div>
+                <div class="progress" id="uploadProgress">
+                  <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p id="uploadStatus" class="upload-status"></p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Inventario -->
+          <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;margin-bottom:20px;">
+            <h3 style="color:var(--orange);margin:0 0 15px;font-size:1.1rem;">📦 Inventario</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Stock Disponible</label>
+                <input type="number" id="prodStockQuantity" placeholder="0" min="0">
+              </div>
+              <div class="form-group">
+                <label class="checkbox-label" style="margin-top:30px;">
+                  <input type="checkbox" id="prodStock" checked>
+                  <span>Producto en stock (disponible)</span>
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Botones -->
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="resetProductForm()">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="saveBtn">💾 Guardar Producto</button>
+          </div>
+        </form>
       </div>
       
-      <!-- Inventario -->
-      <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;margin-bottom:20px;">
-        <h3 style="color:var(--orange);margin:0 0 15px;font-size:1.1rem;">📦 Inventario</h3>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Stock Disponible</label>
-            <input type="number" id="prodStockQuantity" placeholder="0" min="0">
-          </div>
-          <div class="form-group">
-            <label class="checkbox-label" style="margin-top:30px;">
-              <input type="checkbox" id="prodStock" checked>
-              <span>Producto en stock (disponible)</span>
-            </label>
-          </div>
-        </div>
+      <div class="products-admin-grid" id="adminProductsList">
+        <p class="loading">Cargando...</p>
+      </div>
+    </section>
+
+    <!-- PUBLICACIONES (ZONA TÉCNICOS) -->
+    <section id="posts" class="section">
+      <div class="section-header">
+        <h2>📢 Publicar Contenido Técnico</h2>
+        <button class="btn btn-primary" onclick="togglePostForm()">+ Nueva Publicación</button>
       </div>
       
-      <!-- Botones -->
-      <div class="form-actions">
-        <button type="button" class="btn btn-secondary" onclick="resetProductForm()">Cancelar</button>
-        <button type="submit" class="btn btn-primary" id="saveBtn">💾 Guardar Producto</button>
+      <div id="postForm" class="form-container" style="display:none;">
+        <form id="publishPostForm" class="form">
+          <div class="form-group">
+            <label>Título</label>
+            <input type="text" id="postTitle" required>
+          </div>
+          <div class="form-group">
+            <label>Descripción / Contenido</label>
+            <textarea id="postDesc" rows="4" required></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Categoría</label>
+              <select id="postCategory">
+                <option value="Hardware">Hardware</option>
+                <option value="Software">Software</option>
+                <option value="Reparación">Reparación</option>
+                <option value="Consejos">Consejos</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>¿Es contenido Premium?</label>
+              <select id="postIsPremium">
+                <option value="false">No (Gratis)</option>
+                <option value="true">Sí (👑 Premium)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>URL de Imagen (ImgBB)</label>
+            <input type="text" id="postImage" placeholder="Pegá el link de la imagen aquí">
+          </div>
+          <div class="form-group">
+            <label>URL de Video (Opcional)</label>
+            <input type="text" id="postVideo" placeholder="Link de YouTube o similar">
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('postForm').style.display='none'">Cancelar</button>
+            <button type="submit" class="btn btn-primary">💾 Publicar</button>
+          </div>
+        </form>
       </div>
-    </form>
-  </div>
-  
-  <!-- Lista de Productos (sin cambios) -->
-  <div class="products-admin-grid" id="adminProductsList">
-    <p class="loading">Cargando...</p>
-  </div>
-</section>
+      
+      <div id="postsList" class="slides-list">
+        <p class="loading">Cargando publicaciones...</p>
+      </div>
+    </section>
+
+    <!-- GESTIÓN DE TÉCNICOS -->
+    <section id="tecnicos" class="section">
+      <div class="section-header">
+        <h2>👨‍ Gestión de Técnicos</h2>
+        <button class="btn btn-primary" onclick="loadTechniciansAdmin()">🔄 Actualizar</button>
+      </div>
+      
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Especialidad</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="techniciansTable">
+            <tr><td colspan="5" class="loading">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
     <!-- CONTACTO -->
     <section id="contacto" class="section">
