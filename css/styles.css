@@ -83,7 +83,7 @@ body::after {
 }
 
 /* ========================================
-   NAVBAR - CORREGIDO PARA ÍCONOS ESTABLES
+   NAVBAR
    ======================================== */
 .nav {
   position: fixed;
@@ -132,7 +132,6 @@ body::after {
   flex-wrap: wrap;
 }
 
-/* Links del navbar - SOLO animación de color */
 .nav-right a.nav-link {
   font-size: 13px;
   font-weight: 500;
@@ -155,7 +154,6 @@ body::after {
   font-weight: 600;
 }
 
-/* Botones pequeños - estables */
 .btn-small {
   background: rgba(255,106,0,0.2);
   border: 1px solid rgba(255,106,0,0.3);
@@ -173,7 +171,6 @@ body::after {
   color: white;
 }
 
-/* Ícono del carrito - estable */
 .cart-header-btn {
   position: relative;
   background: rgba(255,106,0,0.1);
@@ -651,22 +648,6 @@ body::after {
   font-size: 14px;
 }
 
-.auth-form input {
-  width: 100%;
-  padding: 12px 15px;
-  background: rgba(26,26,26,0.8);
-  border: 1px solid #333;
-  border-radius: 8px;
-  color: white;
-  font-family: inherit;
-  font-size: 15px;
-}
-
-.auth-form input:focus {
-  outline: none;
-  border-color: var(--orange);
-}
-
 .btn {
   padding: 12px 30px;
   border-radius: 25px;
@@ -934,55 +915,6 @@ body::after {
 .search-box {
   flex: 1;
   position: relative;
-}
-
-.search-box input {
-  width: 100%;
-  padding: 15px 20px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,106,0,0.2);
-  border-radius: 12px;
-  color: white;
-  font-size: 15px;
-  transition: border-color 0.3s ease, background 0.3s ease;
-}
-
-.search-box input:focus {
-  outline: none;
-  border-color: var(--orange);
-  background: rgba(255,255,255,0.08);
-}
-
-.cart-header-btn {
-  padding: 15px 25px;
-  background: rgba(255,106,0,0.1);
-  border: 1px solid rgba(255,106,0,0.3);
-  border-radius: 12px;
-  color: white;
-  cursor: pointer;
-  font-size: 15px;
-  transition: background 0.3s ease;
-  position: relative;
-}
-
-.cart-header-btn:hover {
-  background: rgba(255,106,0,0.2);
-}
-
-#cartCountHeader {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  background: var(--orange);
-  color: white;
-  font-size: 11px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
 }
 
 .category-filters {
@@ -1365,109 +1297,6 @@ body::after {
 }
 
 /* ========================================
-   RESPONSIVE
-   ======================================== */
-@media (max-width: 768px) {
-  .nav {
-    flex-direction: column;
-    gap: 10px;
-    padding: 15px;
-  }
-  
-  .nav-left {
-    gap: 10px;
-  }
-  
-  .nav-logo {
-    height: 50px;
-  }
-  
-  .nav-brand {
-    font-size: 18px;
-  }
-  
-  .nav-right {
-    gap: 12px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  
-  .nav-right a.nav-link {
-    font-size: 12px;
-    padding: 5px 0;
-  }
-  
-  .carousel {
-    height: 300px;
-    border-radius: 12px;
-  }
-  
-  .carousel-content {
-    padding: 25px;
-    max-width: 100%;
-  }
-  
-  .carousel-content h1 {
-    font-size: 1.5rem;
-  }
-  
-  .carousel-content h2 {
-    font-size: 1rem;
-  }
-  
-  .carousel-btn {
-    width: 35px;
-    height: 35px;
-    font-size: 16px;
-  }
-  
-  .services-grid,
-  .products-grid,
-  .footer-content,
-  .products-grid-premium {
-    grid-template-columns: 1fr;
-  }
-  
-  .shop-title {
-    font-size: 2rem;
-  }
-  
-  .shop-controls {
-    flex-direction: column;
-  }
-  
-  .category-filters {
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    padding-bottom: 10px;
-  }
-  
-  .footer-grid {
-    grid-template-columns: 1fr;
-    gap: 30px;
-  }
-  
-  .footer-professional {
-    padding: 40px 20px 20px;
-    margin-top: 60px;
-  }
-  
-  .social-links {
-    justify-content: center;
-  }
-  
-  .social-link {
-    width: 38px;
-    height: 38px;
-  }
-  
-  .social-link svg {
-    width: 18px;
-    height: 18px;
-  }
-}
-/* ========================================
    DROPDOWN DE USUARIO
    ======================================== */
 .user-dropdown {
@@ -1616,7 +1445,6 @@ body::after {
   box-shadow: 0 10px 25px rgba(255,215,0,0.4);
 }
 
-/* Badge premium en cards */
 .premium-badge-card {
   position: absolute;
   top: 10px;
@@ -1629,6 +1457,7 @@ body::after {
   font-weight: 700;
   z-index: 5;
 }
+
 /* ========================================
    MODAL OTP
    ======================================== */
@@ -1718,7 +1547,227 @@ body::after {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ========================================
+   INPUTS OSCUROS - MODO DARK (CORREGIDO)
+   ======================================== */
+
+.auth-form input,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
+input[type="search"] {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+  padding: 14px 18px !important;
+  font-size: 15px !important;
+  font-family: 'Montserrat', sans-serif !important;
+  transition: all 0.3s ease !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.auth-form input:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="tel"]:focus,
+input[type="number"]:focus,
+input[type="search"]:focus {
+  outline: none !important;
+  border-color: var(--orange) !important;
+  background: rgba(255, 106, 0, 0.12) !important;
+  box-shadow: 0 0 0 3px rgba(255, 106, 0, 0.25) !important;
+}
+
+.auth-form input::placeholder,
+input::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+  opacity: 1 !important;
+}
+
+select {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+  padding: 14px 18px !important;
+  font-size: 15px !important;
+  cursor: pointer;
+  width: 100%;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23FF6A00' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+}
+
+select:focus {
+  outline: none !important;
+  border-color: var(--orange) !important;
+}
+
+select option {
+  background: #111;
+  color: #fff;
+  padding: 10px;
+}
+
+textarea {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+  padding: 14px 18px !important;
+  font-size: 15px !important;
+  font-family: 'Montserrat', sans-serif !important;
+  resize: vertical;
+  min-height: 100px;
+}
+
+textarea:focus {
+  outline: none !important;
+  border-color: var(--orange) !important;
+  background: rgba(255, 106, 0, 0.12) !important;
+}
+
+.auth-form label,
+label {
+  color: #ffffff !important;
+  font-weight: 500 !important;
+  margin-bottom: 10px !important;
+  display: block !important;
+  font-size: 14px !important;
+}
+
+.otp-input {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 2px solid rgba(255, 106, 0, 0.4) !important;
+  color: #ffffff !important;
+  border-radius: 12px !important;
+}
+
+.otp-input:focus {
+  border-color: var(--orange) !important;
+  background: rgba(255, 106, 0, 0.15) !important;
+}
+
+.search-box input {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 106, 0, 0.3) !important;
+  color: #ffffff !important;
+}
+
+.search-box input:focus {
+  border-color: var(--orange) !important;
+  background: rgba(255, 106, 0, 0.1) !important;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
 @media (max-width: 768px) {
+  .nav {
+    flex-direction: column;
+    gap: 10px;
+    padding: 15px;
+  }
+  
+  .nav-left {
+    gap: 10px;
+  }
+  
+  .nav-logo {
+    height: 50px;
+  }
+  
+  .nav-brand {
+    font-size: 18px;
+  }
+  
+  .nav-right {
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .nav-right a.nav-link {
+    font-size: 12px;
+    padding: 5px 0;
+  }
+  
+  .carousel {
+    height: 300px;
+    border-radius: 12px;
+  }
+  
+  .carousel-content {
+    padding: 25px;
+    max-width: 100%;
+  }
+  
+  .carousel-content h1 {
+    font-size: 1.5rem;
+  }
+  
+  .carousel-content h2 {
+    font-size: 1rem;
+  }
+  
+  .carousel-btn {
+    width: 35px;
+    height: 35px;
+    font-size: 16px;
+  }
+  
+  .services-grid,
+  .products-grid,
+  .footer-content,
+  .products-grid-premium {
+    grid-template-columns: 1fr;
+  }
+  
+  .shop-title {
+    font-size: 2rem;
+  }
+  
+  .shop-controls {
+    flex-direction: column;
+  }
+  
+  .category-filters {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    padding-bottom: 10px;
+  }
+  
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  
+  .footer-professional {
+    padding: 40px 20px 20px;
+    margin-top: 60px;
+  }
+  
+  .social-links {
+    justify-content: center;
+  }
+  
+  .social-link {
+    width: 38px;
+    height: 38px;
+  }
+  
+  .social-link svg {
+    width: 18px;
+    height: 18px;
+  }
+  
   .profile-page > div {
     grid-template-columns: 1fr !important;
   }
@@ -1733,70 +1782,4 @@ body::after {
     height: 50px;
     font-size: 1.5rem;
   }
-}
-/* ========================================
-   INPUTS OSCUROS - MODO DARK
-   ======================================== */
-
-/* Inputs generales */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="tel"],
-input[type="number"] {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #ffffff !important;
-  border-radius: 8px;
-  padding: 12px 15px;
-  font-size: 15px;
-  transition: all 0.3s ease;
-  width: 100%;
-}
-
-/* Efecto al hacer clic en el input */
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="password"]:focus,
-input[type="tel"]:focus,
-input[type="number"]:focus {
-  outline: none;
-  border-color: var(--orange) !important;
-  background: rgba(255, 106, 0, 0.1) !important;
-  box-shadow: 0 0 0 2px rgba(255, 106, 0, 0.2);
-}
-
-/* Color del texto placeholder */
-input::placeholder {
-  color: rgba(255, 255, 255, 0.4) !important;
-}
-
-/* Selects (desplegables) */
-select {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #ffffff !important;
-  border-radius: 8px;
-  padding: 12px 15px;
-  font-size: 15px;
-  cursor: pointer;
-}
-
-select:focus {
-  outline: none;
-  border-color: var(--orange) !important;
-}
-
-/* Opciones del select */
-select option {
-  background: #1a1a1a;
-  color: #ffffff;
-}
-
-/* Labels */
-label {
-  color: #ffffff !important;
-  font-weight: 500;
-  margin-bottom: 8px;
-  display: block;
 }
