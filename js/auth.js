@@ -1,10 +1,10 @@
 // ========================================
 // CELL SPACE - SISTEMA DE AUTENTICACIÓN
-// Con niveles de acceso
+// Con niveles de acceso y usernames
 // ========================================
 
 let currentUser = null;
-let currentUserType = 'client'; // 'client' o 'technician'
+let currentUserType = 'client';
 let isPremium = false;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -19,13 +19,14 @@ function checkAuthState() {
       // Ocultar login, mostrar perfil
       document.getElementById('loginLink').style.display = 'none';
       document.getElementById('userProfile').style.display = 'block';
-      document.getElementById('userName').textContent = user.email.split('@')[0];
       
       // Verificar si es admin
       if (user.email === 'nahuel0123encinas@gmail.com') {
-        document.getElementById('adminLink').style.display = 'block';
-        document.getElementById('userType').textContent = 'Admin';
+        document.getElementById('userName').textContent = 'nahuel0123encinas';
+        document.getElementById('userType').textContent = 'Admin 👑';
         document.getElementById('userType').classList.add('premium');
+        document.getElementById('adminMenuLink').style.display = 'block';
+        document.getElementById('techZoneLink').style.display = 'block';
         currentUserType = 'admin';
         isPremium = true;
         showAllContent();
@@ -39,7 +40,7 @@ function checkAuthState() {
       // No logueado
       document.getElementById('loginLink').style.display = 'block';
       document.getElementById('userProfile').style.display = 'none';
-      document.getElementById('adminLink').style.display = 'none';
+      document.getElementById('adminMenuLink').style.display = 'none';
       document.getElementById('techZoneLink').style.display = 'none';
       hidePremiumContent();
     }
@@ -57,11 +58,18 @@ async function checkUserType(email) {
     currentUserType = 'technician';
     isPremium = techData.isPremium || false;
     
+    // Mostrar username si existe, sino mostrar email
+    const displayName = techData.username || userId;
+    document.getElementById('userName').textContent = displayName;
+    
     document.getElementById('userType').textContent = isPremium ? 'Técnico Premium 👑' : 'Técnico';
     if (isPremium) document.getElementById('userType').classList.add('premium');
     
     // Mostrar link a zona técnica
     document.getElementById('techZoneLink').style.display = 'block';
+    
+    // Ocultar link admin (no es el propietario)
+    document.getElementById('adminMenuLink').style.display = 'none';
     
     // Mostrar contenido según nivel
     if (isPremium) {
@@ -72,10 +80,17 @@ async function checkUserType(email) {
     
   } else {
     // Es cliente
+    const clientDoc = await db.collection('clients').doc(userId).get();
     currentUserType = 'client';
     isPremium = false;
+    
+    // Mostrar username si existe
+    const displayName = clientDoc.exists && clientDoc.data().username ? clientDoc.data().username : userId;
+    document.getElementById('userName').textContent = displayName;
     document.getElementById('userType').textContent = 'Cliente';
     document.getElementById('techZoneLink').style.display = 'none';
+    document.getElementById('adminMenuLink').style.display = 'none';
+    
     hidePremiumContent();
   }
 }
@@ -104,7 +119,6 @@ function logout() {
 // ========================================
 
 function showAllContent() {
-  // Admin o Premium: ven todo
   document.querySelectorAll('.premium-lock').forEach(lock => {
     lock.remove();
   });
@@ -114,7 +128,6 @@ function showAllContent() {
 }
 
 function showFreeContent() {
-  // Técnicos gratis: ven contenido free, bloqueado el premium
   document.querySelectorAll('.premium-content.premium-only').forEach(content => {
     if (!content.querySelector('.premium-lock')) {
       const lock = document.createElement('div');
@@ -131,7 +144,6 @@ function showFreeContent() {
 }
 
 function hidePremiumContent() {
-  // Clientes: no ven zona técnica ni contenido premium
   document.getElementById('techZoneLink').style.display = 'none';
   document.querySelectorAll('.premium-content').forEach(content => {
     if (!content.querySelector('.premium-lock')) {
