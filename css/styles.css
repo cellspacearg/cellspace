@@ -1734,3 +1734,69 @@ body::after {
     font-size: 1.5rem;
   }
 }
+/* ========================================
+   INPUTS OSCUROS - MODO DARK
+   ======================================== */
+
+/* Inputs generales */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"] {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+  border-radius: 8px;
+  padding: 12px 15px;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+/* Efecto al hacer clic en el input */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="tel"]:focus,
+input[type="number"]:focus {
+  outline: none;
+  border-color: var(--orange) !important;
+  background: rgba(255, 106, 0, 0.1) !important;
+  box-shadow: 0 0 0 2px rgba(255, 106, 0, 0.2);
+}
+
+/* Color del texto placeholder */
+input::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Selects (desplegables) */
+select {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+  border-radius: 8px;
+  padding: 12px 15px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--orange) !important;
+}
+
+/* Opciones del select */
+select option {
+  background: #1a1a1a;
+  color: #ffffff;
+}
+
+/* Labels */
+label {
+  color: #ffffff !important;
+  font-weight: 500;
+  margin-bottom: 8px;
+  display: block;
+}
