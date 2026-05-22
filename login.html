@@ -12,6 +12,16 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  
+  <!-- ✅ EmailJS - AGREGADO -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script type="text/javascript">
+    (function() {
+      // ⚠️ REEMPLAZÁ "TU_PUBLIC_KEY" CON TU CLAVE PÚBLICA DE EMAILJS
+      // (Se encuentra en Account > API Keys en el dashboard de EmailJS)
+      emailjs.init("TU_PUBLIC_KEY_AQUI");
+    })();
+  </script>
 </head>
 <body>
   <div class="login-page">
@@ -64,41 +74,62 @@
   <!-- Modal de Verificación OTP -->
   <div id="otpModal" class="otp-modal" style="display:none;">
     <div class="otp-modal-content">
-      <h2 style="color:var(--orange);margin-bottom:10px;">🔐 Código de Verificación</h2>
-      <p style="color:var(--muted);margin-bottom:30px;text-align:center;">
+      <div style="text-align:center;margin-bottom:30px;">
+        <div style="font-size:4rem;margin-bottom:10px;">🔐</div>
+        <h2 style="color:var(--orange);margin:0 0 10px;">Código de Verificación</h2>
+      </div>
+      
+      <p style="color:var(--muted);margin-bottom:20px;text-align:center;">
         Se ha enviado un código de 6 dígitos a<br>
-        <strong id="otpEmail" style="color:white;"></strong>
+        <strong id="otpEmail" style="color:white;font-size:1.1rem;"></strong>
       </p>
       
       <div class="otp-inputs">
-        <input type="text" class="otp-input" maxlength="1" data-index="0">
-        <input type="text" class="otp-input" maxlength="1" data-index="1">
-        <input type="text" class="otp-input" maxlength="1" data-index="2">
-        <input type="text" class="otp-input" maxlength="1" data-index="3">
-        <input type="text" class="otp-input" maxlength="1" data-index="4">
-        <input type="text" class="otp-input" maxlength="1" data-index="5">
+        <input type="text" class="otp-input" maxlength="1" data-index="0" inputmode="numeric" pattern="[0-9]*">
+        <input type="text" class="otp-input" maxlength="1" data-index="1" inputmode="numeric" pattern="[0-9]*">
+        <input type="text" class="otp-input" maxlength="1" data-index="2" inputmode="numeric" pattern="[0-9]*">
+        <input type="text" class="otp-input" maxlength="1" data-index="3" inputmode="numeric" pattern="[0-9]*">
+        <input type="text" class="otp-input" maxlength="1" data-index="4" inputmode="numeric" pattern="[0-9]*">
+        <input type="text" class="otp-input" maxlength="1" data-index="5" inputmode="numeric" pattern="[0-9]*">
       </div>
       
-      <p style="color:#ff4444;font-size:12px;margin:15px 0;text-align:center;" id="otpError"></p>
+      <p style="color:#ff4444;font-size:12px;margin:10px 0;text-align:center;min-height:18px;" id="otpError"></p>
       
       <button onclick="verifyOTP()" class="btn btn-primary btn-block">Verificar Código</button>
       
-      <p style="color:var(--muted);font-size:12px;margin-top:20px;text-align:center;">
-        ¿No recibiste el código? <a href="#" onclick="resendOTP()" style="color:var(--orange);">Reenviar</a>
+      <p style="color:var(--muted);font-size:12px;margin:20px 0;text-align:center;">
+        ¿No recibiste el código? <a href="#" onclick="resendOTP()" style="color:var(--orange);font-weight:600;">Reenviar</a>
       </p>
       
-      <div style="background:rgba(255,68,68,0.1);border-left:3px solid #ff4444;padding:12px;margin-top:20px;border-radius:6px;">
-        <p style="color:#ff9999;font-size:11px;margin:0;">
-          <strong>Importante:</strong> Nunca compartas este código con nadie. El equipo de Cell Space nunca te pedirá tu código de acceso.
+      <div style="background:rgba(255,68,68,0.1);border-left:3px solid #ff4444;padding:15px;margin-top:20px;border-radius:6px;">
+        <p style="color:#ff9999;font-size:11px;margin:0;line-height:1.5;">
+          <strong>⚠️ Importante:</strong> Nunca compartas este código con nadie. El equipo de Cell Space nunca te pedirá tu código de acceso.
         </p>
       </div>
+      
+      <p style="color:var(--muted);font-size:11px;margin-top:15px;text-align:center;">
+        ⏰ Este código expirará en 10 minutos
+      </p>
     </div>
   </div>
 
   <script src="js/config.js"></script>
-  <script src="js/auth.js"></script>
   <script>
-    // Login con email/username
+    // ========================================
+    // CELL SPACE - LOGIN CON OTP (EmailJS)
+    // ========================================
+    
+    let currentUser = null;
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuthState();
+      setupOTPInputs();
+    });
+    
+    // ========================================
+    // LOGIN CON EMAIL/USERNAME
+    // ========================================
+    
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
@@ -107,7 +138,7 @@
       
       let email = identifier;
       
-      // Si no es email, buscar username
+      // Si no es email, buscar username en Firestore
       if (!identifier.includes('@')) {
         try {
           const usernameDoc = await db.collection('usernames').doc(identifier.toLowerCase()).get();
@@ -118,6 +149,7 @@
             return;
           }
         } catch (error) {
+          console.error('Error buscando username:', error);
           alert('❌ Error al buscar usuario');
           return;
         }
@@ -125,39 +157,60 @@
       
       try {
         // Generar y enviar OTP
-        await sendOTP(email);
+        const otp = generateOTP();
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
         
-        // Guardar email temporalmente
+        // Guardar OTP en Firestore
+        await db.collection('otp_codes').doc(email).set({
+          code: otp,
+          expiresAt: expiresAt,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          attempts: 0
+        });
+        
+        // Enviar email con OTP usando EmailJS
+        await sendOTPEmail(email, otp);
+        
+        // Guardar temporalmente para después del OTP
         sessionStorage.setItem('tempEmail', email);
         sessionStorage.setItem('tempPassword', password);
         
-        // Mostrar modal OTP
+        // Mostrar modal de OTP
         showOTPModal(email);
         
       } catch (error) {
-        if (error.code === 'user-not-found' || error.code === 'wrong-password') {
+        console.error('Error:', error);
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
           alert('❌ Email o contraseña incorrectos');
+        } else if (error.code === 'auth/too-many-requests') {
+          alert('⚠️ Demasiados intentos. Intentá de nuevo más tarde.');
         } else {
           alert('❌ Error: ' + error.message);
         }
       }
     });
     
-    // Login con Google
+    // ========================================
+    // LOGIN CON GOOGLE
+    // ========================================
+    
     function signInWithGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
       
       firebase.auth().signInWithPopup(provider)
         .then(async (result) => {
           const user = result.user;
+          const userId = user.uid;
           
           // Verificar si ya existe en Firestore
-          const userDoc = await db.collection('users').doc(user.uid).get();
+          const userDoc = await db.collection('users').doc(userId).get();
           
           if (!userDoc.exists) {
             // Crear nuevo usuario
-            await db.collection('users').doc(user.uid).set({
-              username: user.displayName.toLowerCase().replace(/\s+/g, '_'),
+            const username = user.displayName.toLowerCase().replace(/\s+/g, '_');
+            
+            await db.collection('users').doc(userId).set({
+              username: username,
               name: user.displayName,
               email: user.email,
               photoURL: user.photoURL,
@@ -168,101 +221,87 @@
             });
             
             // Reservar username
-            await db.collection('usernames').doc(user.displayName.toLowerCase().replace(/\s+/g, '_')).set({
+            await db.collection('usernames').doc(username).set({
               email: user.email,
               userType: 'client',
+              uid: userId,
               createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
           } else {
             // Actualizar lastLogin
-            await db.collection('users').doc(user.uid).update({
+            await db.collection('users').doc(userId).update({
               lastLogin: firebase.firestore.FieldValue.serverTimestamp()
             });
           }
           
+          // Redirigir
           window.location.href = 'index.html';
         })
         .catch((error) => {
+          console.error('Error con Google:', error);
           alert('❌ Error con Google: ' + error.message);
         });
     }
     
-    // Generar y enviar OTP
-    async function sendOTP(email) {
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
-      
-      // Guardar OTP en Firestore
-      await db.collection('otp_codes').doc(email).set({
-        code: otp,
-        expiresAt: expiresAt,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      
-      // Enviar email (usando EmailJS o tu servicio preferido)
-      await sendOTPEmail(email, otp);
-    }
+    // ========================================
+    // ENVÍO DE OTP CON EMAILJS ✅ ACTUALIZADO
+    // ========================================
     
-    // Enviar email con OTP
     async function sendOTPEmail(email, otp) {
-      // Opción 1: Usar EmailJS (recomendado para frontend)
-      // Opción 2: Usar Cloud Function de Firebase
-      // Opción 3: Usar un servicio como SendGrid
+      const userName = email.split('@')[0];
       
-      // Ejemplo con fetch a tu backend/Cloud Function:
+      const templateParams = {
+        to_email: email,
+        user_name: userName,
+        otp_code: otp
+      };
+      
       try {
-        await fetch('https://us-central1-cellspace-login.cloudfunctions.net/sendOTP', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, otp })
-        });
+        // ✅ TUS CREDENCIALES DE EMAILJS
+        const serviceID = 'service_822cqyn';       // Tu Service ID
+        const templateID = 'template_kdt4wrs';    // Tu Template ID
+        
+        await emailjs.send(serviceID, templateID, templateParams);
+        
+        console.log('✅ Email OTP enviado exitosamente a:', email);
+        return true;
       } catch (error) {
-        console.error('Error enviando email:', error);
-        // En producción, implementar Cloud Function
+        console.error('❌ Error enviando email:', error);
+        throw new Error('No se pudo enviar el código de verificación');
       }
     }
     
-    // Mostrar modal OTP
-    function showOTPModal(email) {
-      document.getElementById('otpEmail').textContent = email;
-      document.getElementById('otpModal').style.display = 'flex';
-      document.querySelector('.otp-input').focus();
-    }
+    // ========================================
+    // VERIFICACIÓN DE OTP
+    // ========================================
     
-    // Auto-focus en inputs OTP
-    document.querySelectorAll('.otp-input').forEach((input, index) => {
-      input.addEventListener('input', (e) => {
-        if (e.target.value && index < 5) {
-          document.querySelectorAll('.otp-input')[index + 1].focus();
-        }
-      });
-      
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Backspace' && !e.target.value && index > 0) {
-          document.querySelectorAll('.otp-input')[index - 1].focus();
-        }
-      });
-    });
-    
-    // Verificar OTP
     async function verifyOTP() {
       const email = sessionStorage.getItem('tempEmail');
       const password = sessionStorage.getItem('tempPassword');
       
+      if (!email || !password) {
+        alert('❌ Sesión expirada. Intentá de nuevo.');
+        sessionStorage.clear();
+        document.getElementById('otpModal').style.display = 'none';
+        return;
+      }
+      
+      // Obtener código ingresado
       const otpInputs = document.querySelectorAll('.otp-input');
       let otp = '';
       otpInputs.forEach(input => otp += input.value);
       
       if (otp.length !== 6) {
-        document.getElementById('otpError').textContent = 'Ingresá el código de 6 dígitos';
+        document.getElementById('otpError').textContent = 'Ingresá los 6 dígitos del código';
         return;
       }
       
       try {
+        // Buscar OTP en Firestore
         const otpDoc = await db.collection('otp_codes').doc(email).get();
         
         if (!otpDoc.exists) {
-          document.getElementById('otpError').textContent = 'Código no válido';
+          document.getElementById('otpError').textContent = 'Código no válido o expirado';
           return;
         }
         
@@ -271,12 +310,26 @@
         // Verificar si expiró
         if (otpData.expiresAt.toDate() < new Date()) {
           document.getElementById('otpError').textContent = 'El código expiró. Solicitá uno nuevo.';
+          await db.collection('otp_codes').doc(email).delete();
+          return;
+        }
+        
+        // Verificar intentos
+        if (otpData.attempts >= 3) {
+          document.getElementById('otpError').textContent = 'Demasiados intentos. Solicitá un nuevo código.';
+          await db.collection('otp_codes').doc(email).delete();
           return;
         }
         
         // Verificar código
         if (otpData.code !== otp) {
-          document.getElementById('otpError').textContent = 'Código incorrecto';
+          // Incrementar intentos
+          await db.collection('otp_codes').doc(email).update({
+            attempts: firebase.firestore.FieldValue.increment(1)
+          });
+          
+          const remaining = 3 - (otpData.attempts + 1);
+          document.getElementById('otpError').textContent = `Código incorrecto. Te quedan ${remaining} intentos.`;
           return;
         }
         
@@ -288,7 +341,10 @@
         sessionStorage.removeItem('tempEmail');
         sessionStorage.removeItem('tempPassword');
         
-        // Redirigir
+        // Limpiar inputs
+        otpInputs.forEach(input => input.value = '');
+        
+        // Redirigir según tipo de usuario
         const userId = email.split('@')[0];
         const techDoc = await db.collection('technicians').doc(userId).get();
         
@@ -299,36 +355,126 @@
         }
         
       } catch (error) {
-        document.getElementById('otpError').textContent = 'Error al verificar';
+        console.error('Error verificando OTP:', error);
+        document.getElementById('otpError').textContent = 'Error al verificar. Intentá de nuevo.';
       }
     }
     
-    // Reenviar OTP
+    // ========================================
+    // REENVÍO DE OTP
+    // ========================================
+    
     async function resendOTP() {
       const email = sessionStorage.getItem('tempEmail');
-      if (!email) return;
+      
+      if (!email) {
+        alert('❌ Sesión expirada. Intentá de nuevo.');
+        return;
+      }
       
       try {
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otp = generateOTP();
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
         
         await db.collection('otp_codes').doc(email).set({
           code: otp,
           expiresAt: expiresAt,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          attempts: 0
         });
         
         await sendOTPEmail(email, otp);
         
-        alert('✅ Nuevo código enviado');
-        document.getElementById('otpError').textContent = '';
+        // Limpiar inputs y error
         document.querySelectorAll('.otp-input').forEach(input => input.value = '');
+        document.getElementById('otpError').textContent = '';
+        
+        alert('✅ Nuevo código enviado a tu email');
         document.querySelector('.otp-input').focus();
         
       } catch (error) {
-        alert('❌ Error al reenviar');
+        console.error('Error reenviando OTP:', error);
+        alert('❌ Error al reenviar el código. Intentá de nuevo.');
       }
     }
+    
+    // ========================================
+    // UTILIDADES
+    // ========================================
+    
+    function generateOTP() {
+      return Math.floor(100000 + Math.random() * 900000).toString();
+    }
+    
+    function showOTPModal(email) {
+      document.getElementById('otpEmail').textContent = email;
+      document.getElementById('otpModal').style.display = 'flex';
+      document.querySelector('.otp-input').focus();
+    }
+    
+    function setupOTPInputs() {
+      const inputs = document.querySelectorAll('.otp-input');
+      
+      inputs.forEach((input, index) => {
+        // Auto-focus al siguiente input
+        input.addEventListener('input', (e) => {
+          // Solo permitir números
+          e.target.value = e.target.value.replace(/[^0-9]/g, '');
+          
+          if (e.target.value && index < 5) {
+            inputs[index + 1].focus();
+          }
+        });
+        
+        // Retroceder con backspace
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && !e.target.value && index > 0) {
+            inputs[index - 1].focus();
+          }
+          // Navegación con flechas
+          if (e.key === 'ArrowLeft' && index > 0) {
+            inputs[index - 1].focus();
+          }
+          if (e.key === 'ArrowRight' && index < 5) {
+            inputs[index + 1].focus();
+          }
+        });
+        
+        // Pegar código completo
+        input.addEventListener('paste', (e) => {
+          e.preventDefault();
+          const pastedData = e.clipboardData.getData('text').slice(0, 6).split('');
+          
+          pastedData.forEach((char, i) => {
+            if (inputs[i] && /[0-9]/.test(char)) {
+              inputs[i].value = char;
+            }
+          });
+          
+          // Focus en el último input con valor o el siguiente
+          const lastFilled = pastedData.length - 1;
+          if (inputs[lastFilled]) {
+            inputs[lastFilled].focus();
+          }
+        });
+      });
+    }
+    
+    function checkAuthState() {
+      firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+          // Si ya está logueado, redirigir
+          window.location.href = 'index.html';
+        }
+      });
+    }
+    
+    // Cerrar modal con ESC
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && document.getElementById('otpModal').style.display === 'flex') {
+        // No permitir cerrar con ESC por seguridad
+      }
+    });
   </script>
 </body>
 </html>
