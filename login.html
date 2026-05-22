@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
   
-  <!-- Firebase COMPLETO -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
@@ -18,9 +18,7 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <script type="text/javascript">
     (function() {
-      console.log('🔑 Inicializando EmailJS...');
       emailjs.init("EYej4cfwI1OIadkG5");
-      console.log('✅ EmailJS inicializado');
     })();
   </script>
 </head>
@@ -115,15 +113,12 @@
     let currentUser = null;
     
     document.addEventListener('DOMContentLoaded', () => {
-      console.log('🔍 DOM cargado');
-      console.log('📧 emailjs disponible:', typeof emailjs !== 'undefined');
       checkAuthState();
       setupOTPInputs();
     });
     
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      console.log('📝 Formulario submit iniciado');
       
       const identifier = document.getElementById('loginIdentifier').value.trim();
       const password = document.getElementById('loginPassword').value;
@@ -135,35 +130,29 @@
           const usernameDoc = await db.collection('usernames').doc(identifier.toLowerCase()).get();
           if (usernameDoc.exists) {
             email = usernameDoc.data().email;
-            console.log('✅ Username encontrado, email:', email);
           } else {
             alert('❌ Nombre de usuario no encontrado');
             return;
           }
         } catch (error) {
-          console.error('❌ Error buscando username:', error);
+          console.error('Error buscando username:', error);
           alert('❌ Error al buscar usuario');
           return;
         }
       }
       
       try {
-        console.log('🔐 Generando OTP para:', email);
         const otp = generateOTP();
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
         
-        console.log('💾 Guardando OTP en Firestore...');
         await db.collection('otp_codes').doc(email).set({
           code: otp,
           expiresAt: expiresAt,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           attempts: 0
         });
-        console.log('✅ OTP guardado en Firestore');
         
-        console.log('📧 Enviando email con EmailJS...');
         await sendOTPEmail(email, otp);
-        console.log('✅ Email enviado');
         
         sessionStorage.setItem('tempEmail', email);
         sessionStorage.setItem('tempPassword', password);
@@ -171,8 +160,8 @@
         showOTPModal(email);
         
       } catch (error) {
-        console.error('❌ Error completo:', error);
-        alert('❌ Error: ' + (error.message || 'No se pudo enviar el código'));
+        console.error('Error:', error);
+        alert('❌ Error: ' + error.message);
       }
     });
     
@@ -223,40 +212,29 @@
     async function sendOTPEmail(email, otp) {
       const userName = email.split('@')[0];
       
+      console.log('📧 Preparando email para:', email);
+      
       const templateParams = {
         to_email: email,
         user_name: userName,
         otp_code: otp
       };
       
-      console.log('📦 Parámetros para EmailJS:', templateParams);
-      console.log('🔑 Service ID:', 'service_822cqyn');
-      console.log('📝 Template ID:', 'template_kdt4wrs');
-      
       try {
         const serviceID = 'service_822cqyn';
         const templateID = 'template_kdt4wrs';
         
-        console.log('⏳ Enviando a EmailJS...');
+        console.log('📦 Enviando parámetros:', templateParams);
         
         const result = await emailjs.send(serviceID, templateID, templateParams);
         
-        console.log('✅ Email enviado exitosamente:', result);
+        console.log('✅ Email enviado:', result);
         return true;
       } catch (error) {
-        console.error('❌ Error DETALLADO de EmailJS:', error);
-        console.error('❌ Texto del error:', error.text);
+        console.error('❌ Error de EmailJS:', error);
         console.error('❌ Status:', error.status);
-        
-        // Mostrar error más descriptivo
-        let errorMsg = 'No se pudo enviar el código';
-        if (error.status === 422) {
-          errorMsg = 'Error en los parámetros del email. Verificá la plantilla en EmailJS.';
-        } else if (error.status === 401) {
-          errorMsg = 'Error de autenticación con EmailJS. Verificá las credenciales.';
-        }
-        
-        throw new Error(errorMsg);
+        console.error('❌ Texto:', error.text);
+        throw new Error('No se pudo enviar el código de verificación');
       }
     }
     
@@ -430,7 +408,7 @@
     
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && document.getElementById('otpModal').style.display === 'flex') {
-        // No permitir cerrar con ESC
+        // No permitir cerrar
       }
     });
   </script>
