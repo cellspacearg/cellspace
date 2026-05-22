@@ -77,8 +77,17 @@
           alert('⚠️ Ese nombre de usuario ya está en uso. Probá con otro.');
           return;
         }
+        
+        // Verificar que el email no exista
+        const methods = await firebase.auth().fetchSignInMethodsForEmail(email);
+        if (methods.length > 0) {
+          alert('⚠️ Ese email ya está registrado. Iniciá sesión o usá otro email.');
+          return;
+        }
       } catch (error) {
-        console.error('Error verificando username:', error);
+        console.error('Error verificando:', error);
+        alert('❌ Error al verificar datos');
+        return;
       }
       
       try {
@@ -105,6 +114,7 @@
         window.location.href = 'login.html';
         
       } catch (error) {
+        console.error('Error:', error);
         alert('❌ Error: ' + error.message);
       }
     });
