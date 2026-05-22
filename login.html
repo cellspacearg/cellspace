@@ -18,6 +18,7 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <script type="text/javascript">
     (function() {
+      // Tu Public Key
       emailjs.init("EYej4cfwI1OIadkG5");
     })();
   </script>
@@ -67,6 +68,7 @@
     </div>
   </div>
 
+  <!-- Modal OTP -->
   <div id="otpModal" class="otp-modal" style="display:none;">
     <div class="otp-modal-content">
       <div style="text-align:center;margin-bottom:30px;">
@@ -119,12 +121,14 @@
     
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      console.log('📝 Intento de login iniciado...');
       
       const identifier = document.getElementById('loginIdentifier').value.trim();
       const password = document.getElementById('loginPassword').value;
       
       let email = identifier;
       
+      // Si es username, buscar email
       if (!identifier.includes('@')) {
         try {
           const usernameDoc = await db.collection('usernames').doc(identifier.toLowerCase()).get();
@@ -142,77 +146,65 @@
       }
       
       try {
+        console.log('📧 Email a usar:', email);
         const otp = generateOTP();
-        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
         
+        // Guardar OTP en Firestore
         await db.collection('otp_codes').doc(email).set({
           code: otp,
-          expiresAt: expiresAt,
+          expiresAt: new Date(Date.now() + 10 * 60 * 1000),
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           attempts: 0
         });
         
+        // Enviar Email
         await sendOTPEmail(email, otp);
         
+        // Preparar siguiente paso
         sessionStorage.setItem('tempEmail', email);
         sessionStorage.setItem('tempPassword', password);
-        
         showOTPModal(email);
         
       } catch (error) {
-        console.error('Error:', error);
-        alert('❌ Error: ' + error.message);
+        console.error('❌ Error en el proceso:', error);
+        alert('❌ ' + (error.message || 'Error desconocido'));
       }
     });
     
     function signInWithGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
-      
       firebase.auth().signInWithPopup(provider)
         .then(async (result) => {
           const user = result.user;
           const userId = user.uid;
-          
           const userDoc = await db.collection('users').doc(userId).get();
           
           if (!userDoc.exists) {
             const username = user.displayName.toLowerCase().replace(/\s+/g, '_');
-            
             await db.collection('users').doc(userId).set({
-              username: username,
+              username,
               name: user.displayName,
               email: user.email,
-              photoURL: user.photoURL,
               userType: 'client',
               isPremium: false,
-              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-              lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
-            
             await db.collection('usernames').doc(username).set({
               email: user.email,
               userType: 'client',
               uid: userId,
               createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
-          } else {
-            await db.collection('users').doc(userId).update({
-              lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-            });
           }
-          
           window.location.href = 'index.html';
         })
-        .catch((error) => {
-          console.error('Error con Google:', error);
-          alert('❌ Error con Google: ' + error.message);
-        });
+        .catch((error) => alert('❌ Error con Google: ' + error.message));
     }
     
     async function sendOTPEmail(email, otp) {
       const userName = email.split('@')[0];
       
-      console.log('📧 Preparando email para:', email);
+      console.log('📦 Enviando a EmailJS...');
       
       const templateParams = {
         to_email: email,
@@ -221,20 +213,19 @@
       };
       
       try {
+        // TU ID DE SERVICIO
         const serviceID = 'service_822cqyn';
-        const templateID = 'template_kdt4wrs';
         
-        console.log('📦 Enviando parámetros:', templateParams);
+        // TU NUEVO ID DE PLANTILLA
+        const templateID = 'template_2ue0da9';
         
-        const result = await emailjs.send(serviceID, templateID, templateParams);
+        await emailjs.send(serviceID, templateID, templateParams);
         
-        console.log('✅ Email enviado:', result);
+        console.log('✅ Email enviado exitosamente');
         return true;
       } catch (error) {
-        console.error('❌ Error de EmailJS:', error);
-        console.error('❌ Status:', error.status);
-        console.error('❌ Texto:', error.text);
-        throw new Error('No se pudo enviar el código de verificación');
+        console.error('❌ Error al enviar email:', error);
+        throw new Error('No se pudo enviar el código. Verificá la consola.');
       }
     }
     
@@ -243,7 +234,7 @@
       const password = sessionStorage.getItem('tempPassword');
       
       if (!email || !password) {
-        alert('❌ Sesión expirada. Intentá de nuevo.');
+        alert('❌ Sesión expirada.');
         sessionStorage.clear();
         document.getElementById('otpModal').style.display = 'none';
         return;
@@ -254,163 +245,87 @@
       otpInputs.forEach(input => otp += input.value);
       
       if (otp.length !== 6) {
-        document.getElementById('otpError').textContent = 'Ingresá los 6 dígitos del código';
+        document.getElementById('otpError').textContent = 'Ingresá los 6 dígitos';
         return;
       }
       
       try {
         const otpDoc = await db.collection('otp_codes').doc(email).get();
+        if (!otpDoc.exists) throw new Error('Código inválido');
         
-        if (!otpDoc.exists) {
-          document.getElementById('otpError').textContent = 'Código no válido o expirado';
+        const data = otpDoc.data();
+        if (data.expiresAt.toDate() < new Date()) throw new Error('Código expirado');
+        
+        if (data.code !== otp) {
+          const newAttempts = (data.attempts || 0) + 1;
+          await db.collection('otp_codes').doc(email).update({ attempts: newAttempts });
+          document.getElementById('otpError').textContent = `Incorrecto. Intentos: ${newAttempts}/3`;
           return;
         }
         
-        const otpData = otpDoc.data();
-        
-        if (otpData.expiresAt.toDate() < new Date()) {
-          document.getElementById('otpError').textContent = 'El código expiró. Solicitá uno nuevo.';
-          await db.collection('otp_codes').doc(email).delete();
-          return;
-        }
-        
-        if (otpData.attempts >= 3) {
-          document.getElementById('otpError').textContent = 'Demasiados intentos. Solicitá un nuevo código.';
-          await db.collection('otp_codes').doc(email).delete();
-          return;
-        }
-        
-        if (otpData.code !== otp) {
-          await db.collection('otp_codes').doc(email).update({
-            attempts: firebase.firestore.FieldValue.increment(1)
-          });
-          
-          const remaining = 3 - (otpData.attempts + 1);
-          document.getElementById('otpError').textContent = `Código incorrecto. Te quedan ${remaining} intentos.`;
-          return;
-        }
-        
+        // Login exitoso
         await firebase.auth().signInWithEmailAndPassword(email, password);
-        
         await db.collection('otp_codes').doc(email).delete();
-        sessionStorage.removeItem('tempEmail');
-        sessionStorage.removeItem('tempPassword');
+        sessionStorage.clear();
         
-        otpInputs.forEach(input => input.value = '');
-        
+        // Redirección según tipo
         const userId = email.split('@')[0];
         const techDoc = await db.collection('technicians').doc(userId).get();
-        
-        if (techDoc.exists) {
-          window.location.href = 'technician-zone.html';
-        } else {
-          window.location.href = 'index.html';
-        }
+        window.location.href = techDoc.exists ? 'technician-zone.html' : 'index.html';
         
       } catch (error) {
-        console.error('Error verificando OTP:', error);
-        document.getElementById('otpError').textContent = 'Error al verificar. Intentá de nuevo.';
+        document.getElementById('otpError').textContent = error.message;
       }
     }
     
     async function resendOTP() {
       const email = sessionStorage.getItem('tempEmail');
-      
-      if (!email) {
-        alert('❌ Sesión expirada. Intentá de nuevo.');
-        return;
-      }
+      if (!email) return;
       
       try {
         const otp = generateOTP();
-        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-        
         await db.collection('otp_codes').doc(email).set({
           code: otp,
-          expiresAt: expiresAt,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          expiresAt: new Date(Date.now() + 10 * 60 * 1000),
           attempts: 0
         });
-        
         await sendOTPEmail(email, otp);
-        
-        document.querySelectorAll('.otp-input').forEach(input => input.value = '');
-        document.getElementById('otpError').textContent = '';
-        
-        alert('✅ Nuevo código enviado a tu email');
-        document.querySelector('.otp-input').focus();
-        
-      } catch (error) {
-        console.error('Error reenviando OTP:', error);
-        alert('❌ Error al reenviar el código. Intentá de nuevo.');
+        alert('✅ Código reenviado');
+        document.querySelectorAll('.otp-input').forEach(i => i.value = '');
+      } catch (e) {
+        alert('❌ Error al reenviar');
       }
     }
     
-    function generateOTP() {
-      return Math.floor(100000 + Math.random() * 900000).toString();
-    }
-    
+    function generateOTP() { return Math.floor(100000 + Math.random() * 900000).toString(); }
     function showOTPModal(email) {
       document.getElementById('otpEmail').textContent = email;
       document.getElementById('otpModal').style.display = 'flex';
       document.querySelector('.otp-input').focus();
     }
-    
     function setupOTPInputs() {
       const inputs = document.querySelectorAll('.otp-input');
-      
       inputs.forEach((input, index) => {
         input.addEventListener('input', (e) => {
           e.target.value = e.target.value.replace(/[^0-9]/g, '');
-          
-          if (e.target.value && index < 5) {
-            inputs[index + 1].focus();
-          }
+          if (e.target.value && index < 5) inputs[index + 1].focus();
         });
-        
         input.addEventListener('keydown', (e) => {
-          if (e.key === 'Backspace' && !e.target.value && index > 0) {
-            inputs[index - 1].focus();
-          }
-          if (e.key === 'ArrowLeft' && index > 0) {
-            inputs[index - 1].focus();
-          }
-          if (e.key === 'ArrowRight' && index < 5) {
-            inputs[index + 1].focus();
-          }
+          if (e.key === 'Backspace' && !e.target.value && index > 0) inputs[index - 1].focus();
         });
-        
         input.addEventListener('paste', (e) => {
           e.preventDefault();
-          const pastedData = e.clipboardData.getData('text').slice(0, 6).split('');
-          
-          pastedData.forEach((char, i) => {
-            if (inputs[i] && /[0-9]/.test(char)) {
-              inputs[i].value = char;
-            }
+          const data = e.clipboardData.getData('text').slice(0, 6);
+          data.split('').forEach((char, i) => {
+            if (inputs[i] && /[0-9]/.test(char)) inputs[i].value = char;
           });
-          
-          const lastFilled = pastedData.length - 1;
-          if (inputs[lastFilled]) {
-            inputs[lastFilled].focus();
-          }
+          inputs[Math.min(data.length, 5)].focus();
         });
       });
     }
-    
     function checkAuthState() {
-      firebase.auth().onAuthStateChanged((user) => {
-        if (user) {
-          window.location.href = 'index.html';
-        }
-      });
+      firebase.auth().onAuthStateChanged((user) => { if (user) window.location.href = 'index.html'; });
     }
-    
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && document.getElementById('otpModal').style.display === 'flex') {
-        // No permitir cerrar
-      }
-    });
   </script>
 </body>
 </html>
