@@ -133,5 +133,77 @@
   <script src="js/cart.js"></script>
   <script src="js/shop.js"></script>
   <script src="js/footer.js"></script>
+
+  <!-- Modal Quick View -->
+<div id="quickViewModal" class="quick-view-modal">
+  <div class="quick-view-content">
+    <button class="quick-view-close" onclick="closeQuickView()">&times;</button>
+    
+    <div class="quick-view-body">
+      <div class="quick-view-image">
+        <img id="qvImage" src="" alt="Producto">
+        <div class="qv-badges">
+          <span id="qvStock" class="badge-stock"></span>
+          <span id="qvDiscount" class="badge-discount" style="display:none;"></span>
+        </div>
+      </div>
+      
+      <div class="quick-view-info">
+        <div class="qv-category" id="qvCategory"></div>
+        <h2 class="qv-title" id="qvTitle"></h2>
+        
+        <div class="qv-rating">
+          <span class="stars" id="qvStars">★★★★★</span>
+          <span class="reviews-count" id="qvReviews">(0 reseñas)</span>
+        </div>
+        
+        <div class="qv-price-section">
+          <div class="qv-price">
+            <span class="current-price" id="qvPrice"></span>
+            <span class="old-price" id="qvOldPrice" style="display:none;"></span>
+          </div>
+          <span class="qv-installments" id="qvInstallments">3 cuotas sin interés</span>
+        </div>
+        
+        <div class="qv-description" id="qvDescription"></div>
+        
+        <div class="qv-specs">
+          <h3>Características:</h3>
+          <ul id="qvSpecsList"></ul>
+        </div>
+        
+        <div class="qv-actions">
+          <div class="qv-quantity">
+            <label>Cantidad:</label>
+            <div class="quantity-selector">
+              <button onclick="decrementQty()" class="qty-btn">-</button>
+              <input type="number" id="qvQuantity" value="1" min="1" max="10">
+              <button onclick="incrementQty()" class="qty-btn">+</button>
+            </div>
+          </div>
+          
+          <button onclick="addToCartFromQuickView()" class="btn-add-to-cart-qv">
+            <span>🛒</span> Agregar al Carrito
+          </button>
+        </div>
+        
+        <div class="qv-guarantees">
+          <div class="guarantee-item">
+            <span class="guarantee-icon">✓</span>
+            <span>Garantía de 6 meses</span>
+          </div>
+          <div class="guarantee-item">
+            <span class="guarantee-icon">🚚</span>
+            <span>Envío a todo el país</span>
+          </div>
+          <div class="guarantee-item">
+            <span class="guarantee-icon">🔒</span>
+            <span>Pago 100% seguro</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
