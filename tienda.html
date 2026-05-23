@@ -7,6 +7,11 @@
   <link rel="icon" type="image/png" href="assets/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- ✅ FIREBASE - AGREGADO (ANTES DE config.js) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
   <!-- Navbar -->
@@ -34,7 +39,8 @@
   <!-- Tienda -->
   <section class="shop-section">
     <div class="shop-header">
-      <h1 class="shop-title">Tienda <span>
+      <!-- ✅ H1 CORREGIDO -->
+      <h1 class="shop-title">Tienda <span>Premium</span></h1>
       <p class="shop-subtitle">Licencias, hardware y herramientas profesionales</p>
     </div>
 
@@ -46,13 +52,14 @@
 
     <div class="category-filters">
       <button class="filter-btn active" data-category="all">Todos</button>
-      <button class="filter-btn" data-category="licencias">Licencias</button>
-      <button class="filter-btn" data-category="hardware">Hardware</button>
-      <button class="filter-btn" data-category="accesorios">Accesorios</button>
+      <button class="filter-btn" data-category="Licencias">Licencias</button>
+      <button class="filter-btn" data-category="Hardware">Hardware</button>
+      <button class="filter-btn" data-category="Accesorios">Accesorios</button>
     </div>
 
     <p class="products-count" id="productsCount"></p>
 
+    <!-- Contenedor de productos -->
     <div class="products-grid-premium" id="productsGrid"></div>
   </section>
 
@@ -149,6 +156,7 @@
     </div>
   </div>
 
+  <!-- ✅ SCRIPTS EN ORDEN CORRECTO -->
   <script src="js/config.js"></script>
   <script src="js/tienda.js"></script>
 </body>
