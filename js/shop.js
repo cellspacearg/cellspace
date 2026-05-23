@@ -203,3 +203,141 @@ window.viewProduct = function(productId) {
 };
 
 console.log('✅ shop.js cargado correctamente');
+// ========================================
+// QUICK VIEW FUNCTIONALITY
+// ========================================
+
+let currentQuickViewProduct = null;
+
+function openQuickView(productId) {
+  const product = products.find(p => p.id === productId);
+  if (!product) return;
+  
+  currentQuickViewProduct = product;
+  
+  // Populate modal
+  document.getElementById('qvImage').src = product.image;
+  document.getElementById('qvCategory').textContent = product.category;
+  document.getElementById('qvTitle').textContent = product.name;
+  document.getElementById('qvPrice').textContent = `$${product.price.toFixed(2)}`;
+  document.getElementById('qvDescription').textContent = product.description;
+  
+  // Old price if discount
+  if (product.oldPrice) {
+    document.getElementById('qvOldPrice').textContent = `$${product.oldPrice.toFixed(2)}`;
+    document.getElementById('qvOldPrice').style.display = 'inline';
+    const discount = Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100);
+    document.getElementById('qvDiscount').textContent = `-${discount}%`;
+    document.getElementById('qvDiscount').style.display = 'inline';
+  } else {
+    document.getElementById('qvOldPrice').style.display = 'none';
+    document.getElementById('qvDiscount').style.display = 'none';
+  }
+  
+  // Stock badge
+  const stockBadge = document.getElementById('qvStock');
+  if (product.stock > 0) {
+    stockBadge.textContent = '✓ En Stock';
+    stockBadge.style.background = '#4CAF50';
+  } else {
+    stockBadge.textContent = '✗ Sin Stock';
+    stockBadge.style.background = '#ff4444';
+  }
+  
+  // Specs (random for demo - replace with real data)
+  const specsList = document.getElementById('qvSpecsList');
+  specsList.innerHTML = `
+    <li>✓ Garantía 6 meses</li>
+    <li>✓ Envío gratis</li>
+    <li>✓ Soporte técnico</li>
+    <li>✓ Actualizaciones</li>
+    <li>✓ Compatible 100%</li>
+    <li>✓ Entrega inmediata</li>
+  `;
+  
+  // Reset quantity
+  document.getElementById('qvQuantity').value = 1;
+  
+  // Show modal
+  document.getElementById('quickViewModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeQuickView() {
+  document.getElementById('quickViewModal').classList.remove('active');
+  document.body.style.overflow = '';
+  currentQuickViewProduct = null;
+}
+
+function incrementQty() {
+  const input = document.getElementById('qvQuantity');
+  if (input.value < 10) input.value++;
+}
+
+function decrementQty() {
+  const input = document.getElementById('qvQuantity');
+  if (input.value > 1) input.value--;
+}
+
+function addToCartFromQuickView() {
+  if (!currentQuickViewProduct) return;
+  
+  const quantity = parseInt(document.getElementById('qvQuantity').value);
+  
+  // Add to cart logic
+  const existingItem = cart.find(item => item.id === currentQuickViewProduct.id);
+  if (existingItem) {
+    existingItem.quantity += quantity;
+  } else {
+    cart.push({
+      ...currentQuickViewProduct,
+      quantity: quantity
+    });
+  }
+  
+  saveCart();
+  updateCartCount();
+  closeQuickView();
+  
+  // Show success message
+  showNotification('✅ Producto agregado al carrito', 'success');
+}
+
+function showNotification(message, type = 'info') {
+  const notification = document.createElement('div');
+  notification.className = `notification notification-${type}`;
+  notification.textContent = message;
+  notification.style.cssText = `
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    background: ${type === 'success' ? '#4CAF50' : 'var(--orange)'};
+    color: white;
+    padding: 15px 25px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    z-index: 9999;
+    animation: slideIn 0.3s ease;
+  `;
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.style.animation = 'slideOut 0.3s ease';
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
+// Close modal on outside click
+document.getElementById('quickViewModal')?.addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeQuickView();
+  }
+});
+
+// Close on ESC key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeQuickView();
+  }
+});
