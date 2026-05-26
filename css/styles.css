@@ -1297,68 +1297,161 @@ body::after {
 }
 
 /* ========================================
-   DROPDOWN DE USUARIO
    ======================================== */
-.user-dropdown {
-  position: relative;
-  display: inline-block;
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
+.user-dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Botón del Usuario */
 .user-btn {
-  background: rgba(255,106,0,0.15);
-  border: 1px solid rgba(255,106,0,0.3);
+  background: rgba(20, 20, 20, 0.9);
+  border: 1px solid rgba(255, 106, 0, 0.4);
   border-radius: 25px;
-  padding: 8px 15px;
+  padding: 6px 15px 6px 8px;
   color: white;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
+  gap: 10px;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
 .user-btn:hover {
-  background: rgba(255,106,0,0.25);
+  border-color: var(--orange);
+  background: rgba(255, 106, 0, 0.15);
 }
 
-.user-type-badge {
+.user-info-compact {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar-small {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   background: var(--orange);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
   color: white;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
-.user-type-badge.premium {
-  background: linear-gradient(135deg, #FFD700, #FFA500);
-  color: #000;
+.user-avatar-small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-details-compact {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.1;
+}
+
+.user-name-display {
+  font-weight: 600;
+  font-size: 13px;
+  color: #fff;
+}
+
+.user-role-display {
+  display: flex;
+  align-items: center;
+}
+
+/* Badges de Roles */
+.role-badge {
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+.role-badge.cliente {
+  background: rgba(33, 150, 243, 0.2);
+  color: #64B5F6;
+  border: 1px solid rgba(33, 150, 243, 0.4);
+}
+
+.role-badge.tecnico {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 165, 0, 0.2));
+  color: #FFD700;
+  border: 1px solid rgba(255, 215, 0, 0.4);
+}
+
+.role-badge.admin {
+  background: linear-gradient(135deg, rgba(255, 106, 0, 0.3), rgba(255, 80, 80, 0.3));
+  color: var(--orange);
+  border: 1px solid rgba(255, 106, 0, 0.5);
 }
 
 .dropdown-arrow {
-  font-size: 8px;
+  font-size: 10px;
   transition: transform 0.3s ease;
+  opacity: 0.7;
 }
 
 .user-dropdown.open .dropdown-arrow {
   transform: rotate(180deg);
 }
 
+/* Botón WhatsApp */
+.whatsapp-btn-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #25D366;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.whatsapp-btn-nav:hover {
+  background: #128C7E;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
+}
+
+/* Menú Desplegable */
 .dropdown-menu {
   position: absolute;
-  top: 100%;
+  top: 110%;
   right: 0;
-  margin-top: 10px;
-  background: rgba(17,17,17,0.98);
-  border: 1px solid rgba(255,106,0,0.3);
+  background: #151515;
+  border: 1px solid rgba(255, 106, 0, 0.3);
   border-radius: 12px;
-  min-width: 200px;
+  min-width: 220px;
+  padding: 8px 0;
   opacity: 0;
   visibility: hidden;
   transform: translateY(-10px);
   transition: all 0.3s ease;
-  z-index: 1001;
+  z-index: 1000;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
@@ -1368,23 +1461,64 @@ body::after {
   transform: translateY(0);
 }
 
-.dropdown-menu a {
-  display: block;
-  padding: 12px 15px;
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
   color: #ccc;
   text-decoration: none;
-  transition: all 0.2s ease;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 14px;
+  transition: background 0.2s;
 }
 
-.dropdown-menu a:last-child {
-  border-bottom: none;
-}
-
-.dropdown-menu a:hover {
-  background: rgba(255,106,0,0.1);
+.dropdown-item:hover {
+  background: rgba(255, 106, 0, 0.1);
   color: var(--orange);
 }
+
+.dropdown-icon {
+  width: 20px;
+  text-align: center;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 8px 0;
+}
+
+.dropdown-header {
+  padding: 8px 18px 4px;
+  color: var(--orange);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.dropdown-item.logout {
+  color: #ff4444;
+}
+
+.dropdown-item.logout:hover {
+  background: rgba(255, 68, 68, 0.1);
+  color: #ff6666;
+}
+
+@media (max-width: 768px) {
+  .user-name-display {
+    display: none; /* Ocultar nombre en móvil, solo mostrar avatar */
+  }
+  .user-btn {
+    padding: 6px;
+  }
+  .whatsapp-btn-nav span {
+    display: none; /* Solo icono en móvil */
+  }
+  .whatsapp-btn-nav {
+    padding: 8px 10px;
+  }
 
 /* ========================================
    CONTENIDO PREMIUM BLOQUEADO
