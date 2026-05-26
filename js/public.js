@@ -136,3 +136,47 @@ async function loadContact() {
     }
   } catch (e) { console.error(e); }
 }
+
+// Smooth scroll para la barra secundaria
+document.querySelectorAll('.secondary-menu a').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    
+    // Remover active de todos
+    document.querySelectorAll('.secondary-menu a').forEach(l => l.classList.remove('active'));
+    // Agregar active al clickeado
+    e.target.closest('a').classList.add('active');
+    
+    const targetId = e.target.getAttribute('href');
+    const targetSection = document.querySelector(targetId);
+    
+    if (targetSection) {
+      const offsetTop = targetSection.offsetTop - 120; // Ajustá según la altura de las barras
+      window.scrollTo({
+        top: offsetTop,
+        behavior: 'smooth'
+      });
+    }
+  });
+});
+
+// Highlight activo al hacer scroll
+window.addEventListener('scroll', () => {
+  const sections = document.querySelectorAll('section[id]');
+  const scrollY = window.pageYOffset;
+  
+  sections.forEach(section => {
+    const sectionHeight = section.offsetHeight;
+    const sectionTop = section.offsetTop - 150;
+    const sectionId = section.getAttribute('id');
+    
+    if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
+      document.querySelectorAll('.secondary-menu a').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${sectionId}`) {
+          link.classList.add('active');
+        }
+      });
+    }
+  });
+});
