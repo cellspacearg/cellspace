@@ -15,7 +15,7 @@
 </head>
 <body>
   
-  <!-- NAVBAR ACTUALIZADA -->
+  <!-- NAVBAR -->
   <nav class="nav">
     <div class="nav-left">
       <a href="index.html" class="nav-logo-link">
@@ -98,7 +98,7 @@
     </div>
   </nav>
 
-  <!-- CONTENIDO PRINCIPAL DEL PERFIL -->
+  <!-- CONTENIDO PRINCIPAL -->
   <div class="profile-page" style="max-width:1200px;margin:100px auto 60px;padding:0 20px;">
     <h1 style="color:var(--orange);margin-bottom:10px;">Configuración de Perfil</h1>
     <p style="color:var(--muted);margin-bottom:40px;">Actualizá tu información personal y ajustá tus preferencias.</p>
@@ -130,7 +130,7 @@
             <small style="color:var(--muted);font-size:12px;">Mínimo 6 caracteres</small>
           </div>
           
-          <!-- Campos adicionales para TÉCNICOS -->
+          <!-- Campos para TÉCNICOS -->
           <div id="techFields" style="display:none;border-top:1px solid rgba(255,255,255,0.1);margin:30px 0;padding-top:30px;">
             <h2 style="color:white;margin-bottom:25px;display:flex;align-items:center;gap:10px;">
               <span style="color:#FFD700;">🔧</span> Perfil Técnico
@@ -220,14 +220,12 @@
               <span>📦</span> Mis Pedidos
             </a>
             
-            <!-- Enlaces para Técnicos -->
             <div id="sidebarTechMenu" style="display:none;">
               <a href="technician-zone.html" style="display:flex;align-items:center;gap:10px;padding:12px;color:#FFD700;text-decoration:none;border-radius:8px;margin-bottom:10px;">
                 <span>🔧</span> Panel Técnico
               </a>
             </div>
             
-            <!-- Enlaces para Admin -->
             <div id="sidebarAdminMenu" style="display:none;">
               <a href="admin.html" style="display:flex;align-items:center;gap:10px;padding:12px;color:var(--orange);text-decoration:none;border-radius:8px;margin-bottom:10px;">
                 <span>⚙️</span> Panel Admin
@@ -267,7 +265,6 @@
     async function loadProfileData(user) {
       const userId = user.email.split('@')[0];
       
-      // Buscar en todas las colecciones
       let userData = null;
       let collection = 'clients';
       
@@ -299,10 +296,10 @@
         }
       }
       
-      // Llenar formulario con datos
+      // Llenar formulario
       const username = userData?.username || user.displayName?.toLowerCase().replace(/\s+/g, '_') || userId;
       document.getElementById('profileUsername').value = username;
-      document.getElementById('profileUsername').defaultValue = username; // Para detectar cambios
+      document.getElementById('profileUsername').defaultValue = username;
       document.getElementById('profileEmail').value = user.email;
       document.getElementById('profileName').value = userData?.name || user.displayName || '';
       document.getElementById('profilePhone').value = userData?.phone || '';
@@ -310,7 +307,7 @@
       document.getElementById('profileWhatsApp').value = userData?.whatsapp || '';
       document.getElementById('profileLocation').value = userData?.location || '';
       
-      // Campos técnicos (si aplica)
+      // Campos técnicos
       if (currentUserType === 'technician') {
         document.getElementById('techFields').style.display = 'block';
         document.getElementById('profileSpecialty').value = userData?.specialty || '';
@@ -323,7 +320,6 @@
       document.getElementById('sidebarName').textContent = displayName;
       document.getElementById('sidebarEmail').textContent = user.email;
       
-      // Avatar
       const initial = displayName.charAt(0).toUpperCase();
       document.getElementById('profileInitial').textContent = initial;
       document.getElementById('userInitial').textContent = initial;
@@ -366,15 +362,10 @@
         }
       }
       
-      // Nombre en navbar
       if (document.getElementById('userNameDisplay')) {
         document.getElementById('userNameDisplay').textContent = displayName.length > 12 ? displayName.substring(0, 12) + '...' : displayName;
       }
     }
-    
-    // ========================================
-    // CONFIGURAR NAVBAR
-    // ========================================
     
     function setupNavbar(user) {
       const userDropdown = document.getElementById('userDropdown');
@@ -385,7 +376,7 @@
     }
     
     // ========================================
-    // GUARDAR CAMBIOS
+    // GUARDAR CAMBIOS - CORREGIDO
     // ========================================
     
     document.getElementById('profileForm').addEventListener('submit', async (e) => {
@@ -416,9 +407,12 @@
             return;
           }
           
-          // Actualizar en la colección usernames (eliminar el viejo, crear el nuevo)
+          // Actualizar en usernames
           if (oldUsername && oldUsername !== userId) {
-            await db.collection('usernames').doc(oldUsername).delete();
+            const oldDoc = await db.collection('usernames').doc(oldUsername).get();
+            if (oldDoc.exists) {
+              await db.collection('usernames').doc(oldUsername).delete();
+            }
           }
           
           await db.collection('usernames').doc(newUsername).set({
@@ -446,15 +440,18 @@
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
       
-      // Campos técnicos si aplica
+      // Campos técnicos
       const techFields = document.getElementById('techFields');
       if (techFields && techFields.style.display !== 'none') {
         updates.specialty = document.getElementById('profileSpecialty').value;
         updates.experience = document.getElementById('profileExperience').value;
         updates.bio = document.getElementById('profileBio').value;
+        updates.userType = 'technician';
+      } else {
+        updates.userType = 'client';
       }
       
-      // Cambiar contraseña si se proporcionó
+      // Cambiar contraseña
       const newPassword = document.getElementById('newPassword').value;
       if (newPassword && newPassword.length >= 6) {
         try {
@@ -467,21 +464,42 @@
         }
       }
       
-      // Determinar colección
-      let collection = 'clients';
-      const clientDoc = await db.collection('clients').doc(userId).get();
-      if (!clientDoc.exists) {
-        const techDoc = await db.collection('technicians').doc(userId).get();
-        if (techDoc.exists) collection = 'technicians';
-        else collection = 'users';
-      }
+      // ✅ CORRECCIÓN: Verificar en qué colección existe
+      let collection = 'users';
+      let docExists = false;
       
       try {
-        await db.collection(collection).doc(userId).update(updates);
+        const clientDoc = await db.collection('clients').doc(userId).get();
+        if (clientDoc.exists) {
+          collection = 'clients';
+          docExists = true;
+        } else {
+          const techDoc = await db.collection('technicians').doc(userId).get();
+          if (techDoc.exists) {
+            collection = 'technicians';
+            docExists = true;
+          } else {
+            const userDoc = await db.collection('users').doc(currentUser.uid).get();
+            if (userDoc.exists) {
+              collection = 'users';
+              docExists = true;
+            }
+          }
+        }
+        
+        // Actualizar o crear
+        if (docExists) {
+          await db.collection(collection).doc(userId).update(updates);
+        } else {
+          updates.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+          updates.email = currentUser.email;
+          await db.collection(collection).doc(userId).set(updates);
+        }
         
         // Actualizar UI
         document.getElementById('profileUsername').defaultValue = newUsername;
-        document.getElementById('sidebarName').textContent = document.getElementById('profileName').value || newUsername;
+        const displayName = document.getElementById('profileName').value || newUsername;
+        document.getElementById('sidebarName').textContent = displayName;
         
         const userNameDisplay = document.getElementById('userNameDisplay');
         if (userNameDisplay) {
@@ -496,10 +514,6 @@
         alert('❌ Error al actualizar el perfil: ' + error.message);
       }
     });
-    
-    // ========================================
-    // FUNCIONES AUXILIARES
-    // ========================================
     
     function cancelChanges() {
       location.reload();
@@ -522,7 +536,6 @@
       }
     }
     
-    // Cerrar dropdown al hacer click fuera
     document.addEventListener('click', (e) => {
       const dropdown = document.getElementById('userDropdown');
       if (dropdown && !dropdown.contains(e.target)) {
