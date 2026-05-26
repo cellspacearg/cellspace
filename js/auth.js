@@ -1,6 +1,6 @@
 // ========================================
 // CELL SPACE - SISTEMA DE AUTENTICACIÓN
-// Con niveles de acceso y usernames
+// Compatible con nuevo navbar + verificaciones null
 // ========================================
 
 let currentUser = null;
@@ -12,21 +12,35 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function checkAuthState() {
-  firebase.auth().onAuthStateChanged((user) => {
+  firebase.auth().onAuthStateChanged(async (user) => {
     currentUser = user;
     
+    // Elementos del nuevo navbar (con verificación null)
+    const userDropdown = document.getElementById('userDropdown');
+    const loginBtn = document.getElementById('loginBtn');
+    const userNameDisplay = document.getElementById('userNameDisplay');
+    const userRoleBadge = document.getElementById('userRoleBadge');
+    const userAvatarSmall = document.getElementById('userAvatarSmall');
+    const userInitial = document.getElementById('userInitial');
+    const technicianMenu = document.getElementById('technicianMenu');
+    const adminMenu = document.getElementById('adminMenu');
+    
     if (user) {
-      // Ocultar login, mostrar perfil
-      document.getElementById('loginLink').style.display = 'none';
-      document.getElementById('userProfile').style.display = 'block';
+      // ✅ Usuario logueado: mostrar dropdown, ocultar login
+      if (userDropdown) userDropdown.style.display = 'flex';
+      if (loginBtn) loginBtn.style.display = 'none';
       
-      // Verificar si es admin
+      // Verificar si es admin por email
       if (user.email === 'nahuel0123encinas@gmail.com') {
-        document.getElementById('userName').textContent = 'nahuel0123encinas';
-        document.getElementById('userType').textContent = 'Admin 👑';
-        document.getElementById('userType').classList.add('premium');
-        document.getElementById('adminMenuLink').style.display = 'block';
-        document.getElementById('techZoneLink').style.display = 'block';
+        if (userNameDisplay) userNameDisplay.textContent = 'nahuel0123encinas';
+        if (userRoleBadge) {
+          userRoleBadge.textContent = 'Admin';
+          userRoleBadge.className = 'role-badge admin';
+        }
+        if (userInitial) userInitial.textContent = 'N';
+        if (technicianMenu) technicianMenu.style.display = 'block';
+        if (adminMenu) adminMenu.style.display = 'block';
+        
         currentUserType = 'admin';
         isPremium = true;
         showAllContent();
@@ -34,14 +48,15 @@ function checkAuthState() {
       }
       
       // Verificar tipo de usuario en Firestore
-      checkUserType(user.email);
+      await checkUserType(user.email);
       
     } else {
-      // No logueado
-      document.getElementById('loginLink').style.display = 'block';
-      document.getElementById('userProfile').style.display = 'none';
-      document.getElementById('adminMenuLink').style.display = 'none';
-      document.getElementById('techZoneLink').style.display = 'none';
+      // ❌ No logueado: ocultar dropdown, mostrar login
+      if (userDropdown) userDropdown.style.display = 'none';
+      if (loginBtn) loginBtn.style.display = 'inline-block';
+      if (technicianMenu) technicianMenu.style.display = 'none';
+      if (adminMenu) adminMenu.style.display = 'none';
+      
       hidePremiumContent();
     }
   });
@@ -50,66 +65,113 @@ function checkAuthState() {
 async function checkUserType(email) {
   const userId = email.split('@')[0];
   
-  // Primero verificar si es técnico
-  const techDoc = await db.collection('technicians').doc(userId).get();
+  // Elementos del UI
+  const userNameDisplay = document.getElementById('userNameDisplay');
+  const userRoleBadge = document.getElementById('userRoleBadge');
+  const userAvatarSmall = document.getElementById('userAvatarSmall');
+  const userInitial = document.getElementById('userInitial');
+  const technicianMenu = document.getElementById('technicianMenu');
+  const adminMenu = document.getElementById('adminMenu');
   
-  if (techDoc.exists) {
-    const techData = techDoc.data();
-    currentUserType = 'technician';
-    isPremium = techData.isPremium || false;
+  try {
+    // 1. Verificar si es técnico
+    const techDoc = await db.collection('technicians').doc(userId).get();
     
-    // Mostrar username si existe, sino mostrar email
-    const displayName = techData.username || userId;
-    document.getElementById('userName').textContent = displayName;
-    
-    document.getElementById('userType').textContent = isPremium ? 'Técnico Premium 👑' : 'Técnico';
-    if (isPremium) document.getElementById('userType').classList.add('premium');
-    
-    // Mostrar link a zona técnica
-    document.getElementById('techZoneLink').style.display = 'block';
-    
-    // Ocultar link admin (no es el propietario)
-    document.getElementById('adminMenuLink').style.display = 'none';
-    
-    // Mostrar contenido según nivel
-    if (isPremium) {
-      showAllContent();
+    if (techDoc.exists) {
+      const techData = techDoc.data();
+      currentUserType = 'technician';
+      isPremium = techData.isPremium || false;
+      
+      // Mostrar nombre
+      const displayName = techData.username || techData.name || userId;
+      if (userNameDisplay) {
+        userNameDisplay.textContent = displayName.length > 12 ? displayName.substring(0, 12) + '...' : displayName;
+      }
+      if (userInitial) {
+        userInitial.textContent = displayName.charAt(0).toUpperCase();
+      }
+      
+      // Badge de rol
+      if (userRoleBadge) {
+        userRoleBadge.textContent = isPremium ? 'Técnico 👑' : 'Técnico';
+        userRoleBadge.className = isPremium ? 'role-badge tecnico premium' : 'role-badge tecnico';
+      }
+      
+      // Mostrar menú técnico
+      if (technicianMenu) technicianMenu.style.display = 'block';
+      if (adminMenu) adminMenu.style.display = 'none';
+      
+      // Contenido según nivel
+      if (isPremium) {
+        showAllContent();
+      } else {
+        showFreeContent();
+      }
+      
     } else {
-      showFreeContent();
+      // 2. Es cliente
+      const clientDoc = await db.collection('clients').doc(userId).get();
+      currentUserType = 'client';
+      isPremium = false;
+      
+      const displayName = (clientDoc.exists && clientDoc.data().name) ? clientDoc.data().name : userId;
+      
+      if (userNameDisplay) {
+        userNameDisplay.textContent = displayName.length > 12 ? displayName.substring(0, 12) + '...' : displayName;
+      }
+      if (userInitial) {
+        userInitial.textContent = displayName.charAt(0).toUpperCase();
+      }
+      if (userRoleBadge) {
+        userRoleBadge.textContent = 'Cliente';
+        userRoleBadge.className = 'role-badge cliente';
+      }
+      
+      if (technicianMenu) technicianMenu.style.display = 'none';
+      if (adminMenu) adminMenu.style.display = 'none';
+      
+      hidePremiumContent();
     }
     
-  } else {
-    // Es cliente
-    const clientDoc = await db.collection('clients').doc(userId).get();
-    currentUserType = 'client';
-    isPremium = false;
+    // Actualizar avatar si tiene foto
+    if (userAvatarSmall && currentUser?.photoURL) {
+      userAvatarSmall.innerHTML = `<img src="${currentUser.photoURL}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;">`;
+    }
     
-    // Mostrar username si existe
-    const displayName = clientDoc.exists && clientDoc.data().username ? clientDoc.data().username : userId;
-    document.getElementById('userName').textContent = displayName;
-    document.getElementById('userType').textContent = 'Cliente';
-    document.getElementById('techZoneLink').style.display = 'none';
-    document.getElementById('adminMenuLink').style.display = 'none';
-    
-    hidePremiumContent();
+  } catch (error) {
+    console.error('Error verificando tipo de usuario:', error);
+    // Fallback a cliente
+    if (userNameDisplay) userNameDisplay.textContent = userId;
+    if (userRoleBadge) {
+      userRoleBadge.textContent = 'Cliente';
+      userRoleBadge.className = 'role-badge cliente';
+    }
   }
 }
 
+// Toggle dropdown
 function toggleUserDropdown() {
-  document.querySelector('.user-dropdown').classList.toggle('open');
+  const dropdown = document.getElementById('userDropdown');
+  if (dropdown) {
+    dropdown.classList.toggle('open');
+  }
 }
 
 // Cerrar dropdown al hacer click fuera
 document.addEventListener('click', (e) => {
-  if (!e.target.closest('.user-dropdown')) {
-    document.querySelector('.user-dropdown')?.classList.remove('open');
+  const dropdown = document.getElementById('userDropdown');
+  if (dropdown && !dropdown.contains(e.target)) {
+    dropdown.classList.remove('open');
   }
 });
 
+// Logout
 function logout() {
-  if (confirm('¿Cerrar sesión?')) {
+  if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
     firebase.auth().signOut().then(() => {
       window.location.href = 'index.html';
+    }).catch((error) => {
+      console.error('Error al cerrar sesión:', error);
     });
   }
 }
@@ -119,9 +181,7 @@ function logout() {
 // ========================================
 
 function showAllContent() {
-  document.querySelectorAll('.premium-lock').forEach(lock => {
-    lock.remove();
-  });
+  document.querySelectorAll('.premium-lock').forEach(lock => lock.remove());
   document.querySelectorAll('.premium-content').forEach(content => {
     content.classList.remove('restricted');
   });
@@ -144,7 +204,9 @@ function showFreeContent() {
 }
 
 function hidePremiumContent() {
-  document.getElementById('techZoneLink').style.display = 'none';
+  const techZoneLink = document.getElementById('techZoneLink');
+  if (techZoneLink) techZoneLink.style.display = 'none';
+  
   document.querySelectorAll('.premium-content').forEach(content => {
     if (!content.querySelector('.premium-lock')) {
       const lock = document.createElement('div');
