@@ -2362,3 +2362,246 @@ label {
     top: 60px;
   }
 }
+/* ========================================
+   TOP BAR - ESTILO WIFIX
+   ======================================== */
+.top-bar {
+  background: linear-gradient(90deg, #1a1a1a 0%, #0a0a0a 100%);
+  border-bottom: 1px solid rgba(255, 106, 0, 0.2);
+  padding: 10px 0;
+  font-size: 13px;
+}
+
+.top-bar .container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.top-bar-content {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.top-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ccc;
+  white-space: nowrap;
+}
+
+.top-bar-item .icon {
+  color: var(--orange);
+  font-size: 16px;
+}
+
+/* ========================================
+   NAVBAR MEJORADA
+   ======================================== */
+.nav {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-center {
+  display: flex;
+  gap: 25px;
+  justify-content: center;
+}
+
+.nav-center .nav-link {
+  color: #ccc;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 15px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.nav-center .nav-link:hover,
+.nav-center .nav-link.active {
+  color: var(--orange);
+  background: rgba(255, 106, 0, 0.1);
+}
+
+/* ========================================
+   BOTÓN CHECK IMEI
+   ======================================== */
+.btn-imei {
+  background: linear-gradient(135deg, rgba(255, 106, 0, 0.2), rgba(255, 106, 0, 0.1));
+  border: 2px solid var(--orange);
+  color: var(--orange);
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.3s ease;
+}
+
+.btn-imei:hover {
+  background: var(--orange);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 106, 0, 0.4);
+}
+
+/* ========================================
+   MODAL CHECK IMEI
+   ======================================== */
+.modal-imei {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+  z-index: 3000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-imei.active {
+  display: flex;
+}
+
+.modal-imei-content {
+  background: linear-gradient(145deg, #1a1a1a 0%, #111 100%);
+  border: 2px solid rgba(255, 106, 0, 0.3);
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 500px;
+  width: 100%;
+  position: relative;
+  animation: slideUp 0.3s ease;
+}
+
+.modal-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 106, 0, 0.2);
+  border: 2px solid var(--orange);
+  border-radius: 50%;
+  color: var(--orange);
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+  background: var(--orange);
+  color: white;
+  transform: rotate(90deg);
+}
+
+.modal-imei-content h2 {
+  color: white;
+  margin: 0 0 10px;
+  font-size: 24px;
+}
+
+.modal-imei-content > p {
+  color: var(--muted);
+  margin-bottom: 30px;
+}
+
+.imei-result {
+  margin-top: 30px;
+  padding: 20px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.result-success,
+.result-error {
+  text-align: center;
+}
+
+.result-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.result-success h3 {
+  color: #4CAF50;
+  margin: 0 0 15px;
+}
+
+.result-error h3 {
+  color: #ff4444;
+  margin: 0 0 15px;
+}
+
+.result-success p,
+.result-error p {
+  margin: 10px 0;
+  color: #ccc;
+}
+
+.btn-check-imei {
+  width: 100%;
+  background: linear-gradient(135deg, var(--orange) 0%, #ff8533 100%);
+  border: none;
+  padding: 15px;
+  border-radius: 12px;
+  color: white;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+}
+
+.btn-check-imei:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(255, 106, 0, 0.4);
+}
+
+/* ========================================
+   RESPONSIVE NAVBAR
+   ======================================== */
+@media (max-width: 968px) {
+  .nav {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .nav-center {
+    order: 3;
+    gap: 15px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+  }
+  
+  .nav-right {
+    justify-content: flex-end;
+  }
+  
+  .btn-imei span:last-child {
+    display: none;
+  }
+  
+  .whatsapp-btn-nav span {
+    display: none;
+  }
+  
+  .top-bar-content {
+    gap: 15px;
+    font-size: 12px;
+  }
+}
