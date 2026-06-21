@@ -6,22 +6,47 @@
   <title>Cell Space Argentina - Inicio</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=4">
+  <link rel="stylesheet" href="css/styles.css?v=5">
   
-  <!-- Firebase -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
+  <!-- ✅ AGREGADO: Storage SDK -->
 </head>
 <body>
   <div class="particles" id="particles"></div>
 
-  <!-- ========================================
-       BARRA SUPERIOR CON SCROLL/MARQUEE
-       ======================================== -->
+  <!-- BARRA SUPERIOR CON SCROLL -->
   <div class="top-announcement-bar">
     <div class="announcement-wrapper">
       <div class="announcement-scroll">
+        <div class="announcement-item">
+          <span class="icon">🚚</span>
+          <span>Envíos a todo el país por OCA y Andreani</span>
+        </div>
+        <div class="announcement-item">
+          <span class="icon">✓</span>
+          <span>Garantía en todos los productos</span>
+        </div>
+        <div class="announcement-item">
+          <span class="icon">💵</span>
+          <span>Compra mínima $150.000 pesos</span>
+        </div>
+        <div class="announcement-item">
+          <span class="icon">⚡</span>
+          <span>Pedidos despachados en 24hs hábiles</span>
+        </div>
+        <div class="announcement-item">
+          <span class="icon">📦</span>
+          <span>Stock y precios actualizados</span>
+        </div>
+        <div class="announcement-item">
+          <span class="icon">🔒</span>
+          <span>Pago 100% seguro</span>
+        </div>
+        <!-- DUPLICAR PARA SCROLL INFINITO -->
         <div class="announcement-item">
           <span class="icon">🚚</span>
           <span>Envíos a todo el país por OCA y Andreani</span>
@@ -50,9 +75,7 @@
     </div>
   </div>
 
-  <!-- ========================================
-       SEGUNDA BARRA - NAVEGACIÓN PRINCIPAL
-       ======================================== -->
+  <!-- NAVBAR PRINCIPAL -->
   <nav class="nav-main">
     <div class="container nav-container">
       <div class="nav-left">
