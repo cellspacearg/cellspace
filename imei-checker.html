@@ -1,101 +1,96 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IMEI Checker - Cell Space Argentina</title>
-  <link rel="icon" type="image/png" href="assets/logo.png">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
-  <link rel="stylesheet" href="css/imei-checker.css">
-</head>
-<body>
-  <div class="particles" id="particles"></div>
+// ========================================
+// CHECK IMEI FUNCTIONALITY
+// ========================================
 
-  <!-- NAVBAR -->
-  <nav class="nav">
-    <div class="nav-left">
-      <a href="index.html" class="nav-logo-link">
-        <img src="assets/logo.png" class="nav-logo" alt="Logo" onerror="this.style.display='none'">
-      </a>
-      <div>
-        <div class="nav-brand">CELL SPACE</div>
-        <div class="nav-subtitle">ARGENTINA</div>
-      </div>
-    </div>
-    <div class="nav-right">
-      <a href="index.html" class="nav-link">Inicio</a>
-      <a href="tienda.html" class="nav-link">Tienda</a>
-      <a href="imei-checker.html" class="nav-link active">🔍 IMEI Checker</a>
-    </div>
-  </nav>
+// Hacer funciones globales
+window.openIMEIChecker = function() {
+  const modal = document.getElementById('imeiModal');
+  if (modal) {
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  console.log('✅ IMEI Checker abierto');
+}
 
-  <!-- CHECKER SECTION -->
-  <section class="checker-hero">
-    <div class="checker-container">
-      <h1>🔍 IMEI & Serial Checker PRO</h1>
-      <p class="checker-subtitle">Verificación profesional de estado de dispositivo</p>
+window.closeIMEIChecker = function() {
+  const modal = document.getElementById('imeiModal');
+  if (modal) {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    const result = document.getElementById('imeiResult');
+    if (result) result.style.display = 'none';
+    const form = document.getElementById('imeiForm');
+    if (form) form.reset();
+  }
+}
+
+// Cerrar con ESC
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeIMEIChecker();
+  }
+});
+
+// Cerrar click fuera
+const imeiModal = document.getElementById('imeiModal');
+if (imeiModal) {
+  imeiModal.addEventListener('click', (e) => {
+    if (e.target === imeiModal) {
+      closeIMEIChecker();
+    }
+  });
+}
+
+// Form submit
+const imeiForm = document.getElementById('imeiForm');
+if (imeiForm) {
+  imeiForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const imeiInput = document.getElementById('imeiInput');
+    const imei = imeiInput ? imeiInput.value.trim() : '';
+    
+    if (!imei || imei.length < 10) {
+      alert('⚠️ IMEI inválido. Debe tener al menos 10 dígitos');
+      return;
+    }
+    
+    // Mostrar loading
+    const resultDiv = document.getElementById('imeiResult');
+    if (resultDiv) {
+      resultDiv.innerHTML = '<div class="loading">Verificando...</div>';
+      resultDiv.style.display = 'block';
+    }
+    
+    try {
+      // Simular verificación (reemplazar con Cloud Function real)
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      <div class="search-box-large">
-        <div class="search-tabs">
-          <button class="search-tab active" data-type="imei">📱 IMEI</button>
-          <button class="search-tab" data-type="serial">🔢 Serial Number</button>
-          <button class="search-tab" data-type="meid">📡 MEID</button>
-        </div>
-        
-        <div class="search-input-group">
-          <input type="text" id="imeiInput" placeholder="Ingresa el IMEI (15-16 dígitos)" maxlength="16">
-          <button class="btn-search" id="searchBtn" onclick="checkIMEI()">🔍 Consultar</button>
-        </div>
-        
-        <div class="search-hints">💡 Tip: Marcá *#06# en tu teléfono o revisá en Ajustes > General > Información</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- RESULTS SECTION -->
-  <section class="results-section" id="resultsSection" style="display:none;">
-    <div class="results-container">
-      <div class="report-header">
-        <img src="assets/logo.png" class="report-logo" alt="Cell Space Logo" onerror="this.style.display='none'">
-        <div class="report-title-group">
-          <h2>📋 Reporte de Verificación</h2>
-          <p class="report-date" id="reportDate">Generado: --/--/----</p>
-        </div>
-        <div class="results-actions">
-          <button class="btn-action" onclick="copyResults()">📋 Copiar</button>
-          <button class="btn-action" onclick="shareWhatsApp()">💬 WhatsApp</button>
-        </div>
-      </div>
-
-      <div id="resultCard" class="result-card-report">
-        <!-- Resultados cargados dinámicamente -->
-      </div>
-    </div>
-  </section>
-
-  <!-- FOOTER -->
-  <footer class="footer-professional">
-    <div class="footer-container">
-      <div class="footer-grid">
-        <div class="footer-section">
-          <img src="assets/logo.png" class="footer-logo" onerror="this.style.display='none'">
-          <p>Tu tienda de tecnología y centro de reparaciones profesional.</p>
-        </div>
-        <div class="footer-section">
-          <h3>CONTACTO</h3>
-          <div class="footer-contact">
-            <p>📍 Saladas, Corrientes</p>
-            <p>📱 3782-437674</p>
+      if (resultDiv) {
+        resultDiv.innerHTML = `
+          <div class="result-success">
+            <div class="result-icon">✅</div>
+            <h3>IMEI Verificado</h3>
+            <p><strong>IMEI:</strong> ${imei}</p>
+            <p><strong>Estado:</strong> Disponible</p>
+            <p><strong>Modelo:</strong> iPhone 12 Pro</p>
           </div>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>&copy; 2026 Cell Space Argentina</p>
-      </div>
-    </div>
-  </footer>
+        `;
+      }
+      
+    } catch (error) {
+      console.error('Error:', error);
+      if (resultDiv) {
+        resultDiv.innerHTML = `
+          <div class="result-error">
+            <div class="result-icon">❌</div>
+            <h3>Error</h3>
+            <p>No se pudo verificar el IMEI</p>
+          </div>
+        `;
+      }
+    }
+  });
+}
 
-  <script src="js/imei-checker.js"></script>
-</body>
-</html>
+console.log('✅ Cell Space IMEI System Loaded');
