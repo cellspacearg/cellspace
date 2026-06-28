@@ -8,11 +8,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
   
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
+  <!-- ✅ FIREBASE - ORDEN CORRECTO -->
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
 </head>
 <body>
   
@@ -226,7 +226,7 @@
   <script>
     let currentUser = null;
     let currentUserType = 'client';
-    let originalUsername = ''; // ✅ Variable segura para comparar cambios
+    let originalUsername = '';
     
     document.addEventListener('DOMContentLoaded', async () => {
       firebase.auth().onAuthStateChanged(async (user) => {
@@ -244,7 +244,6 @@
       const userId = user.email.split('@')[0];
       let userData = null;
       
-      // Buscar en todas las colecciones
       const clientDoc = await db.collection('clients').doc(userId).get();
       if (clientDoc.exists) {
         userData = clientDoc.data(); currentUserType = 'client';
@@ -260,10 +259,9 @@
         }
       }
       
-      // Cargar datos en formulario
       const username = userData?.username || user.displayName?.toLowerCase().replace(/\s+/g, '_') || userId;
       document.getElementById('profileUsername').value = username;
-      originalUsername = username; // ✅ Guardamos el original aquí
+      originalUsername = username;
       
       document.getElementById('profileEmail').value = user.email;
       document.getElementById('profileName').value = userData?.name || user.displayName || '';
@@ -279,7 +277,6 @@
         document.getElementById('profileBio').value = userData?.bio || '';
       }
       
-      // Sidebar & Navbar UI
       const displayName = userData?.name || username;
       document.getElementById('sidebarName').textContent = displayName;
       document.getElementById('sidebarEmail').textContent = user.email;
@@ -321,10 +318,6 @@
       if (document.getElementById('loginBtn')) document.getElementById('loginBtn').style.display = 'none';
     }
     
-    // ========================================
-    // GUARDAR CAMBIOS - LÓGICA CORREGIDA
-    // ========================================
-    
     document.getElementById('profileForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!currentUser) return;
@@ -336,7 +329,6 @@
         alert('⚠️ Mínimo 3 caracteres'); return;
       }
       
-      // Si cambió el username, actualizar colección 'usernames'
       if (newUsername !== originalUsername) {
         try {
           const checkDoc = await db.collection('usernames').doc(newUsername).get();
@@ -344,7 +336,6 @@
             alert('⚠️ Ese username ya está en uso.'); return;
           }
           
-          // Borrar el viejo si existe
           if (originalUsername) {
             await db.collection('usernames').doc(originalUsername).delete().catch(() => {});
           }
@@ -360,7 +351,6 @@
         }
       }
       
-      // Preparar datos
       const updates = {
         username: newUsername,
         name: document.getElementById('profileName').value,
@@ -372,14 +362,12 @@
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
       
-      // Campos técnicos
       if (currentUserType === 'technician') {
         updates.specialty = document.getElementById('profileSpecialty').value;
         updates.experience = document.getElementById('profileExperience').value;
         updates.bio = document.getElementById('profileBio').value;
       }
       
-      // Contraseña
       const newPass = document.getElementById('newPassword').value;
       if (newPass && newPass.length >= 6) {
         try {
@@ -389,7 +377,6 @@
         }
       }
       
-      // Detectar colección correcta
       let collection = 'clients';
       const cSnap = await db.collection('clients').doc(userId).get();
       if (cSnap.exists) collection = 'clients';
@@ -400,7 +387,6 @@
       }
       
       try {
-        // ✅ MERGE: Actualiza si existe, CREA si no existe. Evita el error "No document to update"
         await db.collection(collection).doc(userId).set(updates, { merge: true });
         
         originalUsername = newUsername;
