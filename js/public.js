@@ -125,16 +125,35 @@ async function loadFeaturedProducts() {
 }
 
 // CONTACTO
-async function loadContact() {
-  try {
-    const doc = await db.collection('site_config').doc('contact').get();
-    if (doc.exists) {
-      const c = doc.data();
-      document.getElementById('footerAddress').textContent = c.address || 'Saladas, Corrientes';
-      document.getElementById('footerHours').textContent = c.hours || 'Lun-Sáb 9-20hs';
-      document.getElementById('footerPhone').textContent = 'WhatsApp: ' + (c.phone || '3782-437674');
-    }
-  } catch (e) { console.error(e); }
+function loadContact() {
+  // Verificar que los elementos existen antes de usarlos
+  const elements = {
+    address: document.getElementById('footerAddress'),
+    hours: document.getElementById('footerHours'),
+    phone: document.getElementById('footerPhone'),
+    email: document.getElementById('footerEmail')
+  };
+  
+  // Datos de contacto
+  const contactData = {
+    address: '📍 Sargeto Cabral 1745 - Saladas, Corrientes',
+    hours: '🕒 Lun-Sab 9-20hs',
+    phone: '📱 +54 9 3782 437674',
+    email: '✉️ cellspacearg@gmail.com'
+  };
+  
+  // Actualizar solo si los elementos existen
+  if (elements.address) elements.address.textContent = contactData.address;
+  if (elements.hours) elements.hours.textContent = contactData.hours;
+  if (elements.phone) elements.phone.textContent = contactData.phone;
+  if (elements.email) elements.email.textContent = contactData.email;
+}
+
+// Llamar a loadContact cuando el DOM esté listo
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', loadContact);
+} else {
+  loadContact();
 }
 
 // Smooth scroll para la barra secundaria
