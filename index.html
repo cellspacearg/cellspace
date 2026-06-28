@@ -5,7 +5,7 @@
 
 console.log('✅ index.js cargado');
 
-// Variables del carrusel (DECLARADAS UNA SOLA VEZ)
+// Variables del carrusel
 let currentSlide = 0;
 let carouselInterval;
 
@@ -14,34 +14,31 @@ const slides = [
   {
     title: 'REPARACIONES PROFESIONALES',
     subtitle: 'Técnicos certificados, garantía y precio justo',
-    image: 'assets/carousel/slide1.jpg',
     cta: 'Ver Servicios',
     link: '#servicios'
   },
   {
     title: 'LICENCIAS PREMIUM',
     subtitle: 'Chimera, Z3X, NCK y más. Entrega inmediata',
-    image: 'assets/carousel/slide2.jpg',
     cta: 'Ir a la Tienda',
     link: 'tienda.html'
   },
   {
     title: 'SOPORTE TÉCNICO 24/7',
     subtitle: 'Escribinos por WhatsApp para asistencia rápida',
-    image: 'assets/carousel/slide3.jpg',
     cta: 'Contactar',
     link: '#contacto'
   }
 ];
 
 // Inicializar cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
   initCarousel();
   initSmoothScroll();
 });
 
 function initCarousel() {
-  const carousel = document.getElementById('carousel');
+  var carousel = document.getElementById('carousel');
   if (!carousel) {
     console.error('❌ No se encontró el carousel');
     return;
@@ -53,69 +50,73 @@ function initCarousel() {
 }
 
 function startCarousel() {
-  // Limpiar intervalo anterior si existe
   if (carouselInterval) {
     clearInterval(carouselInterval);
   }
   
-  carouselInterval = setInterval(() => {
+  carouselInterval = setInterval(function() {
     currentSlide = (currentSlide + 1) % slides.length;
     renderSlide(currentSlide);
   }, 5000);
 }
 
 function renderSlide(index) {
-  const carousel = document.getElementById('carousel');
+  var carousel = document.getElementById('carousel');
   if (!carousel) return;
   
-  const slide = slides[index];
+  var slide = slides[index];
+  var dotsHtml = '';
   
-  carousel.innerHTML = `
-    <div class="carousel-slide active">
-      <div class="carousel-slide::before"></div>
-      <div class="carousel-content">
-        <h1>${slide.title}</h1>
-        <h2>${slide.subtitle}</h2>
-        <a href="${slide.link}" class="btn">${slide.cta}</a>
-      </div>
-    </div>
-    <div class="carousel-dots">
-      ${slides.map((_, i) => `<span class="dot ${i === index ? 'active' : ''}" onclick="goToSlide(${i})"></span>`).join('')}
-    </div>
-    <button class="carousel-btn prev" onclick="changeSlide(-1)">❮</button>
-    <button class="carousel-btn next" onclick="changeSlide(1)">❯</button>
-  `;
+  for (var i = 0; i < slides.length; i++) {
+    var activeClass = (i === index) ? 'active' : '';
+    dotsHtml += '<span class="dot ' + activeClass + '" onclick="goToSlide(' + i + ')"></span>';
+  }
+  
+  carousel.innerHTML = '<div class="carousel-slide active">' +
+    '<div class="carousel-content">' +
+    '<h1>' + slide.title + '</h1>' +
+    '<h2>' + slide.subtitle + '</h2>' +
+    '<a href="' + slide.link + '" class="btn">' + slide.cta + '</a>' +
+    '</div>' +
+    '</div>' +
+    '<div class="carousel-dots">' + dotsHtml + '</div>' +
+    '<button class="carousel-btn prev" onclick="changeSlide(-1)">❮</button>' +
+    '<button class="carousel-btn next" onclick="changeSlide(1)">❯</button>';
 }
 
 // Funciones globales
 window.goToSlide = function(index) {
   currentSlide = index;
   renderSlide(currentSlide);
-  startCarousel(); // Reiniciar autoplay
-}
+  startCarousel();
+};
 
 window.changeSlide = function(dir) {
   currentSlide = (currentSlide + dir + slides.length) % slides.length;
   renderSlide(currentSlide);
-  startCarousel(); // Reiniciar autoplay
-}
+  startCarousel();
+};
 
 // Smooth scroll
 function initSmoothScroll() {
-  document.querySelectorAll('a[href^="#"]').forEach(link => {
-    link.addEventListener('click', (e) => {
-      const href = link.getAttribute('href');
-      if (href === '#') return;
-      
-      e.preventDefault();
-      
-      const target = document.querySelector(href);
-      if (target) {
-        const offset = 150;
-        const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+  var links = document.querySelectorAll('a[href^="#"]');
+  
+  for (var i = 0; i < links.length; i++) {
+    (function(link) {
+      link.addEventListener('click', function(e) {
+        var href = link.getAttribute('href');
+        if (href === '#') return;
         
-        window.scrollTo({ top, behavior: 'smooth' });
-      }
-    });
-  });
+        e.preventDefault();
+        
+        var target = document.querySelector(href);
+        if (target) {
+          var offset = 150;
+          var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+          
+          window.scrollTo({ top: top, behavior: 'smooth' });
+        }
+      });
+    })(links[i]);
+  }
 }
