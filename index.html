@@ -76,17 +76,20 @@
     </div>
   </div>
 
-  <!-- ========================================
-       BARRA PRINCIPAL - LOGO + SEARCH + CUENTA
-       ======================================== -->
-  <div class="main-header-bar">
-    <div class="container header-container">
-      <div class="header-left">
-        <a href="index.html" class="header-logo">
-          <img src="assets/logo.png" alt="Cell Space">
-        </a>
-      </div>
-      
+  <!-- BARRA PRINCIPAL - HEADER -->
+<div class="main-header-bar">
+  <div class="container header-container">
+    <div class="header-left">
+      <a href="index.html" class="header-logo">
+        <img src="assets/logo.png" alt="Cell Space">
+        <div class="header-brand-text">
+          <span class="brand-name">CELL SPACE</span>
+          <span class="brand-subtitle">ARGENTINA</span>
+        </div>
+      </a>
+    </div>
+    
+    <div class="header-center">
       <div class="header-search">
         <input type="text" placeholder="Buscar productos, marcas y más" class="search-input">
         <button class="search-btn">
@@ -96,80 +99,78 @@
           </svg>
         </button>
       </div>
-      
-      <div class="header-right">
-        <!-- Mi Cuenta con Dropdown Completo -->
-        <div class="user-dropdown" id="userDropdown" style="display:none;">
-          <button class="user-btn" onclick="toggleUserDropdown()">
-            <div class="user-avatar-small" id="userAvatarSmall">
-              <span id="userInitial">?</span>
-            </div>
-            <div class="user-info">
-              <span class="user-name" id="userNameDisplay">Usuario</span>
-              <span class="user-badge" id="userRoleBadge">Cliente</span>
-            </div>
-            <span class="dropdown-arrow">▼</span>
-          </button>
+    </div>
+    
+    <div class="header-right">
+      <!-- Usuario Dropdown -->
+      <div class="user-dropdown" id="userDropdown" style="display:none;">
+        <button class="user-btn" onclick="toggleUserDropdown()">
+          <div class="user-avatar-small" id="userAvatarSmall">
+            <span id="userInitial">?</span>
+          </div>
+          <div class="user-info">
+            <span class="user-name" id="userNameDisplay">Usuario</span>
+            <span class="user-badge" id="userRoleBadge">Cliente</span>
+          </div>
+          <span class="dropdown-arrow">▼</span>
+        </button>
+        
+        <div class="dropdown-menu" id="userDropdownMenu">
+          <a href="perfil.html" class="dropdown-item">
+            <span class="dropdown-icon">️</span> Mi Perfil
+          </a>
+          <a href="mis-pedidos.html" class="dropdown-item">
+            <span class="dropdown-icon">📦</span> Mis Pedidos
+          </a>
           
-          <div class="dropdown-menu" id="userDropdownMenu">
-            <a href="perfil.html" class="dropdown-item">
-              <span class="dropdown-icon">️</span> Mi Perfil
-            </a>
-            <a href="mis-pedidos.html" class="dropdown-item">
-              <span class="dropdown-icon">📦</span> Mis Pedidos
-            </a>
-            
-            <!-- Zona Técnica -->
-            <div id="technicianMenu" style="display:none;">
-              <div class="dropdown-divider"></div>
-              <div class="dropdown-header">Zona Técnica</div>
-              <a href="technician-zone.html" class="dropdown-item">
-                <span class="dropdown-icon">🔧</span> Panel Técnico
-              </a>
-            </div>
-
-            <!-- Administración -->
-            <div id="adminMenu" style="display:none;">
-              <div class="dropdown-divider"></div>
-              <div class="dropdown-header">Administración</div>
-              <a href="admin.html" class="dropdown-item">
-                <span class="dropdown-icon">⚙️</span> Panel Admin
-              </a>
-              <a href="admin-productos.html" class="dropdown-item">
-                <span class="dropdown-icon"></span> Productos
-              </a>
-            </div>
-
+          <div id="technicianMenu" style="display:none;">
             <div class="dropdown-divider"></div>
-            <a href="#" class="dropdown-item logout" onclick="logout()">
-              <span class="dropdown-icon">🚪</span> Cerrar Sesión
+            <div class="dropdown-header">Zona Técnica</div>
+            <a href="technician-zone.html" class="dropdown-item">
+              <span class="dropdown-icon">🔧</span> Panel Técnico
             </a>
           </div>
-        </div>
 
-        <!-- Favoritos -->
-        <a href="favoritos.html" class="header-link">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-          </svg>
-          <span>Favoritos</span>
-          <span class="badge" id="favoritesCount">0</span>
-        </a>
-        
-        <!-- Carrito -->
-        <a href="#" class="header-link" onclick="toggleCart(); return false;">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="9" cy="21" r="1"></circle>
-            <circle cx="20" cy="21" r="1"></circle>
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-          </svg>
-          <span>Carrito</span>
-          <span class="badge" id="cartCountTop">0</span>
-        </a>
+          <div id="adminMenu" style="display:none;">
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-header">Administración</div>
+            <a href="admin.html" class="dropdown-item">
+              <span class="dropdown-icon">⚙️</span> Panel Admin
+            </a>
+            <a href="admin-productos.html" class="dropdown-item">
+              <span class="dropdown-icon"></span> Productos
+            </a>
+          </div>
+
+          <div class="dropdown-divider"></div>
+          <a href="#" class="dropdown-item logout" onclick="logout()">
+            <span class="dropdown-icon">🚪</span> Cerrar Sesión
+          </a>
+        </div>
       </div>
+
+      <!-- Favoritos -->
+      <a href="favoritos.html" class="header-link">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+        </svg>
+        <span>Favoritos</span>
+        <span class="badge" id="favoritesCount">0</span>
+      </a>
+      
+      <!-- Carrito -->
+      <a href="#" class="header-link" onclick="toggleCart(); return false;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+        <span>Carrito</span>
+        <span class="badge" id="cartCountTop">0</span>
+      </a>
     </div>
   </div>
-
+</div>
   <!-- ========================================
        BARRA DE NAVEGACIÓN - CON BOTONES
        ======================================== -->
