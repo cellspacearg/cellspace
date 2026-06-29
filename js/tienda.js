@@ -1,5 +1,5 @@
 // ========================================
-// CELL SPACE - TIENDA PREMIUM CON QUICK VIEW
+// CELL SPACE - TIENDA CON QUICK VIEW
 // ========================================
 
 // Datos de productos (reemplazá con tu base de datos real)
