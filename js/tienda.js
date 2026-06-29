@@ -153,7 +153,13 @@ function renderProducts(productsToRender = products) {
       ${product.stock <= 3 ? `<span class="stock-badge">Últimas unidades</span>` : ''}
       
       <div class="product-image-container">
-        <img src="${product.image}" alt="${product.name}" class="product-image" onerror="this.src='assets/placeholder.png'">
+        <div class="product-image-placeholder">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+          </svg>
+          <span class="placeholder-text">${product.category}</span>
+        </div>
       </div>
       
       <div class="product-info-premium">
@@ -182,6 +188,9 @@ function renderProducts(productsToRender = products) {
       </div>
     </div>
   `).join('');
+
+  updateProductsCount(productsToRender.length);
+}
 
   // Actualizar contador
   updateProductsCount(productsToRender.length);
