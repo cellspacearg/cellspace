@@ -32,3 +32,383 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
 </head>
+  <body>
+  <!-- Overlay de partículas -->
+  <div class="particles" id="particles"></div>
+
+  <!-- ========================================
+       HEADER SUPERIOR
+       ======================================== -->
+  <header class="site-header">
+    <div class="header-top">
+      <div class="container">
+        <div class="header-top-content">
+          <!-- Logo -->
+          <a href="index.html" class="logo">
+            <img src="assets/logo.png" alt="Cell Space Argentina">
+            <div class="logo-text">
+              <span class="logo-main">CELL SPACE</span>
+              <span class="logo-sub">ARGENTINA</span>
+            </div>
+          </a>
+          
+          <!-- Buscador -->
+          <div class="header-search">
+            <input type="text" placeholder="Buscar productos, herramientas, servicios..." class="search-input" id="headerSearchInput">
+            <button class="search-btn" onclick="performSearch()">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+          
+          <!-- Acciones -->
+          <div class="header-actions">
+            <a href="https://wa.me/5493782437674" target="_blank" class="header-action">
+              <i class="fas fa-headset"></i>
+              <span>Soporte</span>
+            </a>
+            <a href="mi-cuenta.html" class="header-action">
+              <i class="fas fa-user"></i>
+              <span>Mi cuenta</span>
+            </a>
+            <a href="#" class="header-action cart-action" onclick="toggleCart(); return false;">
+              <i class="fas fa-shopping-cart"></i>
+              <span>Carrito</span>
+              <span class="cart-count" id="cartCount">0</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Navegación Principal -->
+    <nav class="main-navigation">
+      <div class="container">
+        <ul class="nav-menu">
+          <li><a href="index.html" class="nav-link">INICIO</a></li>
+          <li><a href="tienda.html" class="nav-link active">TIENDA</a></li>
+          <li><a href="servicio-tecnico.html" class="nav-link">SERVICIO TÉCNICO</a></li>
+          <li class="has-dropdown">
+            <a href="#" class="nav-link">HERRAMIENTAS <i class="fas fa-chevron-down"></i></a>
+            <ul class="dropdown">
+              <li><a href="#">Licencias</a></li>
+              <li><a href="#">Boxes y Dongles</a></li>
+              <li><a href="#">Software</a></li>
+              <li><a href="#">Accesorios</a></li>
+            </ul>
+          </li>
+          <li><a href="proyecto-flux.html" class="nav-link">PROYECTO FLUX</a></li>
+          <li><a href="academia.html" class="nav-link">ACADEMIA</a></li>
+          <li><a href="blog.html" class="nav-link">BLOG</a></li>
+          <li><a href="contacto.html" class="nav-link">CONTACTO</a></li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ========================================
+       CONTENIDO PRINCIPAL
+       ======================================== -->
+  <main class="shop-main">
+    <div class="container">
+      <!-- Hero de Tienda -->
+      <section class="shop-hero">
+        <div class="shop-hero-content">
+          <h1 class="shop-title">TIENDA</h1>
+          <p class="shop-subtitle">Los mejores productos y herramientas para potenciar tu tecnología</p>
+        </div>
+        <div class="shop-hero-image">
+          <img src="assets/hero-shop.png" alt="Productos Cell Space" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 800 400%22%3E%3Crect fill=%22%231a1a1a%22 width=%22800%22 height=%22400%22/%3E%3Ctext fill=%22%23FF6A00%22 font-family=%22Montserrat%22 font-size=%2240%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22%3EProductos%3C/text%3E%3C/svg%3E'">
+        </div>
+        <div class="shop-features">
+          <div class="shop-feature">
+            <i class="fas fa-truck"></i>
+            <div>
+              <strong>ENVÍOS A TODO EL PAÍS</strong>
+              <span>Rápidos y seguros</span>
+            </div>
+          </div>
+          <div class="shop-feature">
+            <i class="fas fa-shield-alt"></i>
+            <div>
+              <strong>PAGOS 100% SEGUROS</strong>
+              <span>MercadoPago / Transferencia</span>
+            </div>
+          </div>
+          <div class="shop-feature">
+            <i class="fas fa-credit-card"></i>
+            <div>
+              <strong>HASTA 12 CUOTAS</strong>
+              <span>Con tarjetas seleccionadas</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Layout de Tienda -->
+      <div class="shop-layout">
+        <!-- Sidebar -->
+        <aside class="shop-sidebar">
+          <div class="sidebar-section">
+            <h3 class="sidebar-title">
+              <i class="fas fa-th-large"></i>
+              CATEGORÍAS
+            </h3>
+            <ul class="category-list">
+              <li class="active"><a href="#" onclick="filterByCategory('all'); return false;"><i class="fas fa-th"></i> Todos los productos</a></li>
+              <li><a href="#" onclick="filterByCategory('Celulares'); return false;"><i class="fas fa-mobile-alt"></i> iPhone</a></li>
+              <li><a href="#" onclick="filterByCategory('Celulares'); return false;"><i class="fas fa-mobile-alt"></i> Samsung</a></li>
+              <li><a href="#" onclick="filterByCategory('Celulares'); return false;"><i class="fas fa-mobile-alt"></i> Motorola</a></li>
+              <li><a href="#" onclick="filterByCategory('Celulares'); return false;"><i class="fas fa-mobile-alt"></i> Xiaomi</a></li>
+              <li><a href="#" onclick="filterByCategory('Accesorios'); return false;"><i class="fas fa-headphones"></i> Accesorios</a></li>
+              <li><a href="#" onclick="filterByCategory('Audio'); return false;"><i class="fas fa-headphones"></i> Audio</a></li>
+              <li><a href="#" onclick="filterByCategory('Smartwatch'); return false;"><i class="fas fa-clock"></i> Smartwatch</a></li>
+              <li><a href="#" onclick="filterByCategory('Tablets'); return false;"><i class="fas fa-tablet-alt"></i> Tablets</a></li>
+              <li><a href="#" onclick="filterByCategory('Notebooks'); return false;"><i class="fas fa-laptop"></i> PC y Notebook</a></li>
+              <li><a href="#" onclick="filterByCategory('Herramientas'); return false;"><i class="fas fa-tools"></i> Herramientas</a></li>
+              <li><a href="#" onclick="filterByCategory('Software'); return false;"><i class="fas fa-compact-disc"></i> Software</a></li>
+              <li><a href="#" onclick="filterByCategory('Ofertas'); return false;" class="highlight"><i class="fas fa-tag"></i> Ofertas</a></li>
+            </ul>
+          </div>
+
+          <div class="sidebar-section">
+            <h3 class="sidebar-title">
+              <i class="fas fa-filter"></i>
+              FILTRAR POR
+            </h3>
+            
+            <div class="filter-group">
+              <label>Precio</label>
+              <div class="price-range">
+                <input type="range" min="0" max="2000000" value="2000000" class="price-slider" id="priceSlider">
+                <div class="price-values">
+                  <span>$0</span>
+                  <span id="maxPriceLabel">$2.000.000</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <label>Marca</label>
+              <input type="text" placeholder="Buscar marca..." class="filter-search" id="brandSearch">
+              <select class="filter-select" id="brandSelect">
+                <option value="all">Todas las marcas</option>
+                <option value="Apple">Apple</option>
+                <option value="Samsung">Samsung</option>
+                <option value="Xiaomi">Xiaomi</option>
+                <option value="Motorola">Motorola</option>
+                <option value="JBL">JBL</option>
+                <option value="Spigen">Spigen</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label>Categoría</label>
+              <select class="filter-select" id="categorySelect">
+                <option value="all">Todas</option>
+                <option value="Celulares">Celulares</option>
+                <option value="Accesorios">Accesorios</option>
+                <option value="Audio">Audio</option>
+                <option value="Smartwatch">Smartwatch</option>
+                <option value="Notebooks">Notebooks</option>
+                <option value="Herramientas">Herramientas</option>
+                <option value="Software">Software</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label>Disponibilidad</label>
+              <select class="filter-select" id="availabilitySelect">
+                <option value="all">Todas</option>
+                <option value="in-stock">En stock</option>
+                <option value="preorder">Bajo pedido</option>
+              </select>
+            </div>
+
+            <button class="btn-filter" onclick="applyFilters()">
+              <i class="fas fa-filter"></i>
+              FILTRAR
+            </button>
+          </div>
+
+          <div class="sidebar-promo">
+            <div class="promo-badge">10% OFF</div>
+            <h4>EN TU PRIMERA COMPRA</h4>
+            <p>Usá el cupón:</p>
+            <div class="promo-code">CELLSPACE10</div>
+            <small>Válido para productos seleccionados</small>
+          </div>
+        </aside>
+
+        <!-- Contenido Principal -->
+        <div class="shop-content">
+          <div class="shop-toolbar">
+            <div class="showing-products" id="productsCount">
+              Mostrando 1-12 de 240 productos
+            </div>
+            <div class="sort-options">
+              <label>Ordenar por:</label>
+              <select class="sort-select" id="sortSelect" onchange="sortProducts()">
+                <option value="popular">Más populares</option>
+                <option value="price-asc">Precio: menor a mayor</option>
+                <option value="price-desc">Precio: mayor a menor</option>
+                <option value="newest">Más nuevos</option>
+                <option value="rating">Mejor valorados</option>
+              </select>
+              <div class="view-mode">
+                <button class="view-btn active" onclick="setViewMode('grid')"><i class="fas fa-th"></i></button>
+                <button class="view-btn" onclick="setViewMode('list')"><i class="fas fa-list"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="products-grid" id="productsGrid">
+            <!-- Los productos se cargan con JavaScript -->
+          </div>
+
+          <div class="pagination">
+            <button class="page-btn" onclick="changePage(-1)"><i class="fas fa-chevron-left"></i></button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">4</button>
+            <button class="page-btn">5</button>
+            <span class="page-dots">...</span>
+            <button class="page-btn">20</button>
+            <button class="page-btn" onclick="changePage(1)"><i class="fas fa-chevron-right"></i></button>
+          </div>
+
+          <div class="shop-benefits">
+            <div class="benefit">
+              <i class="fas fa-truck"></i>
+              <div>
+                <strong>ENVÍOS A TODO EL PAÍS</strong>
+                <span>Rápidos y seguros</span>
+              </div>
+            </div>
+            <div class="benefit">
+              <i class="fas fa-shield-alt"></i>
+              <div>
+                <strong>PAGOS 100% SEGUROS</strong>
+                <span>MercadoPago / Transferencia</span>
+              </div>
+            </div>
+            <div class="benefit">
+              <i class="fas fa-credit-card"></i>
+              <div>
+                <strong>HASTA 12 CUOTAS</strong>
+                <span>Con tarjetas seleccionadas</span>
+              </div>
+            </div>
+            <div class="benefit">
+              <i class="fas fa-headset"></i>
+              <div>
+                <strong>SOPORTE 24/7</strong>
+                <span>Estamos para ayudarte</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ========================================
+       FOOTER
+       ======================================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <img src="assets/logo.png" alt="Cell Space Argentina" class="footer-logo" onerror="this.style.display='none'">
+          <p>Tu espacio de confianza en tecnología. Reparación, venta y soluciones profesionales.</p>
+          <div class="social-links">
+            <a href="https://instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+            <a href="https://facebook.com" target="_blank"><i class="fab fa-facebook"></i></a>
+            <a href="https://youtube.com" target="_blank"><i class="fab fa-youtube"></i></a>
+            <a href="https://tiktok.com" target="_blank"><i class="fab fa-tiktok"></i></a>
+          </div>
+        </div>
+        
+        <div class="footer-col">
+          <h4>INFORMACIÓN</h4>
+          <ul>
+            <li><a href="#">Sobre nosotros</a></li>
+            <li><a href="#">Términos y condiciones</a></li>
+            <li><a href="#">Política de privacidad</a></li>
+            <li><a href="#">Preguntas frecuentes</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-col">
+          <h4>CATEGORÍAS</h4>
+          <ul>
+            <li><a href="#">Celulares</a></li>
+            <li><a href="#">Accesorios</a></li>
+            <li><a href="#">Herramientas</a></li>
+            <li><a href="#">Software</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-col">
+          <h4>AYUDA</h4>
+          <ul>
+            <li><a href="#">Soporte técnico</a></li>
+            <li><a href="#">Estado de reparación</a></li>
+            <li><a href="#">Envíos y devoluciones</a></li>
+            <li><a href="#">Garantías</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-col">
+          <h4>CONTACTO</h4>
+          <ul class="contact-info">
+            <li><i class="fab fa-whatsapp"></i> WhatsApp: +54 9 3782 437674</li>
+            <li><i class="fas fa-envelope"></i> Email: info@cellspace.com.ar</li>
+            <li><i class="fas fa-map-marker-alt"></i> Ubicación: Saladas, Corrientes</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2024 Cell Space Argentina. Todos los derechos reservados.</p>
+        <div class="payment-methods">
+          <img src="assets/visa.png" alt="Visa" onerror="this.style.display='none'">
+          <img src="assets/mastercard.png" alt="Mastercard" onerror="this.style.display='none'">
+          <img src="assets/amex.png" alt="American Express" onerror="this.style.display='none'">
+          <img src="assets/mercadopago.png" alt="MercadoPago" onerror="this.style.display='none'">
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================
+       CARRITO MODAL
+       ======================================== -->
+  <div class="cart-modal-overlay" id="cartModal">
+    <div class="cart-modal">
+      <div class="cart-modal-header">
+        <h2><i class="fas fa-shopping-cart"></i> Tu Carrito</h2>
+        <button onclick="toggleCart()" class="close-btn"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="cart-modal-body" id="cartItems">
+        <!-- Items del carrito se cargan dinámicamente -->
+      </div>
+      <div class="cart-modal-footer">
+        <div class="cart-total">
+          <span>Total:</span>
+          <span class="total-price" id="cartTotal">$0</span>
+        </div>
+        <button class="btn-checkout" onclick="checkout()">Finalizar Compra</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================
+       SCRIPTS
+       ======================================== -->
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/tienda.js"></script>
+</body>
+</html>
