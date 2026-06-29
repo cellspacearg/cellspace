@@ -74,42 +74,92 @@
     </div>
   </div>
 
-  <!-- NAVBAR PRINCIPAL -->
-  <nav class="nav-main">
-    <div class="container nav-container">
-      <div class="nav-left">
-        <a href="index.html" class="nav-logo-link">
-          <img src="assets/logo.png" alt="Cell Space" class="nav-logo">
-        </a>
-        <div class="nav-brand-container">
-          <div class="nav-brand">CELL SPACE</div>
-          <div class="nav-subtitle">ARGENTINA</div>
-        </div>
-      </div>
+<!-- BARRA SUPERIOR - SEARCH Y CUENTA -->
+<div class="top-bar">
+  <div class="container top-bar-container">
+    <div class="top-bar-left">
+      <a href="index.html" class="top-bar-logo">
+        <img src="assets/logo.png" alt="Cell Space">
+      </a>
+    </div>
+    
+    <div class="top-bar-search">
+      <input type="text" placeholder="Buscar productos, marcas y más" class="search-input">
+      <button class="search-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="top-bar-right">
+      <a href="perfil.html" class="top-bar-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <span>Mi cuenta</span>
+      </a>
       
-      <div class="nav-center">
+      <a href="favoritos.html" class="top-bar-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+        </svg>
+        <span>Favoritos</span>
+        <span class="badge" id="favoritesCount">0</span>
+      </a>
+      
+      <a href="#" class="top-bar-link" onclick="toggleCart(); return false;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+        <span>Carrito</span>
+        <span class="badge" id="cartCountTop">0</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- BARRA DE NAVEGACIÓN PRINCIPAL -->
+<nav class="main-nav">
+  <div class="container">
+    <ul class="main-nav-menu">
+      <li>
         <a href="#inicio" class="nav-link active">
-          <span class="link-icon">🏠</span>
+          <span class="nav-icon">🏠</span>
           <span>Inicio</span>
         </a>
+      </li>
+      <li>
         <a href="#servicios" class="nav-link">
-          <span class="link-icon">🔧</span>
+          <span class="nav-icon">🔧</span>
           <span>Servicios</span>
         </a>
+      </li>
+      <li>
         <a href="#productos" class="nav-link">
-          <span class="link-icon">📱</span>
+          <span class="nav-icon">📱</span>
           <span>Productos</span>
         </a>
+      </li>
+      <li>
         <a href="tienda.html" class="nav-link">
-          <span class="link-icon">🛒</span>
+          <span class="nav-icon">🛒</span>
           <span>Tienda</span>
         </a>
+      </li>
+      <li>
         <a href="#contacto" class="nav-link">
-          <span class="link-icon">📞</span>
+          <span class="nav-icon">📞</span>
           <span>Contacto</span>
         </a>
-      </div>
-      
+      </li>
+    </ul>
+  </div>
+</nav>  
       <div class="nav-right">
         <!-- Check IMEI -->
         <button onclick="openIMEIChecker()" class="btn-imei-check">
