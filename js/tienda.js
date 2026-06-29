@@ -2,7 +2,7 @@
 // CELL SPACE - TIENDA CON QUICK VIEW
 // ========================================
 
-// Datos de productos (reemplazá con tu base de datos real)
+// Datos de productos
 const products = [
   {
     id: 1,
@@ -10,10 +10,120 @@ const products = [
     category: "Licencias",
     price: 181.00,
     oldPrice: 220.00,
-    image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=400&fit=crop",
-    // ... resto del código
+    image: "assets/products/chimera.png",
+    description: "Licencia premium de Chimera Tool para reparación y desbloqueo de hasta 5000 teléfonos.",
+    stock: 15,
+    rating: 5,
+    reviews: 128,
+    specs: [
+      "✓ Servidor automático",
+      "✓ Entrega instantánea",
+      "✓ 5000 teléfonos/año",
+      "✓ Soporte 24/7",
+      "✓ Actualizaciones incluidas",
+      "✓ Compatible 100%"
+    ]
   },
-  // ... más productos
+  {
+    id: 2,
+    name: "Z3X Box - Samsung Edition",
+    category: "Hardware",
+    price: 145.00,
+    oldPrice: null,
+    image: "assets/products/z3x.png",
+    description: "Z3X Box edición Samsung para reparación de firmware, desbloqueo y mantenimiento.",
+    stock: 8,
+    rating: 4,
+    reviews: 64,
+    specs: [
+      "✓ Samsung exclusivo",
+      "✓ Firmware repair",
+      "✓ Desbloqueo FRP",
+      "✓ Soporte técnico",
+      "✓ Garantía 1 año",
+      "✓ Envío gratis"
+    ]
+  },
+  {
+    id: 3,
+    name: "NCK Dongle - Full Activation",
+    category: "Licencias",
+    price: 89.00,
+    oldPrice: 120.00,
+    image: "assets/products/nck.png",
+    description: "Activación completa de NCK Dongle para desbloqueo de códigos de red.",
+    stock: 25,
+    rating: 5,
+    reviews: 92,
+    specs: [
+      "✓ Multi-marca",
+      "✓ Activación completa",
+      "✓ Código de red",
+      "✓ Actualización gratuita",
+      "✓ Soporte remoto",
+      "✓ Entrega inmediata"
+    ]
+  },
+  {
+    id: 4,
+    name: "Medusa Pro 2 Box",
+    category: "Hardware",
+    price: 299.00,
+    oldPrice: 350.00,
+    image: "assets/products/medusa.png",
+    description: "Medusa Pro 2 para reparación avanzada de firmware y recuperación de datos.",
+    stock: 3,
+    rating: 5,
+    reviews: 45,
+    specs: [
+      "✓ Multi-plataforma",
+      "✓ Reparación avanzada",
+      "✓ Recovery mode",
+      "✓ Flasheo seguro",
+      "✓ Base de datos amplia",
+      "✓ Manual incluido"
+    ]
+  },
+  {
+    id: 5,
+    name: "Octoplus Box - LG Edition",
+    category: "Licencias",
+    price: 75.00,
+    oldPrice: null,
+    image: "assets/products/octoplus.png",
+    description: "Licencia Octoplus para dispositivos LG. Herramientas de flasheo y reparación.",
+    stock: 12,
+    rating: 4,
+    reviews: 38,
+    specs: [
+      "✓ LG exclusivo",
+      "✓ Reparación IMEI",
+      "✓ Flasheo completo",
+      "✓ Base de datos LG",
+      "✓ Soporte incluido",
+      "✓ Actualizaciones"
+    ]
+  },
+  {
+    id: 6,
+    name: "Infinity Box - CM2 Chinese Miracle",
+    category: "Hardware",
+    price: 195.00,
+    oldPrice: 240.00,
+    image: "assets/products/infinity.png",
+    description: "Infinity Box CM2 para reparación de firmware chino y desbloqueo.",
+    stock: 6,
+    rating: 4,
+    reviews: 56,
+    specs: [
+      "✓ Marcas chinas",
+      "✓ Firmware repair",
+      "✓ Desbloqueo avanzado",
+      "✓ Multi-protocolo",
+      "✓ Soporte técnico",
+      "✓ Garantía 6 meses"
+    ]
+  }
 ];
 
 // Carrito
@@ -23,7 +133,11 @@ let cart = JSON.parse(localStorage.getItem('cellspace_cart') || '[]');
 // RENDERIZAR PRODUCTOS
 // ========================================
 
-function renderProducts(productsToRender = products) {
+function renderProducts(productsToRender) {
+  if (!productsToRender) {
+    productsToRender = products;
+  }
+  
   const grid = document.getElementById('productsGrid');
   if (!grid) return;
 
@@ -82,10 +196,6 @@ function renderProducts(productsToRender = products) {
   updateProductsCount(productsToRender.length);
 }
 
-  // Actualizar contador
-  updateProductsCount(productsToRender.length);
-}
-
 // ========================================
 // QUICK VIEW FUNCTIONS
 // ========================================
@@ -98,29 +208,26 @@ function openQuickView(productId) {
 
   currentQuickViewProduct = product;
 
-  // Populá el modal
   document.getElementById('qvImage').src = product.image;
   document.getElementById('qvImage').alt = product.name;
   document.getElementById('qvCategory').textContent = product.category;
   document.getElementById('qvTitle').textContent = product.name;
-  document.getElementById('qvPrice').textContent = `$${product.price.toFixed(2)}`;
+  document.getElementById('qvPrice').textContent = '$' + product.price.toFixed(2);
   document.getElementById('qvDescription').textContent = product.description;
   document.getElementById('qvStars').textContent = '★'.repeat(product.rating) + '☆'.repeat(5 - product.rating);
-  document.getElementById('qvReviews').textContent = `(${product.reviews} reseñas)`;
+  document.getElementById('qvReviews').textContent = '(' + product.reviews + ' reseñas)';
 
-  // Precio viejo si hay descuento
   if (product.oldPrice) {
-    document.getElementById('qvOldPrice').textContent = `$${product.oldPrice.toFixed(2)}`;
+    document.getElementById('qvOldPrice').textContent = '$' + product.oldPrice.toFixed(2);
     document.getElementById('qvOldPrice').style.display = 'inline';
     const discount = Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100);
-    document.getElementById('qvDiscount').textContent = `-${discount}%`;
+    document.getElementById('qvDiscount').textContent = '-' + discount + '%';
     document.getElementById('qvDiscount').style.display = 'inline';
   } else {
     document.getElementById('qvOldPrice').style.display = 'none';
     document.getElementById('qvDiscount').style.display = 'none';
   }
 
-  // Stock
   const stockBadge = document.getElementById('qvStock');
   if (product.stock > 0) {
     stockBadge.textContent = '✓ En Stock';
@@ -130,14 +237,11 @@ function openQuickView(productId) {
     stockBadge.style.background = '#ff4444';
   }
 
-  // Specs
   const specsList = document.getElementById('qvSpecsList');
-  specsList.innerHTML = product.specs.map(spec => `<li>${spec}</li>`).join('');
+  specsList.innerHTML = product.specs.map(spec => '<li>' + spec + '</li>').join('');
 
-  // Reset cantidad
   document.getElementById('qvQuantity').value = 1;
 
-  // Mostrar modal
   document.getElementById('quickViewModal').classList.add('active');
   document.body.style.overflow = 'hidden';
 }
@@ -150,12 +254,16 @@ function closeQuickView() {
 
 function incrementQty() {
   const input = document.getElementById('qvQuantity');
-  if (parseInt(input.value) < 10) input.value = parseInt(input.value) + 1;
+  if (parseInt(input.value) < 10) {
+    input.value = parseInt(input.value) + 1;
+  }
 }
 
 function decrementQty() {
   const input = document.getElementById('qvQuantity');
-  if (parseInt(input.value) > 1) input.value = parseInt(input.value) - 1;
+  if (parseInt(input.value) > 1) {
+    input.value = parseInt(input.value) - 1;
+  }
 }
 
 function addToCartFromQuickView() {
@@ -296,19 +404,22 @@ function renderCart() {
     </div>
   `).join('');
 
-  document.getElementById('cartTotal').textContent = `$${getCartTotal().toFixed(2)}`;
+  document.getElementById('cartTotal').textContent = '$' + getCartTotal().toFixed(2);
 }
 
 // ========================================
 // NOTIFICACIONES
 // ========================================
 
-function showNotification(message, type = 'info') {
-  // Remover notificaciones existentes
+function showNotification(message, type) {
+  if (!type) {
+    type = 'info';
+  }
+  
   document.querySelectorAll('.notification').forEach(n => n.remove());
 
   const notification = document.createElement('div');
-  notification.className = `notification notification-${type}`;
+  notification.className = 'notification notification-' + type;
   notification.textContent = message;
   notification.style.cssText = `
     position: fixed;
@@ -337,7 +448,6 @@ function showNotification(message, type = 'info') {
 // ========================================
 
 function filterByCategory(category) {
-  // Actualizar botones activos
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.classList.remove('active');
     if (btn.textContent.toLowerCase().includes(category.toLowerCase()) || 
@@ -365,7 +475,9 @@ function searchProducts(query) {
 
 function updateProductsCount(count) {
   const el = document.getElementById('productsCount');
-  if (el) el.textContent = `${count} productos encontrados`;
+  if (el) {
+    el.textContent = count + ' productos encontrados';
+  }
 }
 
 // ========================================
@@ -373,13 +485,9 @@ function updateProductsCount(count) {
 // ========================================
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Renderizar productos
   renderProducts();
-
-  // Actualizar contador del carrito
   updateCartCount();
 
-  // Configurar búsqueda
   const searchInput = document.getElementById('searchInput');
   if (searchInput) {
     searchInput.addEventListener('input', (e) => {
@@ -387,7 +495,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Configurar filtros
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const category = btn.getAttribute('data-category') || 'all';
@@ -395,21 +502,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Cerrar carrito con click fuera
-  document.getElementById('cartOverlay')?.addEventListener('click', (e) => {
-    if (e.target === document.getElementById('cartOverlay')) {
-      closeCart();
-    }
-  });
+  const cartOverlay = document.getElementById('cartOverlay');
+  if (cartOverlay) {
+    cartOverlay.addEventListener('click', (e) => {
+      if (e.target === cartOverlay) {
+        closeCart();
+      }
+    });
+  }
 
-  // Cerrar Quick View con click fuera
-  document.getElementById('quickViewModal')?.addEventListener('click', (e) => {
-    if (e.target === document.getElementById('quickViewModal')) {
-      closeQuickView();
-    }
-  });
+  const quickViewModal = document.getElementById('quickViewModal');
+  if (quickViewModal) {
+    quickViewModal.addEventListener('click', (e) => {
+      if (e.target === quickViewModal) {
+        closeQuickView();
+      }
+    });
+  }
 
-  // Cerrar con ESC
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       closeQuickView();
