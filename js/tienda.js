@@ -2,162 +2,109 @@
 // CELL SPACE - TIENDA JAVASCRIPT
 // ========================================
 
-// Datos de productos
+// Datos de productos (sin imágenes externas, usamos placeholder)
 const products = [
   {
     id: 1,
-    name: "iPhone 15 Pro Max 256GB - Titanio Azul",
-    category: "Celulares",
-    brand: "Apple",
-    price: 2199999,
-    oldPrice: 2499999,
-    image: "https://images.unsplash.com/photo-1696446701796-da61225697cc?w=400&h=400&fit=crop",
+    name: "Chimera Tool Premium - 5000 Teléfonos",
+    category: "Licencias",
+    brand: "Chimera",
+    price: 181.00,
+    oldPrice: 220.00,
+    image: "assets/products/chimera.png",
     rating: 5,
-    badge: "NUEVO",
+    badge: "OFERTA",
     stock: 15
   },
   {
     id: 2,
-    name: "Samsung Galaxy S24 Ultra 512GB",
-    category: "Celulares",
-    brand: "Samsung",
-    price: 1999999,
+    name: "Z3X Box - Samsung Edition",
+    category: "Hardware",
+    brand: "Z3X",
+    price: 145.00,
     oldPrice: null,
-    image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400&h=400&fit=crop",
-    rating: 5,
-    badge: "NUEVO",
-    stock: 10
-  },
-  {
-    id: 3,
-    name: "Xiaomi 14 512GB",
-    category: "Celulares",
-    brand: "Xiaomi",
-    price: 1199999,
-    oldPrice: null,
-    image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400&h=400&fit=crop",
+    image: "assets/products/z3x.png",
     rating: 4,
-    badge: "NUEVO",
-    stock: 20
-  },
-  {
-    id: 4,
-    name: "MacBook Air M3 13.6\" 256GB",
-    category: "Notebooks",
-    brand: "Apple",
-    price: 1699999,
-    oldPrice: null,
-    image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&h=400&fit=crop",
-    rating: 5,
     badge: null,
     stock: 8
   },
   {
-    id: 5,
-    name: "AirPods Pro 2 USB-C",
-    category: "Audio",
-    brand: "Apple",
-    price: 499999,
-    oldPrice: 599999,
-    image: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=400&h=400&fit=crop",
+    id: 3,
+    name: "NCK Dongle - Full Activation",
+    category: "Licencias",
+    brand: "NCK",
+    price: 89.00,
+    oldPrice: 120.00,
+    image: "assets/products/nck.png",
     rating: 5,
     badge: "OFERTA",
     stock: 25
   },
   {
-    id: 6,
-    name: "Apple Watch Series 9",
-    category: "Smartwatch",
-    brand: "Apple",
-    price: 699999,
-    oldPrice: null,
-    image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=400&h=400&fit=crop",
+    id: 4,
+    name: "Medusa Pro 2 Box",
+    category: "Hardware",
+    brand: "Medusa",
+    price: 299.00,
+    oldPrice: 350.00,
+    image: "assets/products/medusa.png",
     rating: 5,
+    badge: "Últimas unidades",
+    stock: 3
+  },
+  {
+    id: 5,
+    name: "Octoplus Box - LG Edition",
+    category: "Licencias",
+    brand: "Octoplus",
+    price: 75.00,
+    oldPrice: null,
+    image: "assets/products/octoplus.png",
+    rating: 4,
     badge: null,
     stock: 12
   },
   {
-    id: 7,
-    name: "Samsung Galaxy Watch 6 Classic",
-    category: "Smartwatch",
-    brand: "Samsung",
-    price: 599999,
-    oldPrice: null,
-    image: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=400&h=400&fit=crop",
-    rating: 4,
-    badge: null,
-    stock: 18
-  },
-  {
-    id: 8,
-    name: "Cargador MagSafe Apple 15W",
-    category: "Accesorios",
-    brand: "Apple",
-    price: 59999,
-    oldPrice: null,
-    image: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=400&fit=crop",
-    rating: 4,
-    badge: null,
-    stock: 50
-  },
-  {
-    id: 9,
-    name: "Vidrio Templado Premium",
-    category: "Accesorios",
-    brand: "Generic",
-    price: 9999,
-    oldPrice: 14999,
-    image: "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=400&h=400&fit=crop",
+    id: 6,
+    name: "Infinity Box - CM2 Chinese Miracle",
+    category: "Hardware",
+    brand: "Infinity",
+    price: 195.00,
+    oldPrice: 240.00,
+    image: "assets/products/infinity.png",
     rating: 4,
     badge: "OFERTA",
-    stock: 100
-  },
-  {
-    id: 10,
-    name: "Auriculares JBL Tune 720BT",
-    category: "Audio",
-    brand: "JBL",
-    price: 99999,
-    oldPrice: null,
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop",
-    rating: 4,
-    badge: null,
-    stock: 30
-  },
-  {
-    id: 11,
-    name: "Cable USB-C a Lightning",
-    category: "Accesorios",
-    brand: "Apple",
-    price: 9999,
-    oldPrice: null,
-    image: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=400&h=400&fit=crop",
-    rating: 4,
-    badge: null,
-    stock: 75
-  },
-  {
-    id: 12,
-    name: "Case iPhone 15 Pro Spigen Ultra Hybrid",
-    category: "Accesorios",
-    brand: "Spigen",
-    price: 19999,
-    oldPrice: null,
-    image: "https://images.unsplash.com/photo-1603313011101-320f26a4f6f6?w=400&h=400&fit=crop",
-    rating: 5,
-    badge: null,
-    stock: 40
+    stock: 6
   }
 ];
 
-// Carrito
-let cart = JSON.parse(localStorage.getItem('cellspace_cart') || '[]');
+// ========================================
+// USAR EL CARRITO GLOBAL (de cart.js)
+// ========================================
+// No declaramos 'cart' aquí para evitar conflicto
+// Usamos window.cart si existe, sino creamos uno local
+
+function getCart() {
+  if (typeof window.cart !== 'undefined') {
+    return window.cart;
+  }
+  return JSON.parse(localStorage.getItem('cellspace_cart') || '[]');
+}
+
+function setCart(newCart) {
+  if (typeof window.cart !== 'undefined') {
+    window.cart = newCart;
+  }
+  localStorage.setItem('cellspace_cart', JSON.stringify(newCart));
+}
 
 // ========================================
 // RENDERIZAR PRODUCTOS
 // ========================================
 
-function renderProducts(productsToRender = products) {
+function renderProducts(productsToRender) {
+  if (!productsToRender) productsToRender = products;
+  
   const grid = document.getElementById('productsGrid');
   if (!grid) return;
 
@@ -166,31 +113,54 @@ function renderProducts(productsToRender = products) {
     return;
   }
 
-  grid.innerHTML = productsToRender.map(product => `
-    <div class="product-card">
-      ${product.badge ? `<span class="product-badge ${product.badge.toLowerCase()}">${product.badge}</span>` : ''}
-      <img src="${product.image}" alt="${product.name}" class="product-image">
-      <div class="product-info">
-        <h3 class="product-title">${product.name}</h3>
-        <div class="product-price">
-          <span class="price-current">$${product.price.toLocaleString('es-AR')}</span>
-          ${product.oldPrice ? `<span class="price-old">$${product.oldPrice.toLocaleString('es-AR')}</span>` : ''}
-        </div>
-        <div class="product-rating">
-          <span class="stars">${'★'.repeat(product.rating)}${'☆'.repeat(5 - product.rating)}</span>
-        </div>
-        <div class="product-actions">
-          <button class="btn-add-cart" onclick="addToCart(${product.id})">
-            <i class="fas fa-shopping-cart"></i>
-            Agregar
-          </button>
-          <button class="btn-wishlist" onclick="addToWishlist(${product.id})">
-            <i class="far fa-heart"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-  `).join('');
+  grid.innerHTML = productsToRender.map(function(product) {
+    var badgeHtml = '';
+    if (product.badge) {
+      var badgeClass = 'product-badge';
+      if (product.badge === 'NUEVO') badgeClass += ' new';
+      if (product.badge === 'OFERTA') badgeClass += ' sale';
+      badgeHtml = '<span class="' + badgeClass + '">' + product.badge + '</span>';
+    }
+
+    var oldPriceHtml = '';
+    if (product.oldPrice) {
+      oldPriceHtml = '<span class="price-old">$' + product.oldPrice.toFixed(2) + '</span>';
+    }
+
+    var stars = '';
+    for (var i = 0; i < product.rating; i++) stars += '★';
+    for (var i = product.rating; i < 5; i++) stars += '☆';
+
+    return '<div class="product-card">' +
+      badgeHtml +
+      '<div class="product-image-placeholder">' +
+        '<i class="fas fa-box-open" style="font-size:48px;color:var(--primary);opacity:0.5;"></i>' +
+        '<span style="font-size:12px;color:var(--text-muted);margin-top:10px;">' + product.category + '</span>' +
+      '</div>' +
+      '<div class="product-info">' +
+        '<h3 class="product-title">' + product.name + '</h3>' +
+        '<div class="product-price">' +
+          '<span class="price-current">$' + product.price.toFixed(2) + '</span>' +
+          oldPriceHtml +
+        '</div>' +
+        '<div class="product-rating"><span class="stars">' + stars + '</span></div>' +
+        '<div class="product-actions">' +
+          '<button class="btn-add-cart" onclick="addToCart(' + product.id + ')">' +
+            '<i class="fas fa-shopping-cart"></i> Agregar' +
+          '</button>' +
+          '<button class="btn-wishlist" onclick="addToWishlist(' + product.id + ')">' +
+            '<i class="far fa-heart"></i>' +
+          '</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  // Actualizar contador
+  var countEl = document.getElementById('productsCount');
+  if (countEl) {
+    countEl.textContent = 'Mostrando ' + productsToRender.length + ' productos';
+  }
 }
 
 // ========================================
@@ -198,10 +168,11 @@ function renderProducts(productsToRender = products) {
 // ========================================
 
 function addToCart(productId) {
-  const product = products.find(p => p.id === productId);
+  var product = products.find(function(p) { return p.id === productId; });
   if (!product) return;
 
-  const existingItem = cart.find(item => item.id === productId);
+  var cart = getCart();
+  var existingItem = cart.find(function(item) { return item.id === productId; });
   
   if (existingItem) {
     existingItem.quantity += 1;
@@ -215,20 +186,22 @@ function addToCart(productId) {
     });
   }
 
-  saveCart();
+  setCart(cart);
   updateCartCount();
   showNotification('✅ Producto agregado al carrito');
 }
 
 function removeFromCart(productId) {
-  cart = cart.filter(item => item.id !== productId);
-  saveCart();
+  var cart = getCart();
+  cart = cart.filter(function(item) { return item.id !== productId; });
+  setCart(cart);
   updateCartCount();
   renderCart();
 }
 
 function updateQuantity(productId, change) {
-  const item = cart.find(item => item.id === productId);
+  var cart = getCart();
+  var item = cart.find(function(i) { return i.id === productId; });
   if (!item) return;
 
   item.quantity += change;
@@ -238,18 +211,15 @@ function updateQuantity(productId, change) {
     return;
   }
 
-  saveCart();
+  setCart(cart);
   updateCartCount();
   renderCart();
 }
 
-function saveCart() {
-  localStorage.setItem('cellspace_cart', JSON.stringify(cart));
-}
-
 function updateCartCount() {
-  const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const countEl = document.getElementById('cartCount');
+  var cart = getCart();
+  var count = cart.reduce(function(sum, item) { return sum + item.quantity; }, 0);
+  var countEl = document.getElementById('cartCount');
   if (countEl) {
     countEl.textContent = count;
     countEl.style.display = count > 0 ? 'flex' : 'none';
@@ -257,7 +227,7 @@ function updateCartCount() {
 }
 
 function toggleCart() {
-  const modal = document.getElementById('cartModal');
+  var modal = document.getElementById('cartModal');
   if (modal) {
     modal.classList.toggle('active');
     if (modal.classList.contains('active')) {
@@ -267,8 +237,10 @@ function toggleCart() {
 }
 
 function renderCart() {
-  const container = document.getElementById('cartItems');
+  var container = document.getElementById('cartItems');
   if (!container) return;
+
+  var cart = getCart();
 
   if (cart.length === 0) {
     container.innerHTML = '<p style="text-align:center;padding:40px;color:var(--text-muted);">Tu carrito está vacío</p>';
@@ -276,24 +248,43 @@ function renderCart() {
     return;
   }
 
-  container.innerHTML = cart.map(item => `
-    <div class="cart-item">
-      <img src="${item.image}" alt="${item.name}">
-      <div class="cart-item-info">
-        <h4 class="cart-item-title">${item.name}</h4>
-        <p class="cart-item-price">$${item.price.toLocaleString('es-AR')}</p>
-        <div style="display:flex;gap:10px;margin-top:10px;">
-          <button onclick="updateQuantity(${item.id}, -1)" style="padding:5px 10px;background:var(--dark);border:1px solid var(--border);border-radius:5px;color:white;cursor:pointer;">-</button>
-          <span>${item.quantity}</span>
-          <button onclick="updateQuantity(${item.id}, 1)" style="padding:5px 10px;background:var(--dark);border:1px solid var(--border);border-radius:5px;color:white;cursor:pointer;">+</button>
-          <button onclick="removeFromCart(${item.id})" style="margin-left:auto;padding:5px 10px;background:var(--danger);border:none;border-radius:5px;color:white;cursor:pointer;">🗑️</button>
-        </div>
-      </div>
-    </div>
-  `).join('');
+  container.innerHTML = cart.map(function(item) {
+    return '<div class="cart-item">' +
+      '<div style="width:80px;height:80px;background:var(--dark);border-radius:8px;display:flex;align-items:center;justify-content:center;">' +
+        '<i class="fas fa-box" style="font-size:24px;color:var(--primary);"></i>' +
+      '</div>' +
+      '<div class="cart-item-info">' +
+        '<h4 class="cart-item-title">' + item.name + '</h4>' +
+        '<p class="cart-item-price">$' + item.price.toFixed(2) + '</p>' +
+        '<div style="display:flex;gap:10px;margin-top:10px;align-items:center;">' +
+          '<button onclick="updateQuantity(' + item.id + ', -1)" style="padding:5px 10px;background:var(--dark);border:1px solid var(--border);border-radius:5px;color:white;cursor:pointer;">-</button>' +
+          '<span>' + item.quantity + '</span>' +
+          '<button onclick="updateQuantity(' + item.id + ', 1)" style="padding:5px 10px;background:var(--dark);border:1px solid var(--border);border-radius:5px;color:white;cursor:pointer;">+</button>' +
+          '<button onclick="removeFromCart(' + item.id + ')" style="margin-left:auto;padding:5px 10px;background:var(--danger);border:none;border-radius:5px;color:white;cursor:pointer;">🗑️</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
 
-  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  document.getElementById('cartTotal').textContent = '$' + total.toLocaleString('es-AR');
+  var total = cart.reduce(function(sum, item) { return sum + (item.price * item.quantity); }, 0);
+  document.getElementById('cartTotal').textContent = '$' + total.toFixed(2);
+}
+
+function checkout() {
+  var cart = getCart();
+  if (cart.length === 0) {
+    alert('Tu carrito está vacío');
+    return;
+  }
+  
+  var message = '¡Hola! Quiero hacer el siguiente pedido:\n\n';
+  cart.forEach(function(item) {
+    message += '- ' + item.name + ' x' + item.quantity + ' = $' + (item.price * item.quantity).toFixed(2) + '\n';
+  });
+  var total = cart.reduce(function(sum, item) { return sum + (item.price * item.quantity); }, 0);
+  message += '\nTotal: $' + total.toFixed(2);
+  
+  window.open('https://wa.me/5493782437674?text=' + encodeURIComponent(message), '_blank');
 }
 
 // ========================================
@@ -309,49 +300,82 @@ function addToWishlist(productId) {
 // ========================================
 
 function showNotification(message) {
-  const notification = document.createElement('div');
+  var notification = document.createElement('div');
   notification.textContent = message;
-  notification.style.cssText = `
-    position: fixed;
-    top: 100px;
-    right: 20px;
-    background: var(--primary);
-    color: white;
-    padding: 15px 25px;
-    border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    z-index: 9999;
-    font-weight: 600;
-    animation: slideIn 0.3s ease;
-  `;
-
+  notification.style.cssText = 'position:fixed;top:100px;right:20px;background:var(--primary);color:white;padding:15px 25px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.3);z-index:9999;font-weight:600;';
   document.body.appendChild(notification);
 
-  setTimeout(() => {
-    notification.style.animation = 'slideOut 0.3s ease';
-    setTimeout(() => notification.remove(), 300);
+  setTimeout(function() {
+    notification.style.opacity = '0';
+    notification.style.transition = 'opacity 0.3s';
+    setTimeout(function() { notification.remove(); }, 300);
   }, 3000);
 }
 
 // ========================================
-// FILTROS Y BÚSQUEDA
+// FILTROS
 // ========================================
 
 function filterByCategory(category) {
-  if (category === 'all') {
+  // Actualizar active en sidebar
+  var links = document.querySelectorAll('.category-list a');
+  links.forEach(function(link) {
+    link.parentElement.classList.remove('active');
+  });
+  event.target.closest('li').classList.add('active');
+
+  if (category === 'all' || category === 'Todos los productos') {
     renderProducts(products);
   } else {
-    const filtered = products.filter(p => p.category.toLowerCase() === category.toLowerCase());
+    var filtered = products.filter(function(p) {
+      return p.category.toLowerCase() === category.toLowerCase() || 
+             p.name.toLowerCase().includes(category.toLowerCase());
+    });
     renderProducts(filtered);
   }
 }
 
-function searchProducts(query) {
-  const filtered = products.filter(p =>
-    p.name.toLowerCase().includes(query.toLowerCase()) ||
-    p.category.toLowerCase().includes(query.toLowerCase()) ||
-    p.brand.toLowerCase().includes(query.toLowerCase())
-  );
+function applyFilters() {
+  var brand = document.getElementById('brandSelect').value;
+  var category = document.getElementById('categorySelect').value;
+  var maxPrice = parseInt(document.getElementById('priceSlider').value);
+  var availability = document.getElementById('availabilitySelect').value;
+
+  var filtered = products.filter(function(p) {
+    var matchBrand = brand === 'all' || p.brand === brand;
+    var matchCategory = category === 'all' || p.category === category;
+    var matchPrice = p.price <= maxPrice;
+    var matchStock = availability === 'all' || 
+                     (availability === 'in-stock' && p.stock > 0) ||
+                     (availability === 'preorder' && p.stock === 0);
+    return matchBrand && matchCategory && matchPrice && matchStock;
+  });
+
+  renderProducts(filtered);
+}
+
+function sortProducts() {
+  var sort = document.getElementById('sortSelect').value;
+  var sorted = products.slice();
+
+  if (sort === 'price-asc') {
+    sorted.sort(function(a, b) { return a.price - b.price; });
+  } else if (sort === 'price-desc') {
+    sorted.sort(function(a, b) { return b.price - a.price; });
+  } else if (sort === 'rating') {
+    sorted.sort(function(a, b) { return b.rating - a.rating; });
+  }
+
+  renderProducts(sorted);
+}
+
+function performSearch() {
+  var query = document.getElementById('headerSearchInput').value.toLowerCase();
+  var filtered = products.filter(function(p) {
+    return p.name.toLowerCase().includes(query) ||
+           p.category.toLowerCase().includes(query) ||
+           p.brand.toLowerCase().includes(query);
+  });
   renderProducts(filtered);
 }
 
@@ -359,55 +383,31 @@ function searchProducts(query) {
 // INICIALIZACIÓN
 // ========================================
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
   renderProducts();
   updateCartCount();
 
-  // Búsqueda
-  const searchInput = document.querySelector('.search-input');
+  // Búsqueda con Enter
+  var searchInput = document.getElementById('headerSearchInput');
   if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      searchProducts(e.target.value);
+    searchInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') performSearch();
     });
   }
 
-  // Categorías
-  document.querySelectorAll('.category-list a').forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      document.querySelectorAll('.category-list li').forEach(li => li.classList.remove('active'));
-      link.parentElement.classList.add('active');
-      
-      const category = link.textContent.trim();
-      if (category === 'Todos los productos') {
-        renderProducts(products);
-      } else {
-        filterByCategory(category);
-      }
+  // Slider de precio
+  var priceSlider = document.getElementById('priceSlider');
+  if (priceSlider) {
+    priceSlider.addEventListener('input', function() {
+      document.getElementById('maxPriceLabel').textContent = '$' + parseInt(this.value).toLocaleString('es-AR');
     });
-  });
+  }
 
   // Cerrar carrito al hacer click fuera
-  const cartModal = document.getElementById('cartModal');
+  var cartModal = document.getElementById('cartModal');
   if (cartModal) {
-    cartModal.addEventListener('click', (e) => {
-      if (e.target === cartModal) {
-        toggleCart();
-      }
+    cartModal.addEventListener('click', function(e) {
+      if (e.target === cartModal) toggleCart();
     });
   }
 });
-
-// Animaciones CSS
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes slideIn {
-    from { transform: translateX(100px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  @keyframes slideOut {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(100px); opacity: 0; }
-  }
-`;
-document.head.appendChild(style);
