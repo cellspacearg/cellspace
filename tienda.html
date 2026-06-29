@@ -7,7 +7,7 @@
   <link rel="icon" type="image/png" href="assets/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="css/styles.css?v=11">
+  <link rel="stylesheet" href="css/styles.css?v=12">
   
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
@@ -17,13 +17,74 @@
 <body>
   <div class="particles" id="particles"></div>
 
-  <!-- HEADER -->
+  <!-- ========================================
+       CARRUSEL INFINITO DE ANUNCIOS
+       ======================================== -->
+  <div class="announcement-bar">
+    <div class="announcement-wrapper">
+      <div class="announcement-scroll">
+        <div class="announcement-item">
+          <i class="fas fa-truck"></i>
+          <span>Envíos a todo el país por OCA y Andreani</span>
+        </div>
+        <div class="announcement-item">
+          <i class="fas fa-shield-alt"></i>
+          <span>Garantía en todos los productos</span>
+        </div>
+        <div class="announcement-item">
+          <i class="fas fa-dollar-sign"></i>
+          <span>Compra mínima $150.000 pesos</span>
+        </div>
+        <div class="announcement-item">
+          <i class="fas fa-bolt"></i>
+          <span>Pedidos despachados en 24hs hábiles</span>
+        </div>
+        <div class="announcement-item">
+          <i class="fas fa-boxes"></i>
+          <span>Stock y precios actualizados</span>
+        </div>
+        <div class="announcement-item">
+          <i class="fas fa-lock"></i>
+          <span>Pago 100% seguro</span>
+        </div>
+        <!-- DUPLICAR PARA SCROLL INFINITO -->
+        <div class="announcement-item">
+          <i class="fas fa-truck"></i>
+          <span>Envíos a todo el país por OCA y Andreani</span>
+        </div>
+        <div class="announcement-item">
+          <i class="fas fa-shield-alt"></i>
+          <span>Garantía en todos los productos</span>
+        </div>
+        <div class="announcement-item">
+          <i class="fas fa-dollar-sign"></i>
+          <span>Compra mínima $150.000 pesos</span>
+        </div>
+        <div class="announcement-item">
+          <i class="fas fa-bolt"></i>
+          <span>Pedidos despachados en 24hs hábiles</span>
+        </div>
+        <div class="announcement-item">
+          <i class="fas fa-boxes"></i>
+          <span>Stock y precios actualizados</span>
+        </div>
+        <div class="announcement-item">
+          <i class="fas fa-lock"></i>
+          <span>Pago 100% seguro</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================
+       HEADER PRINCIPAL
+       ======================================== -->
   <header class="site-header">
     <div class="header-top">
       <div class="container">
         <div class="header-top-content">
           <a href="index.html" class="logo">
-            <img src="assets/logo.png" alt="Cell Space">
+            <img src="assets/logo.png" alt="Cell Space Argentina">
             <div class="logo-text">
               <span class="logo-main">CELL SPACE</span>
               <span class="logo-sub">ARGENTINA</span>
@@ -32,7 +93,9 @@
           
           <div class="header-search">
             <input type="text" placeholder="Buscar productos, herramientas, servicios..." class="search-input" id="headerSearchInput">
-            <button class="search-btn" onclick="performSearch()"><i class="fas fa-search"></i></button>
+            <button class="search-btn" onclick="performSearch()">
+              <i class="fas fa-search"></i>
+            </button>
           </div>
           
           <div class="header-actions">
@@ -63,38 +126,67 @@
           <li><a href="tienda.html" class="nav-link">HERRAMIENTAS</a></li>
           <li><a href="index.html#contacto" class="nav-link">CONTACTO</a></li>
         </ul>
+        
+        <div class="nav-buttons">
+          <button onclick="openIMEIChecker()" class="btn-imei-check">
+            <i class="fas fa-mobile-alt"></i>
+            <span>Check IMEI</span>
+          </button>
+          
+          <a href="https://wa.me/5493782437674" target="_blank" class="btn-whatsapp">
+            <i class="fab fa-whatsapp"></i>
+            <span>WhatsApp</span>
+          </a>
+        </div>
       </div>
     </nav>
   </header>
 
-  <!-- CONTENIDO -->
+  <!-- ========================================
+       CONTENIDO PRINCIPAL
+       ======================================== -->
   <main class="shop-main">
     <div class="container">
+      <!-- Hero de Tienda -->
       <section class="shop-hero">
         <div class="shop-hero-content">
           <h1 class="shop-title">TIENDA</h1>
           <p class="shop-subtitle">Los mejores productos y herramientas para potenciar tu tecnología</p>
         </div>
-        <div class="shop-features">
+        <div class="shop-hero-features">
           <div class="shop-feature">
             <i class="fas fa-truck"></i>
-            <div><strong>ENVÍOS A TODO EL PAÍS</strong><span>Rápidos y seguros</span></div>
+            <div>
+              <strong>ENVÍOS A TODO EL PAÍS</strong>
+              <span>Rápidos y seguros</span>
+            </div>
           </div>
           <div class="shop-feature">
             <i class="fas fa-shield-alt"></i>
-            <div><strong>PAGOS 100% SEGUROS</strong><span>MercadoPago / Transferencia</span></div>
+            <div>
+              <strong>PAGOS 100% SEGUROS</strong>
+              <span>MercadoPago / Transferencia</span>
+            </div>
           </div>
           <div class="shop-feature">
             <i class="fas fa-credit-card"></i>
-            <div><strong>HASTA 12 CUOTAS</strong><span>Con tarjetas seleccionadas</span></div>
+            <div>
+              <strong>HASTA 12 CUOTAS</strong>
+              <span>Con tarjetas seleccionadas</span>
+            </div>
           </div>
         </div>
       </section>
 
+      <!-- Layout de Tienda -->
       <div class="shop-layout">
+        <!-- Sidebar -->
         <aside class="shop-sidebar">
           <div class="sidebar-section">
-            <h3 class="sidebar-title"><i class="fas fa-th-large"></i> CATEGORÍAS</h3>
+            <h3 class="sidebar-title">
+              <i class="fas fa-th-large"></i>
+              CATEGORÍAS
+            </h3>
             <ul class="category-list">
               <li class="active"><a href="#" onclick="filterByCategory('all'); return false;"><i class="fas fa-th"></i> Todos los productos</a></li>
               <li><a href="#" onclick="filterByCategory('Licencias'); return false;"><i class="fas fa-key"></i> Licencias</a></li>
@@ -104,7 +196,10 @@
           </div>
 
           <div class="sidebar-section">
-            <h3 class="sidebar-title"><i class="fas fa-filter"></i> FILTRAR POR</h3>
+            <h3 class="sidebar-title">
+              <i class="fas fa-filter"></i>
+              FILTRAR POR
+            </h3>
             
             <div class="filter-group">
               <label>Precio máximo</label>
@@ -128,6 +223,7 @@
           </div>
         </aside>
 
+        <!-- Contenido -->
         <div class="shop-content">
           <div class="shop-toolbar">
             <div class="showing-products" id="productsCount">Mostrando 6 productos</div>
@@ -144,17 +240,43 @@
           <div class="products-grid" id="productsGrid"></div>
 
           <div class="shop-benefits">
-            <div class="benefit"><i class="fas fa-truck"></i><div><strong>ENVÍOS A TODO EL PAÍS</strong><span>Rápidos y seguros</span></div></div>
-            <div class="benefit"><i class="fas fa-shield-alt"></i><div><strong>PAGOS 100% SEGUROS</strong><span>MercadoPago / Transferencia</span></div></div>
-            <div class="benefit"><i class="fas fa-credit-card"></i><div><strong>HASTA 12 CUOTAS</strong><span>Con tarjetas seleccionadas</span></div></div>
-            <div class="benefit"><i class="fas fa-headset"></i><div><strong>SOPORTE 24/7</strong><span>Estamos para ayudarte</span></div></div>
+            <div class="benefit">
+              <i class="fas fa-truck"></i>
+              <div>
+                <strong>ENVÍOS A TODO EL PAÍS</strong>
+                <span>Rápidos y seguros</span>
+              </div>
+            </div>
+            <div class="benefit">
+              <i class="fas fa-shield-alt"></i>
+              <div>
+                <strong>PAGOS 100% SEGUROS</strong>
+                <span>MercadoPago / Transferencia</span>
+              </div>
+            </div>
+            <div class="benefit">
+              <i class="fas fa-credit-card"></i>
+              <div>
+                <strong>HASTA 12 CUOTAS</strong>
+                <span>Con tarjetas seleccionadas</span>
+              </div>
+            </div>
+            <div class="benefit">
+              <i class="fas fa-headset"></i>
+              <div>
+                <strong>SOPORTE 24/7</strong>
+                <span>Estamos para ayudarte</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- FOOTER -->
+  <!-- ========================================
+       FOOTER
+       ======================================== -->
   <footer class="site-footer">
     <div class="container">
       <div class="footer-grid">
@@ -167,6 +289,7 @@
             <a href="#"><i class="fab fa-youtube"></i></a>
           </div>
         </div>
+        
         <div class="footer-col">
           <h4>INFORMACIÓN</h4>
           <ul>
@@ -175,6 +298,7 @@
             <li><a href="#">Política de privacidad</a></li>
           </ul>
         </div>
+        
         <div class="footer-col">
           <h4>CATEGORÍAS</h4>
           <ul>
@@ -183,6 +307,7 @@
             <li><a href="#">Herramientas</a></li>
           </ul>
         </div>
+        
         <div class="footer-col">
           <h4>CONTACTO</h4>
           <ul class="contact-info">
@@ -213,6 +338,29 @@
         </div>
         <button class="btn-checkout" onclick="checkout()">Finalizar Compra</button>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL CHECK IMEI -->
+  <div id="imeiModal" class="modal-imei">
+    <div class="modal-imei-content">
+      <button class="modal-close" onclick="closeIMEIChecker()">&times;</button>
+      <h2>📱 Verificación de IMEI</h2>
+      <p>Ingresá el IMEI del dispositivo para verificar su estado</p>
+      
+      <form id="imeiForm">
+        <div class="form-group">
+          <label>IMEI del dispositivo</label>
+          <input type="text" id="imeiInput" placeholder="Ej: 356789012345678" maxlength="15" required>
+          <small>El IMEI se encuentra marcando *#06# en el teléfono</small>
+        </div>
+        
+        <button type="submit" class="btn-check-imei">
+          <i class="fas fa-search"></i> Verificar IMEI
+        </button>
+      </form>
+      
+      <div id="imeiResult" class="imei-result" style="display:none;"></div>
     </div>
   </div>
 
