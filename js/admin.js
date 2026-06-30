@@ -1,179 +1,55 @@
 // ========================================
-// CELL SPACE - PANEL DE ADMINISTRACIÓN
-// Versión Final Corregida
+// PANEL DE ADMINISTRACIÓN
 // ========================================
 
-console.log('🔧 Cargando panel...');
-const IMGBB_API_KEY = 'c9ed363f2cb81f1525d363f714b0d499';
-let currentImageURL = '';
-
-document.addEventListener('DOMContentLoaded', async () => {
-  console.log('✅ DOM cargado');
-  
-  if (typeof firebase === 'undefined' || typeof db === 'undefined') {
-    console.error('❌ Firebase no está inicializado. Verificá config.js');
-    return;
-  }
-
-  firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-      if (user.email === 'nahuel0123encinas@gmail.com') {
-        console.log('✅ Admin:', user.email);
-        const emailEl = document.getElementById('adminEmail');
-        if (emailEl) emailEl.textContent = user.email;
-        setupNavigation();
-        loadDashboard();
-        loadContactInfo();
-      } else {
-        alert('⚠️ Acceso restringido');
-        window.location.href = 'login.html';
-      }
-    } else {
-      window.location.href = 'login.html';
-    }
-  });
-
-  const serviceForm = document.getElementById('serviceFormEl');
-  if (serviceForm) serviceForm.addEventListener('submit', window.saveService);
-  
-  const productForm = document.getElementById('publishForm');
-  if (productForm) productForm.addEventListener('submit', window.saveProduct);
-  
-  const contactForm = document.getElementById('contactForm');
-  if (contactForm) contactForm.addEventListener('submit', window.saveContact);
-  
-  const postForm = document.getElementById('publishPostForm');
-  if (postForm) {
-    postForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      try {
-        await db.collection('technician_posts').add({
-          title: document.getElementById('postTitle').value,
-          description: document.getElementById('postDesc').value,
-          category: document.getElementById('postCategory').value,
-          isPremium: document.getElementById('postIsPremium').value === 'true',
-          imageUrl: document.getElementById('postImage').value || '',
-          videoUrl: document.getElementById('postVideo').value || '',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        alert('✅ Publicado exitosamente');
-        document.getElementById('publishPostForm').reset();
-        document.getElementById('postForm').style.display = 'none';
-        loadPostsAdmin();
-      } catch (error) { alert('❌ Error: ' + error.message); }
+async function loadAdminData() {
+  try {
+    // Total usuarios
+    const usersSnap = await db.collection('users').get();
+    document.getElementById('totalUsers').textContent = usersSnap.size;
+    
+    // Total técnicos
+    const techsSnap = await db.collection('technicians').get();
+    document.getElementById('totalTechnicians').textContent = techsSnap.size;
+    
+    // Total pedidos (simulado)
+    document.getElementById('totalOrders').textContent = '0';
+    
+    // Total ingresos (simulado)
+    document.getElementById('totalRevenue').textContent = '$0';
+    
+    // Usuarios recientes
+    const recentUsers = [];
+    usersSnap.forEach(doc => {
+      recentUsers.push({ id: doc.id, ...doc.data() });
     });
-  }
-});
-
-function setupNavigation() {
-  document.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', function(e) {
-      const href = this.getAttribute('href');
-      if (href === '#' || href.includes('admin.html') || href.includes('index.html')) return;
-      e.preventDefault();
-      window.showSection(href.substring(1), this);
-    });
-  });
-}
-
-window.showSection = function(sectionId, btnElement) {
-  document.querySelectorAll('.section').forEach(s => { s.classList.remove('active'); s.style.display = 'none'; });
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-  const target = document.getElementById(sectionId);
-  if (target) { target.classList.add('active'); target.style.display = 'block'; loadSectionData(sectionId); }
-  if (btnElement) btnElement.classList.add('active');
-};
-
-function loadSectionData(id) {
-  switch(id) {
-    case 'dashboard': loadDashboard(); break;
-    case 'hero': window.loadSlides?.(); break;
-    case 'servicios': window.loadServices?.(); break;
-    case 'productos': window.loadAdminProducts?.(); break;
-    case 'contacto': loadContactInfo?.(); break;
-    case 'footer': window.loadFooterSettings?.(); break;
-    case 'imei': window.loadIMEIHistoryAdmin?.(); break;
-    case 'usuarios': window.loadUsers?.(); break;
-    case 'posts': window.loadPostsAdmin?.(); break;
-    case 'tecnicos': window.loadTechniciansAdmin?.(); break;
+    
+    const recentUsersHtml = recentUsers.slice(0, 5).map(user => `
+      <div style="display:flex;align-items:center;gap:15px;padding:15px;border-bottom:1px solid rgba(255,255,255,0.1);">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;">
+          ${(user.name || user.email || '?').charAt(0).toUpperCase()}
+        </div>
+        <div style="flex:1;">
+          <h4 style="color:white;margin:0 0 5px;">${user.name || 'Sin nombre'}</h4>
+          <p style="color:#888;font-size:13px;margin:0;">${user.email}</p>
+        </div>
+        <span style="background:rgba(255,106,0,0.2);color:var(--orange);padding:5px 10px;border-radius:10px;font-size:12px;font-weight:700;">
+          ${user.role || 'client'}
+        </span>
+      </div>
+    `).join('');
+    
+    document.getElementById('recentUsers').innerHTML = recentUsersHtml || '<p style="color:#888;text-align:center;">No hay usuarios registrados</p>';
+    
+  } catch (error) {
+    console.error('Error cargando datos admin:', error);
   }
 }
 
-window.toggleSidebar = function() { document.getElementById('sidebar')?.classList.toggle('open'); };
-
-window.loadDashboard = async function() {
-  try {
-    const products = await db.collection('products').get();
-    const totalEl = document.getElementById('totalProducts'); if (totalEl) totalEl.textContent = products.size;
-    const users = await db.collection('users').get();
-    const usersEl = document.getElementById('totalUsers'); if (usersEl) usersEl.textContent = users.size;
-    const services = await db.collection('services').get();
-    const servicesEl = document.getElementById('totalServices'); if (servicesEl) servicesEl.textContent = services.size;
-    try { const imei = await db.collection('imei_history').get(); const el = document.getElementById('totalIMEIChecks'); if(el) el.textContent = imei.size; } catch(e) {}
-    const recent = [];
-    products.docs.slice(-5).forEach(d => { const data = d.data(); recent.push({ title: `📦 ${data.title}`, date: data.createdAt?.toDate() || new Date() }); });
-    recent.sort((a, b) => b.date - a.date);
-    const activityEl = document.getElementById('recentActivity');
-    if (activityEl) activityEl.innerHTML = recent.map(item => `<div style="padding:10px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;"><span style="color:white;font-size:14px;">${item.title}</span><span style="color:var(--muted);font-size:12px;">${item.date.toLocaleString('es-AR')}</span></div>`).join('') || '<p style="color:var(--muted);padding:20px;text-align:center;">Sin actividad</p>';
-  } catch (error) { console.error('❌ Dashboard:', error); }
-};
-
-window.loadSlides = async function() {
-  try {
-    const container = document.getElementById('slidesContainer'); if (!container) return;
-    container.innerHTML = '<p class="loading">Cargando...</p>';
-    const snap = await db.collection('hero_slides').orderBy('order', 'asc').get();
-    if (snap.empty) { container.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px;">Sin slides</p>'; return; }
-    container.innerHTML = snap.docs.map((doc) => { const s = doc.data(); return `<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,106,0,0.2);border-radius:12px;padding:15px;margin-bottom:15px;display:flex;gap:15px;align-items:center;"><img src="${s.imageUrl || 'https://via.placeholder.com/100'}" style="width:100px;height:60px;object-fit:cover;border-radius:6px;"><div style="flex:1;"><h4 style="margin:0;color:var(--orange);">${s.title}</h4><p style="margin:5px 0 0;font-size:13px;color:var(--muted);">${s.subtitle || ''}</p></div><div style="display:flex;gap:8px;"><button onclick="window.editSlide('${doc.id}')" style="background:#2196F3;color:white;border:none;padding:6px 10px;border-radius:4px;cursor:pointer;">✏️</button><button onclick="window.deleteSlide('${doc.id}')" style="background:#ff4444;color:white;border:none;padding:6px 10px;border-radius:4px;cursor:pointer;">🗑️</button></div></div>`; }).join('');
-  } catch (e) { console.error(e); }
-};
-
-window.addSlide = async function() { const title = prompt('Título:'); if (!title) return; const subtitle = prompt('Subtítulo:') || ''; const imageUrl = prompt('URL Imagen (ImgBB):') || ''; try { await db.collection('hero_slides').add({ title, subtitle, imageUrl, active: true, order: firebase.firestore.FieldValue.increment(1), createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert('✅ Slide agregado'); window.loadSlides(); } catch (e) { alert('❌ ' + e.message); } };
-window.editSlide = async function(id) { const doc = await db.collection('hero_slides').doc(id).get(); if (!doc.exists) return; const s = doc.data(); const title = prompt('Título:', s.title); if (!title) return; const subtitle = prompt('Subtítulo:', s.subtitle) || ''; const imageUrl = prompt('URL Imagen:', s.imageUrl) || ''; try { await db.collection('hero_slides').doc(id).update({ title, subtitle, imageUrl }); alert('✅ Actualizado'); window.loadSlides(); } catch (e) { alert('❌ ' + e.message); } };
-window.deleteSlide = async function(id) { if (!confirm('¿Eliminar?')) return; try { await db.collection('hero_slides').doc(id).delete(); window.loadSlides(); } catch (e) { alert('❌ ' + e.message); } };
-
-window.toggleServiceForm = function() { const form = document.getElementById('serviceForm'); if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none'; const idEl = document.getElementById('serviceId'); if (idEl) idEl.value = ''; };
-
-window.loadServices = async function() { const list = document.getElementById('adminServicesList'); if (!list) return; list.innerHTML = '<p class="loading">Cargando...</p>'; try { const snap = await db.collection('services').get(); if (snap.empty) { list.innerHTML = '<p style="text-align:center;color:var(--muted);">Sin servicios</p>'; return; } list.innerHTML = snap.docs.map(doc => { const s = doc.data(); return `<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,106,0,0.1);border-radius:10px;padding:15px;margin-bottom:10px;display:flex;align-items:center;gap:15px;"><span style="font-size:2rem;">${s.icon || '🔧'}</span><div style="flex:1;"><h4 style="margin:0;color:var(--orange);">${s.title}</h4><p style="margin:5px 0 0;font-size:13px;color:var(--muted);">${s.description || ''}</p><p style="margin:5px 0 0;font-size:12px;color:var(--muted);">⏱️ ${s.time || 'N/A'} • 💰 ${s.price ? '$'+s.price : 'Consultar'}</p></div><div style="display:flex;gap:8px;"><button onclick="window.editService('${doc.id}')" style="background:#2196F3;color:white;border:none;padding:6px 10px;border-radius:4px;cursor:pointer;">✏️</button><button onclick="window.deleteService('${doc.id}')" style="background:#ff4444;color:white;border:none;padding:6px 10px;border-radius:4px;cursor:pointer;">🗑️</button></div></div>`; }).join(''); } catch (e) { console.error(e); } };
-
-window.saveService = async function(e) { if (e) e.preventDefault(); const idEl = document.getElementById('serviceId'); const id = idEl ? idEl.value : ''; const icon = document.getElementById('serviceIcon')?.value || ''; const title = document.getElementById('serviceTitle')?.value || ''; const desc = document.getElementById('serviceDesc')?.value || ''; const time = document.getElementById('serviceTime')?.value || ''; const price = document.getElementById('servicePrice')?.value || ''; if (!title) { alert('⚠️ Título obligatorio'); return; } const data = { icon, title, description: desc, time: time || '', price: price ? parseFloat(price) : 0, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }; try { if (id) { await db.collection('services').doc(id).update(data); alert('✅ Actualizado'); } else { data.createdAt = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('services').add(data); alert('✅ Agregado'); } window.resetServiceForm(); window.loadServices(); } catch (err) { alert('❌ ' + err.message); } };
-
-window.editService = async function(id) { const doc = await db.collection('services').doc(id).get(); if (!doc.exists) return; const s = doc.data(); const idEl = document.getElementById('serviceId'); if (idEl) idEl.value = id; const iconEl = document.getElementById('serviceIcon'); if (iconEl) iconEl.value = s.icon || ''; const titleEl = document.getElementById('serviceTitle'); if (titleEl) titleEl.value = s.title || ''; const descEl = document.getElementById('serviceDesc'); if (descEl) descEl.value = s.description || ''; const timeEl = document.getElementById('serviceTime'); if (timeEl) timeEl.value = s.time || ''; const priceEl = document.getElementById('servicePrice'); if (priceEl) priceEl.value = s.price || ''; const form = document.getElementById('serviceForm'); if (form) form.style.display = 'block'; window.scrollTo({ top: 0, behavior: 'smooth' }); };
-window.deleteService = async function(id) { if (!confirm('¿Eliminar?')) return; try { await db.collection('services').doc(id).delete(); window.loadServices(); } catch (e) { alert('❌ ' + e.message); } };
-window.resetServiceForm = function() { const formEl = document.getElementById('serviceFormEl'); if (formEl) formEl.reset(); const idEl = document.getElementById('serviceId'); if (idEl) idEl.value = ''; const form = document.getElementById('serviceForm'); if (form) form.style.display = 'none'; };
-
-window.toggleProductForm = function() { const form = document.getElementById('productForm'); if (form) { form.style.display = form.style.display === 'none' ? 'block' : 'none'; if (form.style.display === 'block') window.resetProductForm(); } };
-window.resetProductForm = function() { const form = document.getElementById('publishForm'); if (form) form.reset(); const idEl = document.getElementById('prodId'); if (idEl) idEl.value = ''; const preview = document.getElementById('imagePreview'); if (preview) { preview.style.display = 'none'; preview.src = ''; } const placeholder = document.getElementById('uploadPlaceholder'); if (placeholder) placeholder.style.display = 'block'; const progress = document.getElementById('uploadProgress'); if (progress) progress.classList.remove('show'); const progressFill = document.getElementById('progressFill'); if (progressFill) progressFill.style.width = '0%'; const status = document.getElementById('uploadStatus'); if (status) status.textContent = ''; currentImageURL = ''; };
-
-const imageInput = document.getElementById('prodImage'); if (imageInput) { imageInput.addEventListener('change', function(e) { const file = e.target.files[0]; if (file) window.uploadImage(file); }); };
-
-window.uploadImage = async function(file) { if (!file.type.startsWith('image/')) { alert('❌ Solo se permiten imágenes'); return; } if (file.size > 32 * 1024 * 1024) { alert('❌ La imagen no puede superar 32MB'); return; } const progress = document.getElementById('uploadProgress'); const status = document.getElementById('uploadStatus'); if (progress) progress.classList.add('show'); if (status) status.textContent = '📤 Subiendo a ImgBB...'; try { const formData = new FormData(); formData.append('image', file); const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData }); const data = await response.json(); if (data.success) { currentImageURL = data.data.url; const preview = document.getElementById('imagePreview'); const placeholder = document.getElementById('uploadPlaceholder'); if (preview) { preview.src = currentImageURL; preview.style.display = 'block'; } if (placeholder) placeholder.style.display = 'none'; if (status) status.textContent = '✅ Lista'; if (progress) progress.classList.remove('show'); console.log('✅ Imagen subida:', currentImageURL); } else { throw new Error('Error en ImgBB'); } } catch (error) { console.error('❌ Error:', error); if (status) status.textContent = '❌ Error'; alert('❌ Error al subir: ' + error.message); } };
-
-window.saveProduct = async function(e) { if (e) e.preventDefault(); const btn = document.getElementById('saveBtn'); if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; } const idEl = document.getElementById('prodId'); const id = idEl ? idEl.value : ''; const data = { title: document.getElementById('prodName')?.value || '', category: document.getElementById('prodCategory')?.value || '', brand: document.getElementById('prodBrand')?.value || '', sku: document.getElementById('prodSku')?.value || '', description: document.getElementById('prodDesc')?.value || '', priceList: parseFloat(document.getElementById('prodPriceList')?.value) || 0, priceTransfer: parseFloat(document.getElementById('prodPriceTransfer')?.value) || 0, price: parseFloat(document.getElementById('prodPrice')?.value) || 0, installments: document.getElementById('prodInstallments')?.value || '', warranty: document.getElementById('prodWarranty')?.value || '', imageUrl: currentImageURL || '', inStock: document.getElementById('prodStock')?.checked !== false, stock: parseInt(document.getElementById('prodStockQuantity')?.value) || 0, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }; try { if (id) { await db.collection('products').doc(id).update(data); alert('✅ Producto actualizado correctamente'); } else { data.createdAt = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('products').add(data); alert('✅ Producto agregado correctamente'); } window.resetProductForm(); window.loadAdminProducts(); const form = document.getElementById('productForm'); if (form) form.style.display = 'none'; } catch (error) { console.error('❌ Error:', error); alert('❌ Error al guardar: ' + error.message); } finally { if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; } } };
-
-window.loadAdminProducts = async function() { const list = document.getElementById('adminProductsList'); if (!list) return; list.innerHTML = '<p class="loading">Cargando...</p>'; try { const snap = await db.collection('products').orderBy('createdAt', 'desc').get(); if (snap.empty) { list.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px;">Sin productos</p>'; return; } list.innerHTML = snap.docs.map(doc => { const p = doc.data(); const stockText = p.inStock ? `✓ Stock: ${p.stock || 0}` : '✗ Sin stock'; const stockColor = p.inStock ? '#4CAF50' : '#ff4444'; return `<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,106,0,0.1);border-radius:12px;padding:20px;margin-bottom:15px;display:flex;gap:15px;align-items:center;"><img src="${p.imageUrl || 'https://via.placeholder.com/80'}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;"><div style="flex:1;"><h4 style="margin:0;color:white;">${p.title}</h4><p style="margin:5px 0 0;color:var(--muted);font-size:0.9rem;">${p.brand || ''} ${p.category ? '• ' + p.category : ''}</p><p style="margin:5px 0 0;color:var(--orange);font-weight:700;">$${Number(p.priceTransfer || p.price).toLocaleString('es-AR')}</p><p style="margin:5px 0 0;font-size:0.85rem;color:${stockColor};">${stockText}</p></div><div style="display:flex;gap:8px;"><button onclick="window.editProduct('${doc.id}')" style="background:#2196F3;color:white;border:none;padding:8px;border-radius:6px;cursor:pointer;">✏️</button><button onclick="window.deleteProduct('${doc.id}')" style="background:#ff4444;color:white;border:none;padding:8px;border-radius:6px;cursor:pointer;">🗑️</button></div></div>`; }).join(''); } catch (error) { console.error('❌ Error cargando productos:', error); list.innerHTML = '<p style="color:#ff4444;text-align:center;padding:20px;">Error al cargar productos</p>'; } };
-
-window.editProduct = async function(id) { const doc = await db.collection('products').doc(id).get(); if (!doc.exists) { alert('❌ Producto no encontrado'); return; } const p = doc.data(); const idEl = document.getElementById('prodId'); if (idEl) idEl.value = id; const nameEl = document.getElementById('prodName'); if (nameEl) nameEl.value = p.title || ''; const catEl = document.getElementById('prodCategory'); if (catEl) catEl.value = p.category || ''; const brandEl = document.getElementById('prodBrand'); if (brandEl) brandEl.value = p.brand || ''; const skuEl = document.getElementById('prodSku'); if (skuEl) skuEl.value = p.sku || ''; const descEl = document.getElementById('prodDesc'); if (descEl) descEl.value = p.description || ''; const priceListEl = document.getElementById('prodPriceList'); if (priceListEl) priceListEl.value = p.priceList || ''; const priceTransEl = document.getElementById('prodPriceTransfer'); if (priceTransEl) priceTransEl.value = p.priceTransfer || ''; const priceEl = document.getElementById('prodPrice'); if (priceEl) priceEl.value = p.price || ''; const instEl = document.getElementById('prodInstallments'); if (instEl) instEl.value = p.installments || ''; const warEl = document.getElementById('prodWarranty'); if (warEl) warEl.value = p.warranty || ''; const stockQtyEl = document.getElementById('prodStockQuantity'); if (stockQtyEl) stockQtyEl.value = p.stock || 0; const stockEl = document.getElementById('prodStock'); if (stockEl) stockEl.checked = p.inStock !== false; if (p.imageUrl) { currentImageURL = p.imageUrl; const preview = document.getElementById('imagePreview'); const placeholder = document.getElementById('uploadPlaceholder'); if (preview) { preview.src = p.imageUrl; preview.style.display = 'block'; } if (placeholder) placeholder.style.display = 'none'; } const form = document.getElementById('productForm'); if (form) { form.style.display = 'block'; form.scrollIntoView({ behavior: 'smooth', block: 'start' }); } };
-window.deleteProduct = async function(id) { if (!confirm('¿Estás seguro de eliminar este producto?')) return; try { await db.collection('products').doc(id).delete(); alert('✅ Producto eliminado'); window.loadAdminProducts(); } catch (e) { alert('❌ Error: ' + e.message); } };
-
-window.togglePostForm = function() { const form = document.getElementById('postForm'); if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none'; };
-window.loadPostsAdmin = async function() { const list = document.getElementById('postsList'); if (!list) return; try { const snap = await db.collection('technician_posts').orderBy('createdAt', 'desc').get(); if (snap.empty) { list.innerHTML = '<p style="text-align:center;color:var(--muted)">Sin publicaciones</p>'; return; } list.innerHTML = snap.docs.map(doc => { const p = doc.data(); return `<div style="background:rgba(255,255,255,0.03);padding:15px;border-radius:10px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;"><div><h4 style="margin:0;color:var(--orange);">${p.title}</h4><small style="color:var(--muted)">${p.category} • ${p.isPremium ? '👑 Premium' : 'Gratis'}</small></div><button onclick="window.deletePost('${doc.id}')" style="background:#ff4444;color:white;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;">🗑️</button></div>`; }).join(''); } catch (error) { console.error(error); } };
-window.deletePost = async function(id) { if (confirm('¿Eliminar esta publicación?')) { await db.collection('technician_posts').doc(id).delete(); loadPostsAdmin(); } };
-
-window.loadTechniciansAdmin = async function() { const tb = document.getElementById('techniciansTable'); if (!tb) return; tb.innerHTML = '<tr><td colspan="5" class="loading">Cargando...</td></tr>'; try { const snap = await db.collection('technicians').get(); if (snap.empty) { tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted)">Sin técnicos registrados</td></tr>'; return; } tb.innerHTML = snap.docs.map(doc => { const t = doc.data(); const isPrem = t.isPremium; return `<tr><td>${t.name || '-'}</td><td>${t.email || '-'}</td><td>${t.specialty || '-'}</td><td><span style="color:${isPrem ? 'var(--gold)' : 'var(--muted)'}; font-weight:bold;">${isPrem ? '👑 PREMIUM' : 'Básico'}</span></td><td><button onclick="window.toggleTechPremium('${doc.id}', ${!isPrem})" style="background:${isPrem ? '#ff4444' : 'var(--gold)'};color:${isPrem ? 'white' : 'black'};border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-weight:bold;">${isPrem ? 'Quitar Premium' : 'Dar Premium'}</button></td></tr>`; }).join(''); } catch (error) { console.error(error); } };
-window.toggleTechPremium = async function(docId, makePremium) { const action = makePremium ? 'dar Premium' : 'quitar Premium'; if (!confirm(`¿Seguro que querés ${action} a este técnico?`)) return; try { await db.collection('technicians').doc(docId).update({ isPremium: makePremium }); alert(`✅ Técnico actualizado a ${makePremium ? 'Premium' : 'Básico'}`); loadTechniciansAdmin(); } catch (error) { alert('❌ Error: ' + error.message); } };
-
-async function loadContactInfo() { try { const doc = await db.collection('site_config').doc('contact').get(); if (doc.exists) { const c = doc.data(); const addrEl = document.getElementById('contactAddress'); if (addrEl) addrEl.value = c.address || ''; const phoneEl = document.getElementById('contactPhone'); if (phoneEl) phoneEl.value = c.phone || ''; const hoursEl = document.getElementById('contactHours'); if (hoursEl) hoursEl.value = c.hours || ''; const emailEl = document.getElementById('contactEmail'); if (emailEl) emailEl.value = c.email || ''; } } catch (e) { console.error(e); } }
-window.saveContact = async function(e) { if (e) e.preventDefault(); try { await db.collection('site_config').doc('contact').set({ address: document.getElementById('contactAddress')?.value || '', phone: document.getElementById('contactPhone')?.value || '', hours: document.getElementById('contactHours')?.value || '', email: document.getElementById('contactEmail')?.value || '', updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }); alert('✅ Contacto guardado'); } catch (err) { alert('❌ ' + err.message); } };
-
-window.saveFooterSettings = async function() { try { const servicesText = document.getElementById('footerServicesList')?.value || ''; const storeText = document.getElementById('footerStoreList')?.value || ''; await db.collection('site_config').doc('footer').set({ description: document.getElementById('footerDesc')?.value || '', social: { facebook: document.getElementById('socialFacebook')?.value || '', instagram: document.getElementById('socialInstagram')?.value || '', tiktok: document.getElementById('socialTiktok')?.value || '', telegram: document.getElementById('socialTelegram')?.value || '' }, services: servicesText.split(',').map(s => s.trim()).filter(s => s), store: storeText.split(',').map(s => s.trim()).filter(s => s), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }); alert('✅ Footer guardado'); } catch (e) { alert('❌ ' + e.message); } };
-window.loadFooterSettings = async function() { try { const doc = await db.collection('site_config').doc('footer').get(); if (doc.exists) { const d = doc.data(); const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val || ''; }; setVal('footerDesc', d.description); if(d.social) { setVal('socialFacebook', d.social.facebook); setVal('socialInstagram', d.social.instagram); setVal('socialTiktok', d.social.tiktok); setVal('socialTelegram', d.social.telegram); } setVal('footerServicesList', d.services?.join(', ')); setVal('footerStoreList', d.store?.join(', ')); } } catch (e) { console.error(e); } };
-
-window.loadUsers = async function() { const tb = document.getElementById('usersTable'); if (!tb) return; tb.innerHTML = '<tr><td colspan="4" class="loading">Cargando...</td></tr>'; try { const snap = await db.collection('users').orderBy('createdAt', 'desc').get(); if (snap.empty) { tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted)">Sin usuarios</td></tr>'; return; } tb.innerHTML = snap.docs.map(d => { const u = d.data(); return `<tr><td>${u.name || '-'}</td><td>${u.email}</td><td>${u.createdAt?.toDate().toLocaleDateString('es-AR') || 'Reciente'}</td><td><span style="color:#4CAF50">Activo</span></td></tr>`; }).join(''); } catch (e) { console.error(e); } };
-
-window.loadIMEIHistoryAdmin = async function() { const tb = document.getElementById('imeiHistoryTable'); if (!tb) return; tb.innerHTML = '<tr><td colspan="8" class="loading">Cargando...</td></tr>'; try { const snap = await db.collection('imei_history').orderBy('timestamp', 'desc').limit(50).get(); if (snap.empty) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted)">Sin consultas</td></tr>'; return; } tb.innerHTML = snap.docs.map(d => { const h = d.data(); const date = h.timestamp?.toDate().toLocaleString('es-AR'); const r = h.result || {}; return `<tr><td>${date || '-'}</td><td><strong>${h.imei || '-'}</strong></td><td>${h.searchType || 'IMEI'}</td><td>${r.brand || '-'}</td><td>${r.model || '-'}</td><td><span style="color:${r.blacklist==='Clean'?'#4CAF50':'#ff4444'}">${r.blacklist || '-'}</span></td><td>${h.userEmail?.split('@')[0] || '-'}</td><td><button onclick="window.viewIMEIDetails('${d.id}')" style="background:#2196F3;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">👁️</button></td></tr>`; }).join(''); } catch (e) { console.error(e); } };
-window.viewIMEIDetails = async function(id) { try { const doc = await db.collection('imei_history').doc(id).get(); if (!doc.exists) return alert('No encontrado'); const h = doc.data(); const r = h.result || {}; alert(`📋 DETALLES IMEI\nIMEI: ${h.imei}\nMarca: ${r.brand || '-'}\nModelo: ${r.model || '-'}\nEstado: ${r.blacklist || '-'}\nFecha: ${h.timestamp?.toDate().toLocaleString('es-AR') || '-'}`); } catch (e) { alert('Error: ' + e.message); } };
-
-window.logout = function() { if (confirm('¿Cerrar sesión?')) { firebase.auth().signOut().then(() => window.location.href = 'login.html'); } };
-
-console.log('✅ admin.js cargado correctamente');
+function logout() {
+  if (confirm('¿Cerrar sesión?')) {
+    firebase.auth().signOut().then(() => {
+      window.location.href = 'index.html';
+    });
+  }
+}
