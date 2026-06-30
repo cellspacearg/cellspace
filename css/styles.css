@@ -3502,3 +3502,103 @@ body::after {
     height: 35px;
   }
 }
+/* ========================================
+   SECCIÓN DE MARCAS - TEXTO CON ICONOS
+   ======================================== */
+
+.brands-section {
+  text-align: center;
+  margin-bottom: 80px;
+  padding: 60px 40px;
+  background: rgba(21,21,21,0.5);
+  border: 1px solid rgba(255,106,0,0.2);
+  border-radius: 20px;
+}
+
+.brands-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 50px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.brands-grid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.brand-text:hover {
+  opacity: 1;
+  transform: translateY(-5px);
+}
+
+.brand-text i {
+  font-size: 48px;
+  color: white;
+  transition: color 0.3s ease;
+}
+
+.brand-text:hover i {
+  color: var(--orange);
+}
+
+.brand-text span {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .brands-grid {
+    gap: 25px;
+  }
+  
+  .brand-text i {
+    font-size: 36px;
+  }
+  
+  .brand-text span {
+    font-size: 12px;
+  }
+  
+  .brands-title {
+    font-size: 18px;
+    margin-bottom: 30px;
+  }
+  
+  .brands-section {
+    padding: 40px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .brands-grid {
+    gap: 20px;
+  }
+  
+  .brand-text i {
+    font-size: 28px;
+  }
+  
+  .brand-text span {
+    font-size: 10px;
+  }
+}
