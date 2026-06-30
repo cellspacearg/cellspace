@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Herramientas Profesionales | Cell Space Argentina</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css?v=12">
+  
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <div class="particles" id="particles"></div>
+
+  <!-- CARRUSEL INFINITO -->
+  <div class="announcement-bar">
+    <div class="announcement-wrapper">
+      <div class="announcement-scroll">
+        <div class="announcement-item"><i class="fas fa-tools"></i><span>Herramientas Profesionales</span></div>
+        <div class="announcement-item"><i class="fas fa-certificate"></i><span>Licencias Originales</span></div>
+        <div class="announcement-item"><i class="fas fa-bolt"></i><span>Entrega Inmediata</span></div>
+        <div class="announcement-item"><i class="fas fa-headset"></i><span>Soporte Técnico 24/7</span></div>
+        <!-- DUPLICAR -->
+        <div class="announcement-item"><i class="fas fa-tools"></i><span>Herramientas Profesionales</span></div>
+        <div class="announcement-item"><i class="fas fa-certificate"></i><span>Licencias Originales</span></div>
+        <div class="announcement-item"><i class="fas fa-bolt"></i><span>Entrega Inmediata</span></div>
+        <div class="announcement-item"><i class="fas fa-headset"></i><span>Soporte Técnico 24/7</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-top">
+      <div class="container">
+        <div class="header-top-content">
+          <a href="index.html" class="logo">
+            <img src="assets/logo.png" alt="Cell Space">
+            <div class="logo-text">
+              <span class="logo-main">CELL SPACE</span>
+              <span class="logo-sub">ARGENTINA</span>
+            </div>
+          </a>
+          
+          <div class="header-actions">
+            <a href="perfil.html" class="header-action">
+              <i class="fas fa-user"></i><span>Mi cuenta</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <nav class="main-navigation">
+      <div class="container">
+        <ul class="nav-menu">
+          <li><a href="index.html" class="nav-link">INICIO</a></li>
+          <li><a href="tienda.html" class="nav-link">TIENDA</a></li>
+          <li><a href="servicios.html" class="nav-link">SERVICIO TÉCNICO</a></li>
+          <li><a href="herramientas.html" class="nav-link active">HERRAMIENTAS</a></li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+
+  <!-- CONTENIDO -->
+  <main class="shop-main">
+    <div class="container">
+      <section class="shop-hero">
+        <div class="shop-hero-content">
+          <h1 class="shop-title">HERRAMIENTAS PROFESIONALES</h1>
+          <p class="shop-subtitle">Acceso exclusivo para técnicos certificados</p>
+          <div class="shop-features">
+            <div class="shop-feature">
+              <i class="fas fa-certificate"></i>
+              <div>
+                <strong>LICENCIAS ORIGINALES</strong>
+                <span>100% verificadas</span>
+              </div>
+            </div>
+            <div class="shop-feature">
+              <i class="fas fa-bolt"></i>
+              <div>
+                <strong>ENTREGA INMEDIATA</strong>
+                <span>Por email</span>
+              </div>
+            </div>
+            <div class="shop-feature">
+              <i class="fas fa-headset"></i>
+              <div>
+                <strong>SOPORTE 24/7</strong>
+                <span>Asistencia técnica</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Grid de Herramientas -->
+      <div class="products-grid" id="toolsGrid"></div>
+
+      <!-- Beneficios -->
+      <section class="shop-benefits">
+        <div class="benefit">
+          <i class="fas fa-certificate"></i>
+          <div>
+            <strong>LICENCIAS 100% ORIGINALES</strong>
+            <span>Garantía de autenticidad</span>
+          </div>
+        </div>
+        <div class="benefit">
+          <i class="fas fa-bolt"></i>
+          <div>
+            <strong>ACTIVACIÓN INMEDIATA</strong>
+            <span>Recibí tu licencia al instante</span>
+          </div>
+        </div>
+        <div class="benefit">
+          <i class="fas fa-headset"></i>
+          <div>
+            <strong>SOPORTE TÉCNICO</strong>
+            <span>Asistencia personalizada</span>
+          </div>
+        </div>
+        <div class="benefit">
+          <i class="fas fa-sync"></i>
+          <div>
+            <strong>ACTUALIZACIONES</strong>
+            <span>Siempre actualizado</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2026 Cell Space Argentina. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/auth-middleware.js"></script>
+  <script src="js/herramientas.js"></script>
+  
+  <script>
+    // Verificar acceso (solo técnicos y admin)
+    document.addEventListener('DOMContentLoaded', async () => {
+      const hasAccess = await checkAccess('technician');
+      if (!hasAccess) return;
+      
+      await controlVisibility();
+    });
+  </script>
+</body>
+</html>
