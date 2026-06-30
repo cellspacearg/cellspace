@@ -367,5 +367,12 @@
   <!-- SCRIPTS -->
   <script src="js/config.js"></script>
   <script src="js/tienda.js"></script>
+  <!-- Scripts de control de acceso -->
+<script src="js/auth-middleware.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    await controlVisibility();
+  });
+</script>
 </body>
 </html>
