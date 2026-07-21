@@ -1,251 +1,222 @@
 // ========================================
-// CELL SPACE - PERFIL.JS
-// Página de Mi Cuenta / Perfil
+// PERFIL DE USUARIO - SUPABASE
 // ========================================
 
 let currentUser = null;
-let currentUserType = 'client';
 let originalUsername = '';
 
-// ========================================
-// INICIALIZACIÓN
-// ========================================
-
 document.addEventListener('DOMContentLoaded', async () => {
-  firebase.auth().onAuthStateChanged(async (user) => {
-    if (user) {
-      currentUser = user;
-      await loadProfileData(user);
-      setupNavbar(user);
-    } else {
-      window.location.href = 'login.html';
-    }
-  });
-});
-
-// ========================================
-// CARGAR DATOS DEL PERFIL
-// ========================================
-
-async function loadProfileData(user) {
-  const userId = user.email.split('@')[0];
-  let userData = null;
+  // 1. Verificar sesión
+  const { data: { session } } = await supabase.auth.getSession();
   
-  // Buscar en todas las colecciones
-  const clientDoc = await db.collection('clients').doc(userId).get();
-  if (clientDoc.exists) {
-    userData = clientDoc.data();
-    currentUserType = 'client';
-  } else {
-    const techDoc = await db.collection('technicians').doc(userId).get();
-    if (techDoc.exists) {
-      userData = techDoc.data();
-      currentUserType = 'technician';
-    } else {
-      const userDoc = await db.collection('users').doc(user.uid).get();
-      if (userDoc.exists) {
-        userData = userDoc.data();
-        currentUserType = userDoc.data().userType || 'client';
-      }
-    }
-  }
-  
-  // Cargar datos en formulario
-  const username = userData?.username || user.displayName?.toLowerCase().replace(/\s+/g, '_') || userId;
-  document.getElementById('profileUsername').value = username;
-  originalUsername = username;
-  
-  document.getElementById('profileEmail').value = user.email;
-  document.getElementById('profileName').value = userData?.name || user.displayName || '';
-  document.getElementById('profilePhone').value = userData?.phone || '';
-  document.getElementById('profileTelegram').value = userData?.telegram || '';
-  document.getElementById('profileWhatsApp').value = userData?.whatsapp || '';
-  document.getElementById('profileLocation').value = userData?.location || '';
-  
-  // Campos técnicos si corresponde
-  if (currentUserType === 'technician') {
-    document.getElementById('techFields').style.display = 'block';
-    document.getElementById('profileSpecialty').value = userData?.specialty || '';
-    document.getElementById('profileExperience').value = userData?.experience || '';
-    document.getElementById('profileBio').value = userData?.bio || '';
-  }
-  
-  // Actualizar sidebar
-  const displayName = userData?.name || username;
-  document.getElementById('sidebarName').textContent = displayName;
-  document.getElementById('sidebarEmail').textContent = user.email;
-  document.getElementById('profileInitial').textContent = displayName.charAt(0).toUpperCase();
-  
-  // Foto de perfil
-  if (userData?.photoURL || user.photoURL) {
-    document.getElementById('profilePhotoImg').src = userData?.photoURL || user.photoURL;
-    document.getElementById('profilePhotoImg').style.display = 'block';
-    document.getElementById('profileInitial').style.display = 'none';
-  }
-  
-  // Badge de rol
-  const badge = document.getElementById('userBadge');
-  
-  if (currentUserType === 'admin') {
-    badge.textContent = 'Admin';
-    badge.className = 'role-badge admin';
-    document.getElementById('adminMenu').style.display = 'block';
-    document.getElementById('sidebarAdminMenu').style.display = 'block';
-  } else if (currentUserType === 'technician') {
-    badge.textContent = userData?.isPremium ? 'Técnico Premium 👑' : 'Técnico';
-    badge.className = userData?.isPremium ? 'role-badge tecnico premium' : 'role-badge tecnico';
-    document.getElementById('technicianMenu').style.display = 'block';
-    document.getElementById('sidebarTechMenu').style.display = 'block';
-  } else {
-    badge.textContent = 'Cliente';
-    badge.className = 'role-badge cliente';
-  }
-  
-  console.log('✅ Perfil cargado correctamente');
-}
-
-function setupNavbar(user) {
-  // Mostrar dropdown si existe
-  const userDropdown = document.getElementById('userDropdown');
-  if (userDropdown) {
-    userDropdown.style.display = 'flex';
-  }
-  
-  // Ocultar botón de login
-  const loginBtn = document.getElementById('loginBtn');
-  if (loginBtn) {
-    loginBtn.style.display = 'none';
-  }
-}
-
-// ========================================
-// GUARDAR CAMBIOS
-// ========================================
-
-document.getElementById('profileForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  if (!currentUser) return;
-  
-  const userId = currentUser.email.split('@')[0];
-  const newUsername = document.getElementById('profileUsername').value.trim().toLowerCase();
-  
-  // Validar username
-  if (newUsername.length < 3) {
-    alert('⚠️ Mínimo 3 caracteres');
+  if (!session?.user) {
+    window.location.href = 'login.html';
     return;
   }
   
-  // Si cambió el username
-  if (newUsername !== originalUsername) {
-    try {
-      const checkDoc = await db.collection('usernames').doc(newUsername).get();
-      if (checkDoc.exists && checkDoc.data().email !== currentUser.email) {
-        alert('⚠️ Ese username ya está en uso.');
-        return;
-      }
-      
-      // Borrar el viejo si existe
-      if (originalUsername) {
-        await db.collection('usernames').doc(originalUsername).delete().catch(() => {});
-      }
-      
-      // Crear nuevo username
-      await db.collection('usernames').doc(newUsername).set({
-        email: currentUser.email,
-        userType: currentUserType,
-        uid: currentUser.uid,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    } catch (err) {
-      console.error(err);
-      alert('❌ Error verificando username');
-      return;
-    }
-  }
+  currentUser = session.user;
   
-  // Preparar datos a actualizar
-  const updates = {
-    username: newUsername,
-    name: document.getElementById('profileName').value,
-    phone: document.getElementById('profilePhone').value,
-    telegram: document.getElementById('profileTelegram').value,
-    whatsapp: document.getElementById('profileWhatsApp').value,
-    location: document.getElementById('profileLocation').value,
-    userType: currentUserType,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
+  // 2. Cargar datos del perfil
+  await loadProfileData(currentUser);
   
-  // Campos técnicos
-  if (currentUserType === 'technician') {
-    updates.specialty = document.getElementById('profileSpecialty').value;
-    updates.experience = document.getElementById('profileExperience').value;
-    updates.bio = document.getElementById('profileBio').value;
-  }
-  
-  // Contraseña
-  const newPass = document.getElementById('newPassword').value;
-  if (newPass && newPass.length >= 6) {
-    try {
-      await currentUser.updatePassword(newPass);
-      alert('✅ Contraseña actualizada correctamente');
-    } catch (err) {
-      alert('❌ Error contraseña: ' + err.message);
-      return;
-    }
-  }
-  
-  // Detectar colección correcta
-  let collection = 'clients';
-  const cSnap = await db.collection('clients').doc(userId).get();
-  if (cSnap.exists) {
-    collection = 'clients';
-  } else {
-    const tSnap = await db.collection('technicians').doc(userId).get();
-    if (tSnap.exists) {
-      collection = 'technicians';
-    } else {
-      collection = 'users';
-    }
-  }
-  
-  try {
-    // Actualizar con merge (crea si no existe)
-    await db.collection(collection).doc(userId).set(updates, { merge: true });
-    
-    originalUsername = newUsername;
-    alert('✅ Perfil actualizado correctamente');
-    location.reload();
-  } catch (err) {
-    console.error(err);
-    alert('❌ Error al guardar: ' + err.message);
-  }
+  // 3. Configurar formulario de guardado
+  setupProfileForm();
 });
 
-// ========================================
-// FUNCIONES AUXILIARES
-// ========================================
-
-function cancelChanges() {
-  location.reload();
+async function loadProfileData(user) {
+  try {
+    // Obtener datos principales de la tabla 'users'
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+      
+    if (userError || !userData) {
+      console.error('Error cargando usuario:', userError);
+      alert('⚠️ No se pudieron cargar los datos del perfil.');
+      return;
+    }
+    
+    // Rellenar campos básicos
+    document.getElementById('profileUsername').value = userData.username || '';
+    originalUsername = userData.username || '';
+    document.getElementById('profileEmail').value = user.email || '';
+    document.getElementById('profileName').value = userData.name || '';
+    document.getElementById('profilePhone').value = userData.phone || '';
+    document.getElementById('profileTelegram').value = userData.telegram || '';
+    document.getElementById('profileWhatsApp').value = userData.whatsapp || '';
+    document.getElementById('profileLocation').value = userData.location || '';
+    
+    // Actualizar Sidebar
+    const displayName = userData.name || userData.username || 'Usuario';
+    document.getElementById('sidebarName').textContent = displayName;
+    document.getElementById('sidebarEmail').textContent = user.email;
+    document.getElementById('profileInitial').textContent = displayName.charAt(0).toUpperCase();
+    
+    // Actualizar badge de rol en sidebar y header
+    const roleNames = { 'client': 'Cliente', 'technician': 'Técnico', 'admin': 'Admin' };
+    const role = userData.role || 'client';
+    document.getElementById('userBadge').textContent = roleNames[role];
+    
+    // Si es técnico, mostrar campos técnicos y cargar sus datos
+    if (role === 'technician') {
+      document.getElementById('techFields').style.display = 'block';
+      
+      const { data: techData, error: techError } = await supabase
+        .from('technicians')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+        
+      if (!techError && techData) {
+        document.getElementById('profileSpecialty').value = techData.specialty || '';
+        document.getElementById('profileExperience').value = techData.experience || '';
+        document.getElementById('profileBio').value = techData.bio || '';
+      }
+    }
+    
+    // Foto de perfil (si existe en metadata o en la tabla)
+    const photoUrl = userData.photo_url || user.user_metadata?.avatar_url;
+    if (photoUrl) {
+      document.getElementById('profilePhotoImg').src = photoUrl;
+      document.getElementById('profilePhotoImg').style.display = 'block';
+      document.getElementById('profileInitial').style.display = 'none';
+    }
+    
+  } catch (error) {
+    console.error('Error general cargando perfil:', error);
+  }
 }
 
-function toggleUserDropdown() {
-  const d = document.getElementById('userDropdown');
-  if (d) d.classList.toggle('open');
+function setupProfileForm() {
+  const form = document.getElementById('profileForm');
+  if (!form) return;
+  
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const saveBtn = document.getElementById('saveBtn');
+    const saveBtnText = document.getElementById('saveBtnText');
+    const saveBtnLoader = document.getElementById('saveBtnLoader');
+    
+    const newUsername = document.getElementById('profileUsername').value.trim().toLowerCase().replace(/\s+/g, '_');
+    const name = document.getElementById('profileName').value.trim();
+    const phone = document.getElementById('profilePhone').value.trim();
+    const telegram = document.getElementById('profileTelegram').value.trim();
+    const whatsapp = document.getElementById('profileWhatsApp').value.trim();
+    const location = document.getElementById('profileLocation').value.trim();
+    const newPassword = document.getElementById('newPassword').value;
+    
+    if (newUsername.length < 3) {
+      alert('⚠️ El nombre de usuario debe tener al menos 3 caracteres');
+      return;
+    }
+    
+    // Mostrar estado de carga
+    saveBtn.disabled = true;
+    saveBtnText.style.display = 'none';
+    saveBtnLoader.style.display = 'inline-block';
+    
+    try {
+      // 1. Verificar si el username cambió y si ya existe
+      if (newUsername !== originalUsername) {
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('id')
+          .eq('username', newUsername)
+          .neq('id', currentUser.id)
+          .maybeSingle();
+          
+        if (existingUser) {
+          alert('⚠️ Ese nombre de usuario ya está en uso. Probá con otro.');
+          resetButton();
+          return;
+        }
+      }
+      
+      // 2. Actualizar tabla 'users'
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({
+          username: newUsername,
+          name: name,
+          phone: phone,
+          telegram: telegram,
+          whatsapp: whatsapp,
+          location: location,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', currentUser.id);
+        
+      if (updateError) throw updateError;
+      
+      // 3. Si es técnico, actualizar tabla 'technicians'
+      const roleBadge = document.getElementById('userBadge').textContent;
+      if (roleBadge === 'Técnico') {
+        const specialty = document.getElementById('profileSpecialty').value.trim();
+        const experience = document.getElementById('profileExperience').value.trim();
+        const bio = document.getElementById('profileBio').value.trim();
+        
+        // Verificar si ya existe el registro en technicians, si no, insertarlo
+        const { data: techExists } = await supabase
+          .from('technicians')
+          .select('id')
+          .eq('user_id', currentUser.id)
+          .maybeSingle();
+          
+        if (techExists) {
+          await supabase
+            .from('technicians')
+            .update({ specialty, experience, bio })
+            .eq('user_id', currentUser.id);
+        } else {
+          await supabase
+            .from('technicians')
+            .insert({ user_id: currentUser.id, specialty, experience, bio });
+        }
+      }
+      
+      // 4. Actualizar contraseña si se proporcionó una nueva
+      if (newPassword && newPassword.length >= 6) {
+        const { error: passError } = await supabase.auth.updateUser({
+          password: newPassword
+        });
+        
+        if (passError) {
+          alert('⚠️ No se pudo actualizar la contraseña: ' + passError.message);
+          resetButton();
+          return;
+        }
+      }
+      
+      alert('✅ Perfil actualizado correctamente');
+      window.location.reload();
+      
+    } catch (error) {
+      console.error('Error al guardar:', error);
+      alert('❌ Error al guardar los cambios: ' + error.message);
+      resetButton();
+    }
+    
+    function resetButton() {
+      saveBtn.disabled = false;
+      saveBtnText.style.display = 'inline-block';
+      saveBtnLoader.style.display = 'none';
+    }
+  });
+}
+
+function cancelChanges() {
+  if (confirm('¿Estás seguro de que querés cancelar? Se perderán los cambios no guardados.')) {
+    window.location.reload();
+  }
 }
 
 function logout() {
   if (confirm('¿Cerrar sesión?')) {
-    firebase.auth().signOut().then(() => {
+    supabase.auth.signOut().then(() => {
       window.location.href = 'index.html';
     });
   }
 }
-
-// Cerrar dropdown al hacer click fuera
-document.addEventListener('click', (e) => {
-  const d = document.getElementById('userDropdown');
-  if (d && !d.contains(e.target)) {
-    d.classList.remove('open');
-  }
-});
