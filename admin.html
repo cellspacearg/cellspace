@@ -7,14 +7,14 @@
   <link rel="icon" type="image/png" href="assets/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="css/styles.css?v=12">
+  <link rel="stylesheet" href="css/styles.css?v=15">
   
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <!-- Supabase SDK (Reemplaza a Firebase) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+  <div class="particles" id="particles"></div>
+
   <!-- HEADER -->
   <header class="site-header">
     <div class="header-top">
@@ -97,7 +97,9 @@
 
       <!-- USUARIOS RECIENTES -->
       <h2 style="color:white;margin-bottom:20px;font-size:24px;">USUARIOS RECIENTES</h2>
-      <div id="recentUsers" style="background:rgba(21,21,21,0.9);border:1px solid rgba(255,106,0,0.2);border-radius:16px;padding:20px;"></div>
+      <div id="recentUsers" style="background:rgba(21,21,21,0.9);border:1px solid rgba(255,106,0,0.2);border-radius:16px;padding:20px;">
+        <p style="color:#888;text-align:center;padding:20px;">Cargando usuarios...</p>
+      </div>
     </div>
   </main>
 
@@ -110,31 +112,26 @@
       text-align: center;
       transition: all 0.3s;
     }
-    
     .admin-card:hover {
       transform: translateY(-5px);
       border-color: var(--orange);
       box-shadow: 0 10px 30px rgba(255,106,0,0.2);
     }
-    
     .admin-card i {
       font-size: 48px;
       color: var(--orange);
       margin-bottom: 15px;
     }
-    
     .admin-card h3 {
       font-size: 32px;
       font-weight: 800;
       color: white;
       margin-bottom: 10px;
     }
-    
     .admin-card p {
       color: #888;
       font-size: 14px;
     }
-    
     .admin-action {
       background: rgba(21,21,21,0.9);
       border: 1px solid rgba(255,106,0,0.2);
@@ -144,26 +141,22 @@
       text-decoration: none;
       transition: all 0.3s;
     }
-    
     .admin-action:hover {
       transform: translateY(-5px);
       border-color: var(--orange);
       box-shadow: 0 10px 30px rgba(255,106,0,0.2);
     }
-    
     .admin-action i {
       font-size: 48px;
       color: var(--orange);
       margin-bottom: 15px;
     }
-    
     .admin-action h3 {
       font-size: 18px;
       font-weight: 700;
       color: white;
       margin-bottom: 10px;
     }
-    
     .admin-action p {
       color: #888;
       font-size: 13px;
