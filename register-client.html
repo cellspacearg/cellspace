@@ -6,18 +6,21 @@
   <title>Registro Cliente - Cell Space</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="css/styles.css?v=15">
+  
+  <!-- Supabase SDK (Reemplaza a Firebase) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+  <div class="particles" id="particles"></div>
+
   <div class="login-page">
     <div class="login-container">
       <div class="login-box">
         <div class="login-header">
           <img src="assets/logo.png" class="login-logo" onerror="this.style.display='none'">
           <h1>Registro <span style="color:var(--orange)">Cliente</span></h1>
+          <p style="color: var(--muted); font-size: 14px; margin-top: 10px;">Creá tu cuenta para acceder a la tienda</p>
         </div>
         
         <form id="registerClientForm">
@@ -26,42 +29,55 @@
             <input type="text" id="clientUsername" placeholder="Ej: nahuel_encinas" required minlength="3">
             <small style="color:var(--muted);font-size:12px;">Mínimo 3 caracteres, sin espacios</small>
           </div>
+          
           <div class="form-group">
             <label>Nombre Completo</label>
             <input type="text" id="clientName" placeholder="Tu nombre completo" required>
           </div>
+          
           <div class="form-group">
             <label>Email</label>
             <input type="email" id="clientEmail" placeholder="tu@email.com" required>
           </div>
+          
           <div class="form-group">
             <label>Teléfono</label>
             <input type="tel" id="clientPhone" placeholder="3782-XXXXXX" required>
           </div>
+          
           <div class="form-group">
             <label>Contraseña</label>
             <input type="password" id="clientPassword" placeholder="Mínimo 6 caracteres" required minlength="6">
           </div>
-          <button type="submit" class="btn btn-primary btn-block">Crear Cuenta</button>
+          
+          <button type="submit" id="submitBtn" class="btn btn-primary btn-block">
+            <span id="btnText">Crear Cuenta</span>
+            <span id="btnLoader" style="display:none;"><i class="fas fa-spinner fa-spin"></i> Procesando...</span>
+          </button>
         </form>
         
         <div class="login-footer">
-          <p>¿Ya tenés cuenta? <a href="login.html">Iniciar sesión</a></p>
-          <p style="margin-top:10px;">¿Sos técnico? <a href="register-technician.html">Registrate como técnico</a></p>
+          <p>¿Ya tenés cuenta? <a href="login.html" style="color: var(--orange); text-decoration: none; font-weight: 600;">Iniciar sesión</a></p>
+          <p style="margin-top:10px;">¿Sos técnico? <a href="register-technician.html" style="color: var(--orange); text-decoration: none; font-weight: 600;">Registrate como técnico</a></p>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- SCRIPTS -->
   <script src="js/config.js"></script>
   <script>
     document.getElementById('registerClientForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
+      const submitBtn = document.getElementById('submitBtn');
+      const btnText = document.getElementById('btnText');
+      const btnLoader = document.getElementById('btnLoader');
+      
       const username = document.getElementById('clientUsername').value.trim().toLowerCase().replace(/\s+/g, '_');
-      const name = document.getElementById('clientName').value;
-      const email = document.getElementById('clientEmail').value;
-      const phone = document.getElementById('clientPhone').value;
+      const name = document.getElementById('clientName').value.trim();
+      const email = document.getElementById('clientEmail').value.trim().toLowerCase();
+      const phone = document.getElementById('clientPhone').value.trim();
       const password = document.getElementById('clientPassword').value;
       
       // Validar username
@@ -70,52 +86,82 @@
         return;
       }
       
-      // Verificar que el username no exista
-      try {
-        const usernameDoc = await db.collection('usernames').doc(username).get();
-        if (usernameDoc.exists) {
-          alert('⚠️ Ese nombre de usuario ya está en uso. Probá con otro.');
-          return;
-        }
-        
-        // Verificar que el email no exista
-        const methods = await firebase.auth().fetchSignInMethodsForEmail(email);
-        if (methods.length > 0) {
-          alert('⚠️ Ese email ya está registrado. Iniciá sesión o usá otro email.');
-          return;
-        }
-      } catch (error) {
-        console.error('Error verificando:', error);
-        alert('❌ Error al verificar datos');
-        return;
-      }
+      // Mostrar estado de carga
+      submitBtn.disabled = true;
+      btnText.style.display = 'none';
+      btnLoader.style.display = 'inline-block';
       
       try {
-        await firebase.auth().createUserWithEmailAndPassword(email, password);
+        // 1. Verificar que el username no exista en la tabla 'users'
+        const { data: existingUser, error: checkError } = await supabase
+          .from('users')
+          .select('username')
+          .eq('username', username)
+          .maybeSingle();
+          
+        if (checkError) throw checkError;
         
-        // Guardar datos del cliente
-        await db.collection('clients').doc(email.split('@')[0]).set({
-          username,
-          name,
-          email,
-          phone,
-          userType: 'client',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        if (existingUser) {
+          alert('⚠️ Ese nombre de usuario ya está en uso. Probá con otro.');
+          resetButton();
+          return;
+        }
+        
+        // 2. Crear usuario en Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            data: {
+              name: name,
+              role: 'client' // Guardamos el rol en los metadatos
+            }
+          }
         });
         
-        // Reservar el username
-        await db.collection('usernames').doc(username).set({
-          email,
-          userType: 'client',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        if (authError) {
+          if (authError.message.includes('already registered') || authError.message.includes('User already registered')) {
+            alert('⚠️ Ese email ya está registrado. Iniciá sesión o usá otro email.');
+          } else {
+            alert('❌ Error al crear la cuenta: ' + authError.message);
+          }
+          resetButton();
+          return;
+        }
         
-        alert('✅ Cuenta creada exitosamente. Ahora podés iniciar sesión.');
+        // 3. Guardar datos adicionales en la tabla pública 'users'
+        const { error: dbError } = await supabase
+          .from('users')
+          .insert({
+            id: authData.user.id, // Usamos el UUID que genera Supabase
+            username: username,
+            name: name,
+            email: email,
+            phone: phone,
+            role: 'client'
+          });
+          
+        if (dbError) {
+          console.error('Error DB:', dbError);
+          alert('❌ Error al guardar los datos del perfil. Intentalo de nuevo.');
+          resetButton();
+          return;
+        }
+        
+        // Éxito
+        alert('✅ ¡Cuenta creada exitosamente!\n\nAhora podés iniciar sesión con tu email y contraseña.');
         window.location.href = 'login.html';
         
       } catch (error) {
-        console.error('Error:', error);
-        alert('❌ Error: ' + error.message);
+        console.error('Error general:', error);
+        alert('❌ Ocurrió un error inesperado: ' + error.message);
+        resetButton();
+      }
+      
+      function resetButton() {
+        submitBtn.disabled = false;
+        btnText.style.display = 'inline-block';
+        btnLoader.style.display = 'none';
       }
     });
   </script>
