@@ -6,18 +6,21 @@
   <title>Registro Técnico - Cell Space</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="css/styles.css?v=15">
+  
+  <!-- Supabase SDK (Reemplaza a Firebase) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+  <div class="particles" id="particles"></div>
+
   <div class="login-page">
     <div class="login-container">
       <div class="login-box">
         <div class="login-header">
           <img src="assets/logo.png" class="login-logo" onerror="this.style.display='none'">
-          <h1>Registro <span style="color:var(--gold)">Técnico</span></h1>
+          <h1>Registro <span style="color:var(--orange)">Técnico</span></h1>
+          <p style="color: var(--muted); font-size: 14px; margin-top: 10px;">Unite a nuestra red de profesionales</p>
         </div>
         
         <form id="registerTechnicianForm">
@@ -26,61 +29,75 @@
             <input type="text" id="techUsername" placeholder="Ej: tecnico_nahuel" required minlength="3">
             <small style="color:var(--muted);font-size:12px;">Mínimo 3 caracteres, sin espacios</small>
           </div>
+          
           <div class="form-group">
             <label>Nombre Completo</label>
             <input type="text" id="techName" placeholder="Tu nombre completo" required>
           </div>
+          
           <div class="form-group">
             <label>Email</label>
             <input type="email" id="techEmail" placeholder="tu@email.com" required>
           </div>
+          
           <div class="form-group">
             <label>Especialidad</label>
-            <select id="techSpecialty" required>
-              <option value="">Seleccionar especialidad...</option>
-              <option value="Celulares">Celulares</option>
-              <option value="PC/Laptop">PC / Laptop</option>
-              <option value="Consolas">Consolas</option>
-              <option value="Hardware">Hardware</option>
-              <option value="Software">Software</option>
-              <option value="Microsoldadura">Microsoldadura</option>
+            <select id="techSpecialty" required style="width: 100%; padding: 14px 18px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 15px; font-family: 'Montserrat', sans-serif; outline: none;">
+              <option value="" style="background: #151515;">Seleccionar especialidad...</option>
+              <option value="Celulares" style="background: #151515;">Celulares</option>
+              <option value="PC/Laptop" style="background: #151515;">PC / Laptop</option>
+              <option value="Consolas" style="background: #151515;">Consolas</option>
+              <option value="Hardware" style="background: #151515;">Hardware</option>
+              <option value="Software" style="background: #151515;">Software</option>
+              <option value="Microsoldadura" style="background: #151515;">Microsoldadura</option>
             </select>
           </div>
+          
           <div class="form-group">
             <label>Experiencia</label>
-            <select id="techExperience" required>
-              <option value="">Años de experiencia...</option>
-              <option value="0-1">0-1 años</option>
-              <option value="1-3">1-3 años</option>
-              <option value="3-5">3-5 años</option>
-              <option value="5+">Más de 5 años</option>
+            <select id="techExperience" required style="width: 100%; padding: 14px 18px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: white; font-size: 15px; font-family: 'Montserrat', sans-serif; outline: none;">
+              <option value="" style="background: #151515;">Años de experiencia...</option>
+              <option value="0-1" style="background: #151515;">0-1 años</option>
+              <option value="1-3" style="background: #151515;">1-3 años</option>
+              <option value="3-5" style="background: #151515;">3-5 años</option>
+              <option value="5+" style="background: #151515;">Más de 5 años</option>
             </select>
           </div>
+          
           <div class="form-group">
             <label>Contraseña</label>
             <input type="password" id="techPassword" placeholder="Mínimo 6 caracteres" required minlength="6">
           </div>
-          <button type="submit" class="btn btn-primary btn-block">Solicitar Registro</button>
+          
+          <button type="submit" id="submitBtn" class="btn btn-primary btn-block">
+            <span id="btnText">Solicitar Registro</span>
+            <span id="btnLoader" style="display:none;"><i class="fas fa-spinner fa-spin"></i> Procesando...</span>
+          </button>
         </form>
         
         <div class="login-footer">
-          <p>¿Ya tenés cuenta? <a href="login.html">Iniciar sesión</a></p>
-          <p style="margin-top:10px; color:var(--muted); font-size:0.9rem;">
-            💡 Los técnicos premium acceden a contenido exclusivo
+          <p>¿Ya tenés cuenta? <a href="login.html" style="color: var(--orange); text-decoration: none; font-weight: 600;">Iniciar sesión</a></p>
+          <p style="margin-top:15px; color:var(--muted); font-size:0.85rem; background: rgba(255,106,0,0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,106,0,0.2);">
+            💡 <strong>Nota:</strong> Las cuentas de técnicos son revisadas manualmente por un administrador antes de ser activadas.
           </p>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- SCRIPTS -->
   <script src="js/config.js"></script>
   <script>
     document.getElementById('registerTechnicianForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
+      const submitBtn = document.getElementById('submitBtn');
+      const btnText = document.getElementById('btnText');
+      const btnLoader = document.getElementById('btnLoader');
+      
       const username = document.getElementById('techUsername').value.trim().toLowerCase().replace(/\s+/g, '_');
-      const name = document.getElementById('techName').value;
-      const email = document.getElementById('techEmail').value;
+      const name = document.getElementById('techName').value.trim();
+      const email = document.getElementById('techEmail').value.trim().toLowerCase();
       const specialty = document.getElementById('techSpecialty').value;
       const experience = document.getElementById('techExperience').value;
       const password = document.getElementById('techPassword').value;
@@ -91,55 +108,85 @@
         return;
       }
       
-      // Verificar que el username no exista
-      try {
-        const usernameDoc = await db.collection('usernames').doc(username).get();
-        if (usernameDoc.exists) {
-          alert('⚠️ Ese nombre de usuario ya está en uso. Probá con otro.');
-          return;
-        }
-        
-        // Verificar que el email no exista
-        const methods = await firebase.auth().fetchSignInMethodsForEmail(email);
-        if (methods.length > 0) {
-          alert('⚠️ Ese email ya está registrado.');
-          return;
-        }
-      } catch (error) {
-        console.error('Error verificando:', error);
-        alert('❌ Error al verificar datos');
-        return;
-      }
+      // Mostrar estado de carga
+      submitBtn.disabled = true;
+      btnText.style.display = 'none';
+      btnLoader.style.display = 'inline-block';
       
       try {
-        await firebase.auth().createUserWithEmailAndPassword(email, password);
+        // 1. Verificar que el username no exista en la tabla 'users'
+        const { data: existingUser, error: checkError } = await supabase
+          .from('users')
+          .select('username')
+          .eq('username', username)
+          .maybeSingle();
+          
+        if (checkError) throw checkError;
         
-        // Guardar datos del técnico
-        await db.collection('technicians').doc(email.split('@')[0]).set({
-          username,
-          name,
-          email,
-          specialty,
-          experience,
-          userType: 'technician',
-          isPremium: false,
-          status: 'pending',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        if (existingUser) {
+          alert('⚠️ Ese nombre de usuario ya está en uso. Probá con otro.');
+          resetButton();
+          return;
+        }
+        
+        // 2. Crear usuario en Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            data: {
+              name: name,
+              role: 'technician' // Guardamos el rol en los metadatos
+            }
+          }
         });
         
-        // Reservar el username
-        await db.collection('usernames').doc(username).set({
-          email,
-          userType: 'technician',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        if (authError) {
+          if (authError.message.includes('already registered') || authError.message.includes('User already registered')) {
+            alert('⚠️ Ese email ya está registrado. Intentá iniciar sesión o recuperar contraseña.');
+          } else {
+            alert('❌ Error al crear la cuenta: ' + authError.message);
+          }
+          resetButton();
+          return;
+        }
         
-        alert('✅ Solicitud enviada. Un administrador aprobará tu cuenta.');
+        // 3. Guardar datos adicionales en la tabla pública 'users'
+        const { error: dbError } = await supabase
+          .from('users')
+          .insert({
+            id: authData.user.id, // Usamos el UUID que genera Supabase
+            username: username,
+            name: name,
+            email: email,
+            role: 'technician',
+            specialty: specialty,
+            experience: experience,
+            is_premium: false,
+            status: 'pending' // Pendiente de aprobación por el admin
+          });
+          
+        if (dbError) {
+          console.error('Error DB:', dbError);
+          alert('❌ Error al guardar los datos del perfil. Intentalo de nuevo.');
+          resetButton();
+          return;
+        }
+        
+        // Éxito
+        alert('✅ ¡Solicitud enviada con éxito!\n\nUn administrador revisará tu perfil y te habilitará el acceso. Te notificaremos a tu email.');
         window.location.href = 'login.html';
         
       } catch (error) {
-        console.error('Error:', error);
-        alert('❌ Error: ' + error.message);
+        console.error('Error general:', error);
+        alert('❌ Ocurrió un error inesperado: ' + error.message);
+        resetButton();
+      }
+      
+      function resetButton() {
+        submitBtn.disabled = false;
+        btnText.style.display = 'inline-block';
+        btnLoader.style.display = 'none';
       }
     });
   </script>
