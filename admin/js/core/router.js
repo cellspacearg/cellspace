@@ -1,9 +1,14 @@
 import { store } from './state.js';
+import { initAuthListener } from '../hooks/useAuth.js';
 
 class Router {
   constructor(routes) {
     this.routes = routes;
     this.app = document.getElementById('app');
+    
+    // Inicializar listener de autenticación (sesión persistente)
+    initAuthListener();
+    
     window.addEventListener('hashchange', () => this.render());
     window.addEventListener('load', () => this.render());
   }
@@ -16,26 +21,28 @@ class Router {
     // Buscar la vista correspondiente
     const route = this.routes[path] || this.routes['/login'];
     
-    // Simular carga
-    store.setState({ isLoading: true });
-    
-    // Renderizar la vista (que devuelve HTML string o un objeto con lógica)
+    // Ejecutar middleware de autenticación (beforeEnter)
     if (route.beforeEnter) {
       const canAccess = await route.beforeEnter();
       if (!canAccess) {
-        window.location.hash = '#/login';
-        return;
+        // Si no tiene acceso, redirigir al login
+        if (path !== '/login') {
+          window.location.hash = '#/login';
+          return;
+        }
       }
     }
 
+    // Renderizar la vista
     this.app.innerHTML = await route.component();
-    store.setState({ isLoading: false });
     
     // Ejecutar scripts post-render si la vista lo necesita
-    if (route.onMount) route.onMount();
+    if (route.onMount) {
+      route.onMount();
+    }
   }
 
-  // Simula useNavigate()
+  // Navegar a una ruta
   navigate(path) {
     window.location.hash = path;
   }

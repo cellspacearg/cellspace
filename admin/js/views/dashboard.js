@@ -1,30 +1,42 @@
-// Esta vista se renderizará cuando la ruta sea #/dashboard
+import { logout } from '../hooks/useAuth.js';
+
 export async function dashboardView() {
   return `
     <div class="admin-dashboard-layout">
       <aside class="admin-sidebar">
         <h3>CMS Cell Space</h3>
         <nav>
-          <a href="#/dashboard" class="active">Dashboard</a>
-          <a href="#/products">Productos</a>
-          <a href="#/services">Servicios</a>
+          <a href="#/dashboard" class="active">
+            <i class="fas fa-home"></i> Dashboard
+          </a>
+          <a href="#/products">
+            <i class="fas fa-box"></i> Productos
+          </a>
+          <a href="#/services">
+            <i class="fas fa-tools"></i> Servicios
+          </a>
         </nav>
       </aside>
+      
       <main class="admin-main-content">
         <header class="admin-topbar">
           <h1>Dashboard</h1>
-          <button onclick="window.logout()">Cerrar Sesión</button>
+          <button onclick="handleLogout()" class="btn-logout">
+            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+          </button>
         </header>
+        
         <div class="admin-content-area">
-          <p>Contenido del dashboard (Próximamente)</p>
+          <p>Contenido del dashboard (Próximamente - Parte 4)</p>
         </div>
       </main>
     </div>
   `;
 }
 
-// Hacer logout disponible globalmente para el onclick del HTML
-window.logout = async () => {
-  const { logout } = await import('../hooks/useAuth.js');
-  await logout();
+// Función global para el logout
+window.handleLogout = async () => {
+  if (confirm('¿Estás seguro de que querés cerrar sesión?')) {
+    await logout();
+  }
 };
