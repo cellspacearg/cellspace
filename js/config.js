@@ -1,38 +1,24 @@
-const firebaseConfig = {
-  apiKey: "AIzaSyCNHshneVJhwu6XvxrYAT52w4O8UM_9P94",
-  authDomain: "cellspace-login.firebaseapp.com",
-  projectId: "cellspace-login",
-  storageBucket: "cellspace-login.appspot.com",
-  messagingSenderId: "312985834328",
-  appId: "1:312985834328:web:4a99d20f26427d48300b2d"
-};
+// ========================================
+// SUPABASE CONFIGURATION
+// ========================================
 
-// Inicializar Firebase
-firebase.initializeApp(firebaseConfig);
+// ⚠️ Reemplazá XXXXX por tu Project URL real
+const SUPABASE_URL = 'https://XXXXX.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_PO6r84B1ZNAwFXZAQ_pVfQ_7Ij3qRpS';
 
-// Referencias globales
-const auth = firebase.auth();
-const db = firebase.firestore();
+// Inicializar Supabase
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Storage - Verificar que existe antes de usarlo
-let storage = null;
-try {
-  if (typeof firebase.storage === 'function') {
-    storage = firebase.storage();
-    console.log('✅ Firebase Storage cargado correctamente');
-  } else {
-    console.warn('⚠️ Firebase Storage no disponible');
-  }
-} catch (error) {
-  console.error('❌ Error inicializando Storage:', error);
-}
+// Referencias globales (compatibilidad)
+const db = supabase;
+const auth = supabase.auth;
 
 const ADMIN_EMAIL = "nahuel0123encinas@gmail.com";
 
 // Hacer globales
-window.auth = auth;
+window.supabase = supabase;
 window.db = db;
-window.storage = storage;
-window.firebase = firebase;
+window.auth = auth;
+window.ADMIN_EMAIL = ADMIN_EMAIL;
 
-console.log('✅ Firebase inicializado correctamente');
+console.log('✅ Supabase inicializado correctamente');
