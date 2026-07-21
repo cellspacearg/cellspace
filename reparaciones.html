@@ -6,17 +6,21 @@
   <title>Rastrear Reparación - Cell Space</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css?v=15">
   <link rel="stylesheet" href="css/reparaciones.css">
   
-  <!-- Firebase Compat -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <!-- Supabase SDK (Reemplaza a Firebase) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <!-- HEADER -->
+  <div class="particles" id="particles"></div>
+
+  <!-- HEADER LIMPIO PARA RASTREO -->
   <header class="tech-header">
-    <a href="index.html" class="back-btn">← Volver al inicio</a>
+    <a href="index.html" class="back-btn">
+      <i class="fas fa-arrow-left"></i> Volver al inicio
+    </a>
     <div class="header-content">
       <h1>Sistema <span>Técnico</span></h1>
       <p>Seguimiento de reparaciones en tiempo real</p>
@@ -26,31 +30,24 @@
   <!-- CONTENIDO PRINCIPAL -->
   <main class="tech-content">
     <div class="card">
-      <h2>🔍 Rastrear mi equipo</h2>
+      <h2><i class="fas fa-search" style="color: var(--orange);"></i> Rastrear mi equipo</h2>
       <p class="subtitle">Ingresá el número de orden para ver el estado de tu reparación.</p>
       
       <div class="search-box">
         <input type="text" id="orderInput" placeholder="Ej: TS-2024-0001" maxlength="15">
-        <button onclick="trackOrder()">🔍 Buscar</button>
+        <button onclick="trackOrder()" class="btn-track">
+          <i class="fas fa-search"></i> Buscar
+        </button>
       </div>
-      <p class="hint">💡 ¿No tenés tu número de orden? Consultalo en tu comprobante o escribinos por WhatsApp</p>
+      <p class="hint">💡 ¿No tenés tu número de orden? Consultalo en tu comprobante o <a href="https://wa.me/5493782437674" target="_blank">escribinos por WhatsApp</a></p>
       
       <div id="trackResult" class="result-container"></div>
     </div>
   </main>
 
+  <!-- SCRIPTS (LIMPIOS Y SIN DUPLICADOS) -->
   <script src="js/config.js"></script>
+  <script src="js/auth-middleware.js"></script>
   <script src="js/reparaciones.js"></script>
-  <!-- Scripts de autenticación -->
-<script src="js/config.js"></script>
-<script src="js/auth-middleware.js"></script>
-<script src="js/header-auth.js"></script>
-
-<script>
-  // Inicializar header según estado de login
-  document.addEventListener('DOMContentLoaded', async () => {
-    await updateHeaderAuth();
-  });
-</script>
 </body>
 </html>
