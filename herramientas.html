@@ -7,12 +7,10 @@
   <link rel="icon" type="image/png" href="assets/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="css/styles.css?v=12">
+  <link rel="stylesheet" href="css/styles.css?v=15">
   
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <!-- Supabase SDK (Reemplaza a Firebase) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="particles" id="particles"></div>
@@ -25,7 +23,7 @@
         <div class="announcement-item"><i class="fas fa-certificate"></i><span>Licencias Originales</span></div>
         <div class="announcement-item"><i class="fas fa-bolt"></i><span>Entrega Inmediata</span></div>
         <div class="announcement-item"><i class="fas fa-headset"></i><span>Soporte Técnico 24/7</span></div>
-        <!-- DUPLICAR -->
+        <!-- DUPLICAR PARA SCROLL INFINITO -->
         <div class="announcement-item"><i class="fas fa-tools"></i><span>Herramientas Profesionales</span></div>
         <div class="announcement-item"><i class="fas fa-certificate"></i><span>Licencias Originales</span></div>
         <div class="announcement-item"><i class="fas fa-bolt"></i><span>Entrega Inmediata</span></div>
@@ -34,7 +32,7 @@
     </div>
   </div>
 
-  <!-- HEADER -->
+  <!-- HEADER (Dinámico) -->
   <header class="site-header">
     <div class="header-top">
       <div class="container">
@@ -47,9 +45,62 @@
             </div>
           </a>
           
+          <div class="header-search">
+            <input type="text" placeholder="Buscar herramientas, licencias..." class="search-input">
+            <button class="search-btn"><i class="fas fa-search"></i></button>
+          </div>
+          
           <div class="header-actions">
-            <a href="perfil.html" class="header-action">
-              <i class="fas fa-user"></i><span>Mi cuenta</span>
+            <!-- PARA VISITANTES (Sin Login) -->
+            <div id="guestActions">
+              <a href="register-client.html" class="header-action" style="color: var(--orange); font-weight: 700;">
+                <i class="fas fa-user-plus"></i><span>Regístrate</span>
+              </a>
+              <a href="login.html" class="btn-login-header">
+                <i class="fas fa-sign-in-alt"></i><span>Iniciar Sesión</span>
+              </a>
+            </div>
+            
+            <!-- PARA USUARIOS LOGUEADOS -->
+            <div id="userActions" style="display: none;">
+              <div class="user-dropdown" id="userDropdown">
+                <button class="user-btn" onclick="toggleUserDropdown()">
+                  <div class="user-avatar-small"><span id="userInitial">?</span></div>
+                  <div class="user-info">
+                    <span class="user-name" id="userNameDisplay">Usuario</span>
+                    <span class="user-badge" id="userRoleBadge">Cliente</span>
+                  </div>
+                  <span class="dropdown-arrow">▼</span>
+                </button>
+                
+                <div class="dropdown-menu" id="userDropdownMenu">
+                  <a href="perfil.html" class="dropdown-item"><i class="fas fa-user-cog"></i> Mi Perfil</a>
+                  <a href="mis-pedidos.html" class="dropdown-item"><i class="fas fa-box"></i> Mis Pedidos</a>
+                  
+                  <div id="technicianMenu" style="display: none;">
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-header">Zona Técnica</div>
+                    <a href="technician-zone.html" class="dropdown-item"><i class="fas fa-tools"></i> Panel Técnico</a>
+                  </div>
+                  
+                  <div id="adminMenu" style="display: none;">
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-header">Administración</div>
+                    <a href="admin.html" class="dropdown-item"><i class="fas fa-cog"></i> Panel Admin</a>
+                  </div>
+                  
+                  <div class="dropdown-divider"></div>
+                  <a href="#" class="dropdown-item logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                </div>
+              </div>
+            </div>
+            
+            <a href="https://wa.me/5493782437674" target="_blank" class="header-action">
+              <i class="fas fa-headset"></i><span>Soporte</span>
+            </a>
+            <a href="#" class="header-action cart-action" onclick="toggleCart(); return false;">
+              <i class="fas fa-shopping-cart"></i><span>Carrito</span>
+              <span class="cart-count" id="cartCount">0</span>
             </a>
           </div>
         </div>
@@ -63,7 +114,17 @@
           <li><a href="tienda.html" class="nav-link">TIENDA</a></li>
           <li><a href="servicios.html" class="nav-link">SERVICIO TÉCNICO</a></li>
           <li><a href="herramientas.html" class="nav-link active">HERRAMIENTAS</a></li>
+          <li><a href="index.html#contacto" class="nav-link">CONTACTO</a></li>
         </ul>
+        
+        <div class="nav-buttons">
+          <button onclick="openIMEIChecker()" class="btn-imei-check">
+            <i class="fas fa-mobile-alt"></i><span>Check IMEI</span>
+          </button>
+          <a href="https://wa.me/5493782437674" target="_blank" class="btn-whatsapp">
+            <i class="fab fa-whatsapp"></i><span>WhatsApp</span>
+          </a>
+        </div>
       </div>
     </nav>
   </header>
@@ -75,64 +136,45 @@
         <div class="shop-hero-content">
           <h1 class="shop-title">HERRAMIENTAS PROFESIONALES</h1>
           <p class="shop-subtitle">Acceso exclusivo para técnicos certificados</p>
-          <div class="shop-features">
+          <div class="shop-hero-features">
             <div class="shop-feature">
               <i class="fas fa-certificate"></i>
-              <div>
-                <strong>LICENCIAS ORIGINALES</strong>
-                <span>100% verificadas</span>
-              </div>
+              <div><strong>LICENCIAS ORIGINALES</strong><span>100% verificadas</span></div>
             </div>
             <div class="shop-feature">
               <i class="fas fa-bolt"></i>
-              <div>
-                <strong>ENTREGA INMEDIATA</strong>
-                <span>Por email</span>
-              </div>
+              <div><strong>ENTREGA INMEDIATA</strong><span>Por email</span></div>
             </div>
             <div class="shop-feature">
               <i class="fas fa-headset"></i>
-              <div>
-                <strong>SOPORTE 24/7</strong>
-                <span>Asistencia técnica</span>
-              </div>
+              <div><strong>SOPORTE 24/7</strong><span>Asistencia técnica</span></div>
             </div>
           </div>
         </div>
       </section>
 
       <!-- Grid de Herramientas -->
-      <div class="products-grid" id="toolsGrid"></div>
+      <div class="products-grid" id="toolsGrid">
+        <p style="text-align:center;color:#888;padding:40px;grid-column:1/-1;">Cargando herramientas...</p>
+      </div>
 
       <!-- Beneficios -->
-      <section class="shop-benefits">
+      <section class="shop-benefits" style="margin-top: 60px;">
         <div class="benefit">
           <i class="fas fa-certificate"></i>
-          <div>
-            <strong>LICENCIAS 100% ORIGINALES</strong>
-            <span>Garantía de autenticidad</span>
-          </div>
+          <div><strong>LICENCIAS 100% ORIGINALES</strong><span>Garantía de autenticidad</span></div>
         </div>
         <div class="benefit">
           <i class="fas fa-bolt"></i>
-          <div>
-            <strong>ACTIVACIÓN INMEDIATA</strong>
-            <span>Recibí tu licencia al instante</span>
-          </div>
+          <div><strong>ACTIVACIÓN INMEDIATA</strong><span>Recibí tu licencia al instante</span></div>
         </div>
         <div class="benefit">
           <i class="fas fa-headset"></i>
-          <div>
-            <strong>SOPORTE TÉCNICO</strong>
-            <span>Asistencia personalizada</span>
-          </div>
+          <div><strong>SOPORTE TÉCNICO</strong><span>Asistencia personalizada</span></div>
         </div>
         <div class="benefit">
           <i class="fas fa-sync"></i>
-          <div>
-            <strong>ACTUALIZACIONES</strong>
-            <span>Siempre actualizado</span>
-          </div>
+          <div><strong>ACTUALIZACIONES</strong><span>Siempre actualizado</span></div>
         </div>
       </section>
     </div>
@@ -141,13 +183,66 @@
   <!-- FOOTER -->
   <footer class="site-footer">
     <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <img src="assets/logo.png" alt="Cell Space" class="footer-logo">
+          <p>Tu espacio de confianza en tecnología.</p>
+          <div class="social-links">
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-facebook"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>INFORMACIÓN</h4>
+          <ul>
+            <li><a href="#">Sobre nosotros</a></li>
+            <li><a href="#">Términos y condiciones</a></li>
+            <li><a href="#">Política de privacidad</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>CATEGORÍAS</h4>
+          <ul>
+            <li><a href="#">Celulares</a></li>
+            <li><a href="#">Accesorios</a></li>
+            <li><a href="#">Herramientas</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>CONTACTO</h4>
+          <ul class="contact-info">
+            <li><i class="fab fa-whatsapp"></i> +54 9 3782 437674</li>
+            <li><i class="fas fa-envelope"></i> cellspacearg@gmail.com</li>
+            <li><i class="fas fa-map-marker-alt"></i> Saladas, Corrientes</li>
+          </ul>
+        </div>
+      </div>
       <div class="footer-bottom">
         <p>&copy; 2026 Cell Space Argentina. Todos los derechos reservados.</p>
       </div>
     </div>
   </footer>
 
-  <!-- Scripts -->
+  <!-- CARRITO MODAL -->
+  <div class="cart-modal-overlay" id="cartModal">
+    <div class="cart-modal">
+      <div class="cart-modal-header">
+        <h2><i class="fas fa-shopping-cart"></i> Tu Carrito</h2>
+        <button onclick="toggleCart()" class="close-btn"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="cart-modal-body" id="cartItems"></div>
+      <div class="cart-modal-footer">
+        <div class="cart-total">
+          <span>Total:</span>
+          <span class="total-price" id="cartTotal">$0</span>
+        </div>
+        <button class="btn-checkout" onclick="checkout()">Finalizar Compra</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
   <script src="js/config.js"></script>
   <script src="js/auth-middleware.js"></script>
   <script src="js/herramientas.js"></script>
@@ -159,6 +254,11 @@
       if (!hasAccess) return;
       
       await controlVisibility();
+      
+      // Cargar herramientas si la función existe en herramientas.js
+      if (typeof renderTools === 'function') {
+        renderTools();
+      }
     });
   </script>
 </body>
