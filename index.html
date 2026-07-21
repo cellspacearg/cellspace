@@ -7,12 +7,10 @@
   <link rel="icon" type="image/png" href="assets/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="css/styles.css?v=12">
+  <link rel="stylesheet" href="css/styles.css?v=15">
   
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <!-- Supabase SDK (Reemplaza a Firebase) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="particles" id="particles"></div>
@@ -23,67 +21,30 @@
   <div class="announcement-bar">
     <div class="announcement-wrapper">
       <div class="announcement-scroll">
-        <div class="announcement-item">
-          <i class="fas fa-truck"></i>
-          <span>Envíos a todo el país por OCA y Andreani</span>
-        </div>
-        <div class="announcement-item">
-          <i class="fas fa-shield-alt"></i>
-          <span>Garantía en todos los productos</span>
-        </div>
-        <div class="announcement-item">
-          <i class="fas fa-dollar-sign"></i>
-          <span>Compra mínima $150.000 pesos</span>
-        </div>
-        <div class="announcement-item">
-          <i class="fas fa-bolt"></i>
-          <span>Pedidos despachados en 24hs hábiles</span>
-        </div>
-        <div class="announcement-item">
-          <i class="fas fa-boxes"></i>
-          <span>Stock y precios actualizados</span>
-        </div>
-        <div class="announcement-item">
-          <i class="fas fa-lock"></i>
-          <span>Pago 100% seguro</span>
-        </div>
+        <div class="announcement-item"><i class="fas fa-truck"></i><span>Envíos a todo el país por OCA y Andreani</span></div>
+        <div class="announcement-item"><i class="fas fa-shield-alt"></i><span>Garantía en todos los productos</span></div>
+        <div class="announcement-item"><i class="fas fa-dollar-sign"></i><span>Compra mínima $150.000 pesos</span></div>
+        <div class="announcement-item"><i class="fas fa-bolt"></i><span>Pedidos despachados en 24hs hábiles</span></div>
+        <div class="announcement-item"><i class="fas fa-boxes"></i><span>Stock y precios actualizados</span></div>
+        <div class="announcement-item"><i class="fas fa-lock"></i><span>Pago 100% seguro</span></div>
         <!-- DUPLICAR PARA SCROLL INFINITO -->
-        <div class="announcement-item">
-          <i class="fas fa-truck"></i>
-          <span>Envíos a todo el país por OCA y Andreani</span>
-        </div>
-        <div class="announcement-item">
-          <i class="fas fa-shield-alt"></i>
-          <span>Garantía en todos los productos</span>
-        </div>
-        <div class="announcement-item">
-          <i class="fas fa-dollar-sign"></i>
-          <span>Compra mínima $150.000 pesos</span>
-        </div>
-        <div class="announcement-item">
-          <i class="fas fa-bolt"></i>
-          <span>Pedidos despachados en 24hs hábiles</span>
-        </div>
-        <div class="announcement-item">
-          <i class="fas fa-boxes"></i>
-          <span>Stock y precios actualizados</span>
-        </div>
-        <div class="announcement-item">
-          <i class="fas fa-lock"></i>
-          <span>Pago 100% seguro</span>
-        </div>
+        <div class="announcement-item"><i class="fas fa-truck"></i><span>Envíos a todo el país por OCA y Andreani</span></div>
+        <div class="announcement-item"><i class="fas fa-shield-alt"></i><span>Garantía en todos los productos</span></div>
+        <div class="announcement-item"><i class="fas fa-dollar-sign"></i><span>Compra mínima $150.000 pesos</span></div>
+        <div class="announcement-item"><i class="fas fa-bolt"></i><span>Pedidos despachados en 24hs hábiles</span></div>
+        <div class="announcement-item"><i class="fas fa-boxes"></i><span>Stock y precios actualizados</span></div>
+        <div class="announcement-item"><i class="fas fa-lock"></i><span>Pago 100% seguro</span></div>
       </div>
     </div>
   </div>
 
   <!-- ========================================
-       HEADER PRINCIPAL
+       HEADER PRINCIPAL (Dinámico)
        ======================================== -->
   <header class="site-header">
     <div class="header-top">
       <div class="container">
         <div class="header-top-content">
-          <!-- Logo -->
           <a href="index.html" class="logo">
             <img src="assets/logo.png" alt="Cell Space Argentina">
             <div class="logo-text">
@@ -92,27 +53,62 @@
             </div>
           </a>
           
-          <!-- Buscador -->
           <div class="header-search">
             <input type="text" placeholder="Buscar productos, herramientas, servicios..." class="search-input" id="headerSearchInput">
-            <button class="search-btn" onclick="performSearch()">
-              <i class="fas fa-search"></i>
-            </button>
+            <button class="search-btn" onclick="performSearch()"><i class="fas fa-search"></i></button>
           </div>
           
-          <!-- Acciones -->
           <div class="header-actions">
+            <!-- PARA VISITANTES (Sin Login) -->
+            <div id="guestActions">
+              <a href="register-client.html" class="header-action" style="color: var(--orange); font-weight: 700;">
+                <i class="fas fa-user-plus"></i><span>Regístrate</span>
+              </a>
+              <a href="login.html" class="btn-login-header">
+                <i class="fas fa-sign-in-alt"></i><span>Iniciar Sesión</span>
+              </a>
+            </div>
+            
+            <!-- PARA USUARIOS LOGUEADOS -->
+            <div id="userActions" style="display: none;">
+              <div class="user-dropdown" id="userDropdown">
+                <button class="user-btn" onclick="toggleUserDropdown()">
+                  <div class="user-avatar-small"><span id="userInitial">?</span></div>
+                  <div class="user-info">
+                    <span class="user-name" id="userNameDisplay">Usuario</span>
+                    <span class="user-badge" id="userRoleBadge">Cliente</span>
+                  </div>
+                  <span class="dropdown-arrow">▼</span>
+                </button>
+                
+                <div class="dropdown-menu" id="userDropdownMenu">
+                  <a href="perfil.html" class="dropdown-item"><i class="fas fa-user-cog"></i> Mi Perfil</a>
+                  <a href="mis-pedidos.html" class="dropdown-item"><i class="fas fa-box"></i> Mis Pedidos</a>
+                  
+                  <div id="technicianMenu" style="display: none;">
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-header">Zona Técnica</div>
+                    <a href="technician-zone.html" class="dropdown-item"><i class="fas fa-tools"></i> Panel Técnico</a>
+                    <a href="herramientas.html" class="dropdown-item"><i class="fas fa-wrench"></i> Herramientas</a>
+                  </div>
+                  
+                  <div id="adminMenu" style="display: none;">
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-header">Administración</div>
+                    <a href="admin.html" class="dropdown-item"><i class="fas fa-cog"></i> Panel Admin</a>
+                  </div>
+                  
+                  <div class="dropdown-divider"></div>
+                  <a href="#" class="dropdown-item logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                </div>
+              </div>
+            </div>
+            
             <a href="https://wa.me/5493782437674" target="_blank" class="header-action">
-              <i class="fas fa-headset"></i>
-              <span>Soporte</span>
-            </a>
-            <a href="perfil.html" class="header-action">
-              <i class="fas fa-user"></i>
-              <span>Mi cuenta</span>
+              <i class="fas fa-headset"></i><span>Soporte</span>
             </a>
             <a href="#" class="header-action cart-action" onclick="toggleCart(); return false;">
-              <i class="fas fa-shopping-cart"></i>
-              <span>Carrito</span>
+              <i class="fas fa-shopping-cart"></i><span>Carrito</span>
               <span class="cart-count" id="cartCount">0</span>
             </a>
           </div>
@@ -120,26 +116,22 @@
       </div>
     </div>
     
-    <!-- Navegación -->
     <nav class="main-navigation">
       <div class="container">
         <ul class="nav-menu">
           <li><a href="index.html" class="nav-link active">INICIO</a></li>
           <li><a href="tienda.html" class="nav-link">TIENDA</a></li>
           <li><a href="servicios.html" class="nav-link">SERVICIO TÉCNICO</a></li>
-          <li><a href="tienda.html" class="nav-link">HERRAMIENTAS</a></li>
+          <li><a href="herramientas.html" class="nav-link">HERRAMIENTAS</a></li>
           <li><a href="index.html#contacto" class="nav-link">CONTACTO</a></li>
         </ul>
         
         <div class="nav-buttons">
           <button onclick="openIMEIChecker()" class="btn-imei-check">
-            <i class="fas fa-mobile-alt"></i>
-            <span>Check IMEI</span>
+            <i class="fas fa-mobile-alt"></i><span>Check IMEI</span>
           </button>
-          
           <a href="https://wa.me/5493782437674" target="_blank" class="btn-whatsapp">
-            <i class="fab fa-whatsapp"></i>
-            <span>WhatsApp</span>
+            <i class="fab fa-whatsapp"></i><span>WhatsApp</span>
           </a>
         </div>
       </div>
@@ -147,7 +139,7 @@
   </header>
 
   <!-- ========================================
-       CONTENIDO PRINCIPAL - HERO
+       CONTENIDO PRINCIPAL
        ======================================== -->
   <main class="shop-main">
     <div class="container">
@@ -157,77 +149,41 @@
           <h1 class="shop-title">BIENVENIDOS A CELL SPACE</h1>
           <p class="shop-subtitle">Tu centro especializado en reparación de celulares, venta de herramientas y licencias profesionales. Calidad, garantía y precio justo.</p>
           <div class="hero-buttons">
-            <a href="tienda.html" class="btn-hero-primary">
-              <i class="fas fa-shopping-cart"></i> Ver Tienda
-            </a>
-            <a href="servicios.html" class="btn-hero-secondary">
-              <i class="fas fa-tools"></i> Servicios Técnicos
-            </a>
+            <a href="tienda.html" class="btn-hero-primary"><i class="fas fa-shopping-cart"></i> Ver Tienda</a>
+            <a href="servicios.html" class="btn-hero-secondary"><i class="fas fa-tools"></i> Servicios Técnicos</a>
           </div>
         </div>
         <div class="shop-hero-features">
-          <div class="shop-feature">
-            <i class="fas fa-truck"></i>
-            <div>
-              <strong>ENVÍOS A TODO EL PAÍS</strong>
-              <span>Rápidos y seguros</span>
-            </div>
-          </div>
-          <div class="shop-feature">
-            <i class="fas fa-shield-alt"></i>
-            <div>
-              <strong>PAGOS 100% SEGUROS</strong>
-              <span>MercadoPago / Transferencia</span>
-            </div>
-          </div>
-          <div class="shop-feature">
-            <i class="fas fa-credit-card"></i>
-            <div>
-              <strong>HASTA 12 CUOTAS</strong>
-              <span>Con tarjetas seleccionadas</span>
-            </div>
-          </div>
+          <div class="shop-feature"><i class="fas fa-truck"></i><div><strong>ENVÍOS A TODO EL PAÍS</strong><span>Rápidos y seguros</span></div></div>
+          <div class="shop-feature"><i class="fas fa-shield-alt"></i><div><strong>PAGOS 100% SEGUROS</strong><span>MercadoPago / Transferencia</span></div></div>
+          <div class="shop-feature"><i class="fas fa-credit-card"></i><div><strong>HASTA 12 CUOTAS</strong><span>Con tarjetas seleccionadas</span></div></div>
         </div>
       </section>
 
       <!-- Sección de Servicios Destacados -->
       <section class="home-section">
-        <h2 class="section-title">
-          <i class="fas fa-tools"></i>
-          NUESTROS SERVICIOS
-        </h2>
+        <h2 class="section-title"><i class="fas fa-tools"></i> NUESTROS SERVICIOS</h2>
         <div class="services-grid">
           <div class="service-card">
-            <div class="service-icon">
-              <i class="fas fa-mobile-alt"></i>
-            </div>
+            <div class="service-icon"><i class="fas fa-mobile-alt"></i></div>
             <h3>Reparación de Celulares</h3>
             <p>Servicio técnico especializado en iPhone, Samsung, Motorola y todas las marcas. Cambio de pantallas, baterías, reparación de placas.</p>
             <a href="servicios.html" class="service-link">Ver más <i class="fas fa-arrow-right"></i></a>
           </div>
-          
           <div class="service-card">
-            <div class="service-icon">
-              <i class="fas fa-laptop"></i>
-            </div>
+            <div class="service-icon"><i class="fas fa-laptop"></i></div>
             <h3>Reparación de PC y Notebooks</h3>
             <p>Mantenimiento, reparación de hardware y software. Instalación de programas, limpieza, optimización de equipos.</p>
             <a href="servicios.html" class="service-link">Ver más <i class="fas fa-arrow-right"></i></a>
           </div>
-          
           <div class="service-card">
-            <div class="service-icon">
-              <i class="fas fa-microchip"></i>
-            </div>
+            <div class="service-icon"><i class="fas fa-microchip"></i></div>
             <h3>Microsoldadura</h3>
             <p>Reparación avanzada de placas a nivel componente. Cambio de IC, reparación de circuitos, recuperación de datos.</p>
             <a href="servicios.html" class="service-link">Ver más <i class="fas fa-arrow-right"></i></a>
           </div>
-          
           <div class="service-card">
-            <div class="service-icon">
-              <i class="fas fa-key"></i>
-            </div>
+            <div class="service-icon"><i class="fas fa-key"></i></div>
             <h3>Desbloqueo y Software</h3>
             <p>Desbloqueo de IMEI, liberación de red, flasheo, eliminación de FRP, reparación de software en todas las marcas.</p>
             <a href="servicios.html" class="service-link">Ver más <i class="fas fa-arrow-right"></i></a>
@@ -237,26 +193,18 @@
 
       <!-- Productos Destacados -->
       <section class="home-section">
-        <h2 class="section-title">
-          <i class="fas fa-fire"></i>
-          PRODUCTOS DESTACADOS
-        </h2>
+        <h2 class="section-title"><i class="fas fa-fire"></i> PRODUCTOS DESTACADOS</h2>
         <div class="products-grid" id="featuredProducts">
           <!-- Se cargan con JavaScript -->
         </div>
         <div class="text-center" style="margin-top: 40px;">
-          <a href="tienda.html" class="btn-view-all">
-            Ver Todos los Productos <i class="fas fa-arrow-right"></i>
-          </a>
+          <a href="tienda.html" class="btn-view-all">Ver Todos los Productos <i class="fas fa-arrow-right"></i></a>
         </div>
       </section>
 
       <!-- Por qué elegirnos -->
       <section class="home-section benefits-section">
-        <h2 class="section-title">
-          <i class="fas fa-award"></i>
-          ¿POR QUÉ ELEGIRNOS?
-        </h2>
+        <h2 class="section-title"><i class="fas fa-award"></i> ¿POR QUÉ ELEGIRNOS?</h2>
         <div class="benefits-grid">
           <div class="benefit-card">
             <div class="benefit-number">01</div>
@@ -287,8 +235,7 @@
           <h2>¿Necesitás ayuda?</h2>
           <p>Escribinos por WhatsApp y te asesoramos sin cargo</p>
           <a href="https://wa.me/5493782437674" target="_blank" class="btn-whatsapp-large">
-            <i class="fab fa-whatsapp"></i>
-            Contactar por WhatsApp
+            <i class="fab fa-whatsapp"></i> Contactar por WhatsApp
           </a>
         </div>
       </section>
@@ -311,7 +258,6 @@
             <a href="#"><i class="fab fa-tiktok"></i></a>
           </div>
         </div>
-        
         <div class="footer-col">
           <h4>INFORMACIÓN</h4>
           <ul>
@@ -321,7 +267,6 @@
             <li><a href="#">Preguntas frecuentes</a></li>
           </ul>
         </div>
-        
         <div class="footer-col">
           <h4>CATEGORÍAS</h4>
           <ul>
@@ -331,7 +276,6 @@
             <li><a href="#">Software</a></li>
           </ul>
         </div>
-        
         <div class="footer-col">
           <h4>CONTACTO</h4>
           <ul class="contact-info">
@@ -378,7 +322,6 @@
           <input type="text" id="imeiInput" placeholder="Ej: 356789012345678" maxlength="15" required>
           <small>El IMEI se encuentra marcando *#06# en el teléfono</small>
         </div>
-        
         <button type="submit" class="btn-check-imei">
           <i class="fas fa-search"></i> Verificar IMEI
         </button>
@@ -388,28 +331,37 @@
     </div>
   </div>
 
-  <!-- SCRIPTS -->
+  <!-- ========================================
+       SCRIPTS (LIMPIOS Y SIN DUPLICADOS)
+       ======================================== -->
   <script src="js/config.js"></script>
-  <script src="js/auth.js"></script>
+  <script src="js/auth-middleware.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/index.js"></script>
-  <!-- Scripts de control de acceso -->
-<script src="js/auth-middleware.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', async () => {
-    await controlVisibility();
-  });
-</script>
-  <!-- Scripts de autenticación -->
-<script src="js/config.js"></script>
-<script src="js/auth-middleware.js"></script>
-<script src="js/header-auth.js"></script>
-
-<script>
-  // Inicializar header según estado de login
-  document.addEventListener('DOMContentLoaded', async () => {
-    await updateHeaderAuth();
-  });
-</script>
+  
+  <script>
+    // Inicializar control de visibilidad del header y productos al cargar
+    document.addEventListener('DOMContentLoaded', async () => {
+      await controlVisibility();
+      
+      // Si tenés una función para cargar productos destacados en index.js, se ejecutará aquí
+      if (typeof renderFeaturedProducts === 'function') {
+        renderFeaturedProducts();
+      }
+    });
+    
+    function openIMEIChecker() {
+      document.getElementById('imeiModal').classList.add('active');
+    }
+    
+    function closeIMEIChecker() {
+      document.getElementById('imeiModal').classList.remove('active');
+    }
+    
+    document.getElementById('imeiForm')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      alert('✅ Verificación de IMEI en proceso');
+    });
+  </script>
 </body>
 </html>
