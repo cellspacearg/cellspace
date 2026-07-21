@@ -7,9 +7,9 @@
   <link rel="icon" type="image/png" href="assets/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/technician.css">
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+  
+  <!-- Supabase SDK (Reemplaza a Firebase) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <!-- NAV -->
@@ -48,7 +48,20 @@
     </div>
   </div>
 
+  <!-- Scripts -->
   <script src="js/config.js"></script>
+  <script src="js/auth-middleware.js"></script>
   <script src="js/technician.js"></script>
+  
+  <script>
+    // Verificar acceso (solo técnicos y admin)
+    document.addEventListener('DOMContentLoaded', async () => {
+      const hasAccess = await checkAccess('technician');
+      if (!hasAccess) return;
+      
+      // Cargar contenido de técnico
+      await loadTechnicianContent();
+    });
+  </script>
 </body>
 </html>
