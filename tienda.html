@@ -7,12 +7,10 @@
   <link rel="icon" type="image/png" href="assets/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="css/styles.css?v=12">
+  <link rel="stylesheet" href="css/styles.css?v=15">
   
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <!-- Supabase SDK (Reemplaza a Firebase) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="particles" id="particles"></div>
@@ -99,13 +97,73 @@
           </div>
           
           <div class="header-actions">
+            <!-- ========================================
+                 PARA VISITANTES (Sin Login)
+                 ======================================== -->
+            <div id="guestActions">
+              <a href="register-client.html" class="header-action" style="color: var(--orange); font-weight: 700;">
+                <i class="fas fa-user-plus"></i>
+                <span>Regístrate</span>
+              </a>
+              <a href="login.html" class="btn-login-header">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>Iniciar Sesión</span>
+              </a>
+            </div>
+            
+            <!-- ========================================
+                 PARA USUARIOS LOGUEADOS
+                 ======================================== -->
+            <div id="userActions" style="display: none;">
+              <div class="user-dropdown" id="userDropdown">
+                <button class="user-btn" onclick="toggleUserDropdown()">
+                  <div class="user-avatar-small">
+                    <span id="userInitial">?</span>
+                  </div>
+                  <div class="user-info">
+                    <span class="user-name" id="userNameDisplay">Usuario</span>
+                    <span class="user-badge" id="userRoleBadge">Cliente</span>
+                  </div>
+                  <span class="dropdown-arrow">▼</span>
+                </button>
+                
+                <div class="dropdown-menu" id="userDropdownMenu">
+                  <a href="perfil.html" class="dropdown-item">
+                    <i class="fas fa-user-cog"></i> Mi Perfil
+                  </a>
+                  <a href="mis-pedidos.html" class="dropdown-item">
+                    <i class="fas fa-box"></i> Mis Pedidos
+                  </a>
+                  
+                  <!-- Menú Técnico (solo técnicos) -->
+                  <div id="technicianMenu" style="display: none;">
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-header">Zona Técnica</div>
+                    <a href="herramientas.html" class="dropdown-item">
+                      <i class="fas fa-wrench"></i> Herramientas
+                    </a>
+                  </div>
+                  
+                  <!-- Menú Admin (solo admin) -->
+                  <div id="adminMenu" style="display: none;">
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-header">Administración</div>
+                    <a href="admin.html" class="dropdown-item">
+                      <i class="fas fa-cog"></i> Panel Admin
+                    </a>
+                  </div>
+                  
+                  <div class="dropdown-divider"></div>
+                  <a href="#" class="dropdown-item logout" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                  </a>
+                </div>
+              </div>
+            </div>
+            
             <a href="https://wa.me/5493782437674" target="_blank" class="header-action">
               <i class="fas fa-headset"></i>
               <span>Soporte</span>
-            </a>
-            <a href="perfil.html" class="header-action">
-              <i class="fas fa-user"></i>
-              <span>Mi cuenta</span>
             </a>
             <a href="#" class="header-action cart-action" onclick="toggleCart(); return false;">
               <i class="fas fa-shopping-cart"></i>
@@ -123,7 +181,7 @@
           <li><a href="index.html" class="nav-link">INICIO</a></li>
           <li><a href="tienda.html" class="nav-link active">TIENDA</a></li>
           <li><a href="servicios.html" class="nav-link">SERVICIO TÉCNICO</a></li>
-          <li><a href="tienda.html" class="nav-link">HERRAMIENTAS</a></li>
+          <li><a href="herramientas.html" class="nav-link">HERRAMIENTAS</a></li>
           <li><a href="index.html#contacto" class="nav-link">CONTACTO</a></li>
         </ul>
         
@@ -226,7 +284,7 @@
         <!-- Contenido -->
         <div class="shop-content">
           <div class="shop-toolbar">
-            <div class="showing-products" id="productsCount">Mostrando 6 productos</div>
+            <div class="showing-products" id="productsCount">Mostrando productos...</div>
             <div class="sort-options">
               <label>Ordenar por:</label>
               <select class="sort-select" id="sortSelect" onchange="sortProducts()">
@@ -364,26 +422,18 @@
     </div>
   </div>
 
-  <!-- SCRIPTS -->
+  <!-- ========================================
+       SCRIPTS (LIMPIOS Y SIN DUPLICADOS)
+       ======================================== -->
   <script src="js/config.js"></script>
+  <script src="js/auth-middleware.js"></script>
   <script src="js/tienda.js"></script>
-  <!-- Scripts de control de acceso -->
-<script src="js/auth-middleware.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', async () => {
-    await controlVisibility();
-  });
-</script>
-  <!-- Scripts de autenticación -->
-<script src="js/config.js"></script>
-<script src="js/auth-middleware.js"></script>
-<script src="js/header-auth.js"></script>
-
-<script>
-  // Inicializar header según estado de login
-  document.addEventListener('DOMContentLoaded', async () => {
-    await updateHeaderAuth();
-  });
-</script>
+  
+  <script>
+    // Inicializar control de visibilidad al cargar
+    document.addEventListener('DOMContentLoaded', async () => {
+      await controlVisibility();
+    });
+  </script>
 </body>
 </html>
