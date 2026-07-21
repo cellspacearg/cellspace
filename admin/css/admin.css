@@ -1,0 +1,98 @@
+/* Variables reutilizando tu paleta de colores */
+:root {
+  --admin-bg: #0a0a0a;
+  --admin-card: #151515;
+  --admin-border: rgba(255, 106, 0, 0.2);
+  --admin-orange: #FF6A00;
+  --admin-text: #ffffff;
+  --admin-muted: #888888;
+}
+
+.admin-body {
+  background-color: var(--admin-bg);
+  color: var(--admin-text);
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Estilos básicos para el login (se expandirán en Parte 2) */
+.admin-login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.admin-login-box {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  padding: 40px;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.admin-login-box input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: white;
+}
+
+.admin-login-box button {
+  width: 100%;
+  padding: 12px;
+  background: var(--admin-orange);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 15px;
+}
+
+/* Layout básico del dashboard (se expandirá en Parte 3) */
+.admin-dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  width: 250px;
+  background: var(--admin-card);
+  border-right: 1px solid var(--admin-border);
+  padding: 20px;
+}
+
+.admin-sidebar nav a {
+  display: block;
+  color: var(--admin-muted);
+  text-decoration: none;
+  padding: 12px;
+  margin-bottom: 5px;
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.admin-sidebar nav a:hover, .admin-sidebar nav a.active {
+  background: rgba(255, 106, 0, 0.1);
+  color: var(--admin-orange);
+}
+
+.admin-main-content {
+  flex: 1;
+  padding: 30px;
+}
+
+.admin-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--admin-border);
+}
