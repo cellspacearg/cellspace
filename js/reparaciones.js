@@ -1,158 +1,142 @@
 // ========================================
-// CELL SPACE - RASTREO DE REPARACIONES
-// Solo consulta de estado para clientes
+// RASTREO DE REPARACIONES - SUPABASE
 // ========================================
 
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('✅ Sistema de rastreo cargado');
-  
-  // Permitir buscar con Enter
-  const input = document.getElementById('orderInput');
-  if (input) {
-    input.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') trackOrder();
-    });
-  }
-});
-
-// RASTREAR ORDEN
 async function trackOrder() {
-  const input = document.getElementById('orderInput');
-  const resultDiv = document.getElementById('trackResult');
-  const orderId = input.value.trim().toUpperCase();
-  
+  const orderInput = document.getElementById('orderInput');
+  const resultContainer = document.getElementById('trackResult');
+  const orderId = orderInput.value.trim().toUpperCase();
+
   if (!orderId) {
-    resultDiv.innerHTML = '<p class="error">⚠️ Por favor ingresá un número de orden</p>';
-    input.focus();
+    resultContainer.innerHTML = `
+      <div class="alert alert-error">
+        <i class="fas fa-exclamation-circle"></i> Por favor, ingresá un número de orden.
+      </div>
+    `;
     return;
   }
-  
-  resultDiv.innerHTML = '<p class="loading">🔍 Buscando orden...</p>';
-  
+
+  // Mostrar estado de carga
+  resultContainer.innerHTML = `
+    <div class="loading-state">
+      <i class="fas fa-spinner fa-spin"></i> Buscando tu reparación...
+    </div>
+  `;
+
   try {
-    const snap = await db.collection('repair_orders')
-      .where('orderId', '==', orderId)
-      .get();
-    
-    if (snap.empty) {
-      resultDiv.innerHTML = `
-        <div class="error">
-          <p style="font-size:1.2rem;margin:0 0 10px 0;">❌ Orden no encontrada</p>
-          <p style="margin:0;font-size:0.95rem;">
-            Verificá el número de orden o contactanos por WhatsApp<br>
-            <small>Número buscado: <strong>${orderId}</strong></small>
-          </p>
+    // Consulta a Supabase
+    // Asumimos que tu tabla se llama 'reparaciones' y el campo es 'order_id' o 'order_number'
+    const { data, error } = await supabase
+      .from('reparaciones')
+      .select('*')
+      .eq('order_id', orderId) // Cambiá 'order_id' por el nombre real de tu columna en Supabase
+      .single();
+
+    if (error || !data) {
+      resultContainer.innerHTML = `
+        <div class="alert alert-error">
+          <i class="fas fa-times-circle"></i> No encontramos ninguna reparación con el número <strong>${orderId}</strong>.<br>
+          <small>Verificá que el número esté bien escrito o contactanos.</small>
         </div>
       `;
       return;
     }
-    
-    const order = snap.docs[0].data();
-    renderOrderResult(order, resultDiv);
-    
-  } catch (e) {
-    console.error('Error:', e);
-    resultDiv.innerHTML = `
-      <div class="error">
-        <p style="font-size:1.2rem;margin:0 0 10px 0;">❌ Error al consultar</p>
-        <p style="margin:0;font-size:0.95rem;">
-          Intentá de nuevo en unos segundos<br>
-          <small>${e.message}</small>
-        </p>
+
+    // Si se encuentra, mostrar el resultado
+    renderRepairStatus(data);
+
+  } catch (err) {
+    console.error('Error al buscar:', err);
+    resultContainer.innerHTML = `
+      <div class="alert alert-error">
+        <i class="fas fa-times-circle"></i> Ocurrió un error al buscar. Intentalo de nuevo.
       </div>
     `;
   }
 }
 
-function renderOrderResult(order, container) {
-  const statusColor = getStatusColor(order.status);
+function renderRepairStatus(repair) {
+  const resultContainer = document.getElementById('trackResult');
   
-  // Generar timeline de pasos
-  const stepsHTML = order.steps && order.steps.length > 0 
-    ? order.steps.map((step, index) => {
-        const isDone = step.done === true;
-        const isActive = !isDone && index === order.steps.findIndex(s => s.done !== true);
-        const className = isDone ? 'done' : (isActive ? 'active' : '');
-        
-        return `
-          <div class="timeline-item ${className}">
-            <div class="timeline-dot"></div>
-            <span>${step.name || step}</span>
-          </div>
-        `;
-      }).join('')
-    : '<p style="color:var(--muted);text-align:center;">Sin pasos definidos</p>';
-  
-  const clientInfo = order.clientPhone ? `📱 ${order.clientPhone}` : '';
-  const technicianInfo = order.technician ? order.technician : 'Asignando...';
-  const budgetText = order.budget ? `$${Number(order.budget).toLocaleString('es-AR')}` : 'A confirmar';
-  
-  container.innerHTML = `
-    <div class="order-card">
-      <div class="order-header">
-        <div>
-          <h3>${order.orderId}</h3>
-          <p class="date">
-            📅 ${order.createdAt?.toDate ? order.createdAt.toDate().toLocaleDateString('es-AR') : 'Fecha no disponible'}
-          </p>
-        </div>
-        <span class="status-badge" style="background:${statusColor}20;color:${statusColor};border:2px solid ${statusColor}">
-          ${order.status || 'Pendiente'}
-        </span>
+  // Mapeo de estados a iconos y colores (ajustá según tus estados reales en la BD)
+  const statusConfig = {
+    'recibido': { icon: 'fa-box-open', color: '#3498db', text: 'Equipo Recibido' },
+    'diagnostico': { icon: 'fa-stethoscope', color: '#f39c12', text: 'En Diagnóstico' },
+    'espera_repuesto': { icon: 'fa-clock', color: '#9b59b6', text: 'Esperando Repuesto' },
+    'en_reparacion': { icon: 'fa-tools', color: '#e67e22', text: 'En Reparación' },
+    'listo': { icon: 'fa-check-circle', color: '#2ecc71', text: 'Reparación Finalizada' },
+    'entregado': { icon: 'fa-hand-holding', color: '#27ae60', text: 'Equipo Entregado' }
+  };
+
+  const status = statusConfig[repair.status?.toLowerCase()] || { icon: 'fa-question-circle', color: '#95a5a6', text: 'Estado Desconocido' };
+
+  // Formatear fecha
+  const date = new Date(repair.created_at).toLocaleDateString('es-AR', {
+    year: 'numeric', month: 'long', day: 'numeric'
+  });
+
+  resultContainer.innerHTML = `
+    <div class="success-card">
+      <div class="success-header" style="border-left: 4px solid ${status.color};">
+        <h3><i class="fas ${status.icon}" style="color: ${status.color};"></i> ${status.text}</h3>
+        <p class="order-id">Orden: <strong>${repair.order_id}</strong></p>
       </div>
       
-      <div class="info-grid">
-        <div class="info-box">
-          <span>👤 Cliente</span>
-          <strong>${order.clientName || 'No disponible'}</strong>
+      <div class="repair-details">
+        <div class="detail-row">
+          <span class="label"><i class="fas fa-mobile-alt"></i> Equipo:</span>
+          <span class="value">${repair.device_model || 'No especificado'} ${repair.device_brand || ''}</span>
         </div>
-        <div class="info-box">
-          <span>📱 Equipo</span>
-          <strong>${order.device || 'No disponible'}</strong>
+        <div class="detail-row">
+          <span class="label"><i class="fas fa-calendar"></i> Fecha de ingreso:</span>
+          <span class="value">${date}</span>
         </div>
-        <div class="info-box">
-          <span>🔧 Técnico</span>
-          <strong>${technicianInfo}</strong>
+        <div class="detail-row">
+          <span class="label"><i class="fas fa-comment-alt"></i> Falla reportada:</span>
+          <span class="value">${repair.issue_description || 'Sin descripción'}</span>
         </div>
-        <div class="info-box">
-          <span>💰 Presupuesto</span>
-          <strong>${budgetText}</strong>
+        ${repair.estimated_cost ? `
+        <div class="detail-row">
+          <span class="label"><i class="fas fa-tag"></i> Presupuesto estimado:</span>
+          <span class="value" style="color: var(--orange); font-weight: bold;">$${parseFloat(repair.estimated_cost).toLocaleString('es-AR')}</span>
         </div>
+        ` : ''}
       </div>
-      
-      ${order.fault ? `
-      <div class="fault-box">
-        <strong>📋 Falla reportada:</strong>
-        ${order.fault}
-      </div>
-      ` : ''}
-      
-      <h4 class="timeline-title">📊 Estado del proceso</h4>
+
       <div class="timeline">
-        ${stepsHTML}
+        <h4>Progreso de la reparación</h4>
+        <div class="timeline-steps">
+          <div class="step ${['recibido', 'diagnostico', 'espera_repuesto', 'en_reparacion', 'listo', 'entregado'].includes(repair.status?.toLowerCase()) ? 'completed' : ''}">
+            <div class="step-icon"><i class="fas fa-box-open"></i></div>
+            <p>Recibido</p>
+          </div>
+          <div class="step ${['diagnostico', 'espera_repuesto', 'en_reparacion', 'listo', 'entregado'].includes(repair.status?.toLowerCase()) ? 'completed' : ''}">
+            <div class="step-icon"><i class="fas fa-stethoscope"></i></div>
+            <p>Diagnóstico</p>
+          </div>
+          <div class="step ${['en_reparacion', 'listo', 'entregado'].includes(repair.status?.toLowerCase()) ? 'completed' : ''}">
+            <div class="step-icon"><i class="fas fa-tools"></i></div>
+            <p>Reparación</p>
+          </div>
+          <div class="step ${['listo', 'entregado'].includes(repair.status?.toLowerCase()) ? 'completed' : ''}">
+            <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+            <p>Listo</p>
+          </div>
+        </div>
       </div>
-      
-      <div style="margin-top:25px;padding:15px;background:rgba(255,106,0,0.1);border-radius:10px;text-align:center;">
-        <p style="margin:0 0 10px 0;color:var(--muted);">¿Tenés dudas sobre tu reparación?</p>
-        <a href="https://wa.me/5493782437674?text=Hola!%20Consulta%20por%20mi%20orden%20${order.orderId}" 
-           target="_blank"
-           style="display:inline-block;padding:10px 25px;background:#25D366;color:white;text-decoration:none;border-radius:25px;font-weight:600;">
-          💬 Consultar por WhatsApp
+
+      <div class="action-buttons">
+        <a href="https://wa.me/5493782437674?text=Hola,%20consulto%20por%20la%20orden%20${repair.order_id}" target="_blank" class="btn-whatsapp-track">
+          <i class="fab fa-whatsapp"></i> Consultar por WhatsApp
         </a>
       </div>
     </div>
   `;
 }
 
-function getStatusColor(status) {
-  const map = {
-    'Recibido': '#4CAF50',
-    'Revisando': '#2196F3',
-    'Esperando repuesto': '#FF9800',
-    'En reparación': '#9C27B0',
-    'Pruebas': '#00BCD4',
-    'Listo': '#4CAF50',
-    'Entregado': '#888'
-  };
-  return map[status] || 'var(--orange)';
-}
+// Permitir buscar presionando Enter
+document.getElementById('orderInput')?.addEventListener('keypress', function (e) {
+  if (e.key === 'Enter') {
+    trackOrder();
+  }
+});
