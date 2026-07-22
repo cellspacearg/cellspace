@@ -3,6 +3,7 @@ import { checkSession } from './hooks/useAuth.js';
 import { loginView, loginViewOnMount } from './views/login.js';
 import { dashboardView, dashboardViewOnMount } from './views/dashboard.js';
 import { productsView, productsViewOnMount } from './views/products.js';
+import { servicesView, servicesViewOnMount } from './views/services.js';
 
 function showError(msg) {
   const app = document.getElementById('app');
@@ -17,19 +18,12 @@ window.addEventListener('error', e => showError(e.message + '\n' + (e.filename |
 window.addEventListener('unhandledrejection', e => showError(String(e.reason)));
 
 try {
+  const auth = async () => await checkSession();
   const routes = {
-    '/login': {
-      component: loginView, onMount: loginViewOnMount,
-      beforeEnter: async () => { const a = await checkSession(); if (a) { window.location.hash = '#/dashboard'; return false; } return true; }
-    },
-    '/dashboard': {
-      component: dashboardView, onMount: dashboardViewOnMount,
-      beforeEnter: async () => await checkSession()
-    },
-    '/products': {
-      component: productsView, onMount: productsViewOnMount,
-      beforeEnter: async () => await checkSession()
-    }
+    '/login':     { component: loginView,     onMount: loginViewOnMount,     beforeEnter: async () => { const a = await auth(); if (a) { window.location.hash = '#/dashboard'; return false; } return true; } },
+    '/dashboard': { component: dashboardView, onMount: dashboardViewOnMount, beforeEnter: auth },
+    '/products':  { component: productsView,  onMount: productsViewOnMount,  beforeEnter: auth },
+    '/services':  { component: servicesView,  onMount: servicesViewOnMount,  beforeEnter: auth }
   };
   new Router(routes);
 } catch (err) { showError(err.message + '\n' + err.stack); }
