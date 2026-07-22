@@ -136,24 +136,191 @@ export async function dashboardView() {
         <!-- CONTENT AREA -->
         <main class="admin-content">
           <div class="content-wrapper">
-            <!-- Placeholder para la Parte 4 -->
-            <div class="empty-state">
-              <div class="empty-icon">
-                <i class="fas fa-rocket"></i>
+            
+            <!-- Welcome Section -->
+            <div class="dashboard-welcome">
+              <div class="welcome-text">
+                <h2>¡Hola, ${userName}! 👋</h2>
+                <p>Este es el resumen de tu tienda. Acá vas a ver todas las estadísticas importantes.</p>
               </div>
-              <h2>Bienvenido al Panel de Cell Space</h2>
-              <p>Este es tu centro de control. Acá vas a gestionar productos, servicios, pedidos y todo el contenido de tu sitio.</p>
-              <div class="empty-actions">
+              <div class="welcome-actions">
                 <a href="#/products" class="btn-primary">
-                  <i class="fas fa-box"></i>
-                  Gestionar Productos
+                  <i class="fas fa-plus"></i>
+                  Nuevo Producto
                 </a>
-                <a href="#/settings" class="btn-secondary">
-                  <i class="fas fa-cog"></i>
-                  Configurar Sitio
+                <a href="#/orders" class="btn-secondary">
+                  <i class="fas fa-shopping-cart"></i>
+                  Ver Pedidos
                 </a>
               </div>
             </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+              <!-- Productos -->
+              <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(255, 106, 0, 0.1); color: #FF6A00;">
+                  <i class="fas fa-box"></i>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-label">Productos</span>
+                  <span class="stat-value">0</span>
+                  <span class="stat-sub">0 destacados · 0 sin stock</span>
+                </div>
+                <a href="#/products" class="stat-link">
+                  <i class="fas fa-arrow-right"></i>
+                </a>
+              </div>
+
+              <!-- Servicios -->
+              <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(76, 175, 80, 0.1); color: #4CAF50;">
+                  <i class="fas fa-tools"></i>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-label">Servicios</span>
+                  <span class="stat-value">0</span>
+                  <span class="stat-sub">0 activos</span>
+                </div>
+                <a href="#/services" class="stat-link">
+                  <i class="fas fa-arrow-right"></i>
+                </a>
+              </div>
+
+              <!-- Pedidos -->
+              <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(33, 150, 243, 0.1); color: #2196F3;">
+                  <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-label">Pedidos</span>
+                  <span class="stat-value">0</span>
+                  <span class="stat-sub">0 pendientes · 0 completados</span>
+                </div>
+                <a href="#/orders" class="stat-link">
+                  <i class="fas fa-arrow-right"></i>
+                </a>
+              </div>
+
+              <!-- Clientes -->
+              <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(156, 39, 176, 0.1); color: #9C27B0;">
+                  <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-label">Clientes</span>
+                  <span class="stat-value">0</span>
+                  <span class="stat-sub">0 nuevos este mes</span>
+                </div>
+                <a href="#/customers" class="stat-link">
+                  <i class="fas fa-arrow-right"></i>
+                </a>
+              </div>
+
+              <!-- Mensajes -->
+              <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(255, 193, 7, 0.1); color: #FFC107;">
+                  <i class="fas fa-envelope"></i>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-label">Mensajes</span>
+                  <span class="stat-value">0</span>
+                  <span class="stat-sub">0 sin leer</span>
+                </div>
+                <a href="#/messages" class="stat-link">
+                  <i class="fas fa-arrow-right"></i>
+                </a>
+              </div>
+
+              <!-- Publicaciones -->
+              <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(0, 188, 212, 0.1); color: #00BCD4;">
+                  <i class="fas fa-newspaper"></i>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-label">Publicaciones</span>
+                  <span class="stat-value">0</span>
+                  <span class="stat-sub">0 blog · 0 páginas</span>
+                </div>
+                <a href="#/blog" class="stat-link">
+                  <i class="fas fa-arrow-right"></i>
+                </a>
+              </div>
+
+              <!-- Visitas -->
+              <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(233, 30, 99, 0.1); color: #E91E63;">
+                  <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-label">Visitas (30 días)</span>
+                  <span class="stat-value">0</span>
+                  <span class="stat-sub">0% vs mes anterior</span>
+                </div>
+                <a href="#/analytics" class="stat-link">
+                  <i class="fas fa-arrow-right"></i>
+                </a>
+              </div>
+
+              <!-- Conversión -->
+              <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(63, 81, 181, 0.1); color: #3F51B5;">
+                  <i class="fas fa-percentage"></i>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-label">Tasa de Conversión</span>
+                  <span class="stat-value">0%</span>
+                  <span class="stat-sub">0 ventas / 0 visitas</span>
+                </div>
+                <a href="#/analytics" class="stat-link">
+                  <i class="fas fa-arrow-right"></i>
+                </a>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+              <h3 class="section-title">Accesos Rápidos</h3>
+              <div class="actions-grid">
+                <a href="#/products" class="action-card">
+                  <div class="action-icon">
+                    <i class="fas fa-box"></i>
+                  </div>
+                  <span class="action-label">Gestionar Productos</span>
+                </a>
+                <a href="#/services" class="action-card">
+                  <div class="action-icon">
+                    <i class="fas fa-tools"></i>
+                  </div>
+                  <span class="action-label">Gestionar Servicios</span>
+                </a>
+                <a href="#/orders" class="action-card">
+                  <div class="action-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                  </div>
+                  <span class="action-label">Ver Pedidos</span>
+                </a>
+                <a href="#/media" class="action-card">
+                  <div class="action-icon">
+                    <i class="fas fa-images"></i>
+                  </div>
+                  <span class="action-label">Subir Archivos</span>
+                </a>
+                <a href="#/settings" class="action-card">
+                  <div class="action-icon">
+                    <i class="fas fa-cog"></i>
+                  </div>
+                  <span class="action-label">Configuración</span>
+                </a>
+                <a href="../index.html" class="action-card" target="_blank">
+                  <div class="action-icon">
+                    <i class="fas fa-external-link-alt"></i>
+                  </div>
+                  <span class="action-label">Ver Sitio Público</span>
+                </a>
+              </div>
+            </div>
+
           </div>
         </main>
 
