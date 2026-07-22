@@ -522,3 +522,59 @@
   background: var(--admin-orange); color: #fff; font-size: 9px; font-weight: 700;
   padding: 2px 6px; border-radius: 6px; text-transform: uppercase;
 }
+/* ========================================
+   MÓDULO PÁGINAS - EDITOR POR BLOQUES
+   ======================================== */
+.blocks-add { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.blocks-add select {
+  padding: 12px 14px; background: var(--admin-surface);
+  border: 1px solid var(--admin-border); border-radius: var(--radius-md);
+  color: var(--admin-text); font-family: 'Montserrat', sans-serif; font-size: 14px; outline: none; min-width: 200px;
+}
+.blocks-list { display: flex; flex-direction: column; gap: 12px; }
+.blocks-empty { color: var(--admin-text-muted); font-size: 13px; padding: 16px; text-align: center; border: 1px dashed var(--admin-border); border-radius: var(--radius-md); }
+.block-item { background: rgba(255,255,255,.03); border: 1px solid var(--admin-border); border-radius: var(--radius-md); overflow: hidden; }
+.block-head {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  background: rgba(255,106,0,.06); border-bottom: 1px solid var(--admin-border);
+}
+.block-type-badge {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+  color: var(--admin-orange); background: rgba(255,106,0,.12); padding: 4px 10px; border-radius: 8px;
+}
+.block-head select {
+  padding: 6px 10px; background: var(--admin-surface); border: 1px solid var(--admin-border);
+  border-radius: 6px; color: var(--admin-text); font-size: 12px; outline: none;
+}
+.block-controls { margin-left: auto; display: flex; gap: 6px; }
+.block-controls button {
+  width: 30px; height: 30px; border-radius: 6px; background: rgba(255,255,255,.05);
+  border: none; color: var(--admin-text-secondary); cursor: pointer; transition: var(--transition);
+}
+.block-controls button:hover:not(:disabled) { background: var(--admin-orange); color: #fff; }
+.block-controls button.del:hover { background: var(--admin-error); }
+.block-controls button:disabled { opacity: .35; cursor: not-allowed; }
+.block-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.blk-row { display: flex; gap: 10px; }
+.blk-row.two { display: grid; grid-template-columns: 1fr 1fr; }
+.blk-row.short { max-width: 160px; }
+.block-body input, .block-body textarea, .block-body select {
+  width: 100%; padding: 10px 12px; background: rgba(255,255,255,.05);
+  border: 1px solid var(--admin-border); border-radius: 8px; color: var(--admin-text);
+  font-family: 'Montserrat', sans-serif; font-size: 14px; outline: none;
+}
+.block-body input:focus, .block-body textarea:focus, .block-body select:focus { border-color: var(--admin-orange); }
+.blk-upload {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  padding: 10px 14px; background: rgba(255,106,0,.1); border: 1px dashed var(--admin-border-strong);
+  border-radius: 8px; color: var(--admin-orange); font-size: 13px; font-weight: 600; position: relative;
+}
+.blk-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.blk-img-prev { width: 64px; height: 64px; border-radius: 8px; overflow: hidden; background: #0a0a0a; display: flex; align-items: center; justify-content: center; color: var(--admin-text-muted); }
+.blk-img-prev img { width: 100%; height: 100%; object-fit: cover; }
+.faq-item, .btn-item { display: flex; flex-direction: column; gap: 8px; padding: 12px; background: rgba(255,255,255,.02); border: 1px solid var(--admin-border); border-radius: 8px; position: relative; }
+.btn-item { flex-direction: row; flex-wrap: wrap; align-items: center; }
+.btn-item input, .btn-item select { flex: 1; min-width: 120px; }
+button.mini { padding: 8px 12px; font-size: 12px; }
+button.del.mini { width: 30px; height: 30px; padding: 0; background: rgba(255,68,68,.12); color: var(--admin-error); border: none; border-radius: 6px; cursor: pointer; }
+button.del.mini:hover { background: var(--admin-error); color: #fff; }
