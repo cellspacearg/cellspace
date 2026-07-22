@@ -7,20 +7,19 @@
   <link rel="icon" type="image/png" href="../assets/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Reutilizamos tu CSS base para mantener tipografías y colores -->
   <link rel="stylesheet" href="../css/styles.css?v=15">
-  <!-- CSS exclusivo del admin -->
   <link rel="stylesheet" href="css/admin.css">
-  
-  <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="admin-body">
   <div id="app">
-    <!-- El Router inyectará aquí las vistas (Login o Dashboard) -->
+    <!-- Spinner de fallback: se ve mientras carga o si el JS no arranca -->
+    <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;
+                height:100vh;gap:15px;color:#888;font-family:Montserrat,sans-serif;">
+      <i class="fas fa-spinner fa-spin" style="font-size:40px;color:#FF6A00;"></i>
+      <p style="margin:0;">Cargando panel…</p>
+    </div>
   </div>
-
-  <!-- Carga modular de la arquitectura -->
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
