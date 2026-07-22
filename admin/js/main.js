@@ -4,6 +4,7 @@ import { loginView, loginViewOnMount } from './views/login.js';
 import { dashboardView, dashboardViewOnMount } from './views/dashboard.js';
 import { productsView, productsViewOnMount } from './views/products.js';
 import { servicesView, servicesViewOnMount } from './views/services.js';
+import { pagesView, pagesViewOnMount } from './views/pages.js';
 
 function showError(msg) {
   const app = document.getElementById('app');
@@ -23,7 +24,8 @@ try {
     '/login':     { component: loginView,     onMount: loginViewOnMount,     beforeEnter: async () => { const a = await auth(); if (a) { window.location.hash = '#/dashboard'; return false; } return true; } },
     '/dashboard': { component: dashboardView, onMount: dashboardViewOnMount, beforeEnter: auth },
     '/products':  { component: productsView,  onMount: productsViewOnMount,  beforeEnter: auth },
-    '/services':  { component: servicesView,  onMount: servicesViewOnMount,  beforeEnter: auth }
+    '/services':  { component: servicesView,  onMount: servicesViewOnMount,  beforeEnter: auth },
+    '/pages':     { component: pagesView,     onMount: pagesViewOnMount,     beforeEnter: auth }
   };
   new Router(routes);
 } catch (err) { showError(err.message + '\n' + err.stack); }
