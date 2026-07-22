@@ -1,7 +1,7 @@
 import Router from './core/router.js';
 import { checkSession } from './hooks/useAuth.js';
 import { loginView, loginViewOnMount } from './views/login.js';
-import { dashboardView } from './views/dashboard.js';
+import { dashboardView, dashboardViewOnMount } from './views/dashboard.js';
 
 //  Si ALGO falla, lo pintamos en pantalla (en vez de quedar negro)
 function showError(msg) {
@@ -35,6 +35,7 @@ try {
     },
     '/dashboard': {
       component: dashboardView,
+      onMount: dashboardViewOnMount,  // ← ESTA LÍNEA ES LA QUE FALTABA
       beforeEnter: async () => await checkSession()
     }
   };
