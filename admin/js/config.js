@@ -4,7 +4,8 @@
 
 // ️⬇️⬇️ ESTA LÍNEA ES LA QUE TE FALTA ⬇️️⬇️
 // Copiá la URL de TU proyecto (ver abajo cómo)
-const SUPABASE_URL = 'PEGÁ_ACÁ_TU_URL';
+const SUPABASE_URL = 'https://XXXXX.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_PO6r84B1ZNAwFXZAQ_pVfQ_7Ij3qRpS';
 
 // ✅ Tu clave pública (esta SÍ va, es segura)
 const SUPABASE_ANON_KEY = 'sb_publishable_PO6r84B1ZNAwFXZAQ_pVfQ_7Ij3qRpS';
