@@ -1,4 +1,4 @@
-import Router from './core/router.js?v=2';
+import Router from './core/router.js?v=3';
 import { checkSession } from './hooks/useAuth.js';
 import { loginView, loginViewOnMount } from './views/login.js';
 import { dashboardView, dashboardViewOnMount } from './views/dashboard.js';
