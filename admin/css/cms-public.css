@@ -1,0 +1,85 @@
+/* =========================================================
+   CELL SPACE · CMS público (capa 12.A)
+   Pantalla de mantenimiento + transiciones suaves de color.
+   Si el mantenimiento está OFF, esto no muestra nada.
+   ========================================================= */
+
+/* Transición suave cuando el admin cambia el color primario */
+:root { transition: --orange .4s ease; }
+body, .site-header, .main-navigation, .site-footer,
+.btn-hero-primary, .btn-primary, .btn-service-primary, .btn-cta-large,
+.btn-whatsapp, .btn-imei-check, .nav-link.active {
+  transition: background-color .4s ease, border-color .4s ease, color .4s ease;
+}
+
+/* ---------- MANTENIMIENTO ---------- */
+.cs-maintenance {
+  position: fixed; inset: 0; z-index: 99999;
+  background: radial-gradient(120% 120% at 50% 0%, #141414 0%, #0a0a0a 55%, #050505 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Montserrat', sans-serif; color: #fff; overflow: hidden;
+  animation: csFadeIn .5s ease both;
+}
+@keyframes csFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* Grilla de circuitos sutil (característica de la marca) */
+.cs-maint-grid {
+  position: absolute; inset: 0; opacity: .35;
+  background-image:
+    linear-gradient(rgba(255,106,0,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,106,0,.06) 1px, transparent 1px);
+  background-size: 46px 46px;
+  -webkit-mask-image: radial-gradient(70% 60% at 50% 45%, #000 30%, transparent 80%);
+          mask-image: radial-gradient(70% 60% at 50% 45%, #000 30%, transparent 80%);
+}
+/* Línea de escaneo viva */
+.cs-maint-scan {
+  position: absolute; left: 0; right: 0; height: 2px; top: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,106,0,.0) 10%, #FF6A00 50%, rgba(255,106,0,0) 90%, transparent);
+  box-shadow: 0 0 24px 2px rgba(255,106,0,.5);
+  animation: csScan 3.4s linear infinite;
+}
+@keyframes csScan { 0% { top: -2%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 102%; opacity: 0; } }
+
+.cs-maint-inner {
+  position: relative; z-index: 2; text-align: center; padding: 32px 24px; max-width: 620px;
+  animation: csRise .7s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes csRise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+
+.cs-maint-logo { height: 64px; margin-bottom: 22px; filter: drop-shadow(0 6px 24px rgba(255,106,0,.35)); }
+.cs-maint-kicker {
+  display: inline-block; font-size: 11px; letter-spacing: 4px; font-weight: 700;
+  color: #FF6A00; text-transform: uppercase; margin-bottom: 14px;
+  border: 1px solid rgba(255,106,0,.35); padding: 6px 14px; border-radius: 999px;
+  background: rgba(255,106,0,.06);
+}
+.cs-maint-title {
+  font-size: clamp(48px, 12vw, 116px); line-height: .9; font-weight: 900; margin: 0 0 18px;
+  letter-spacing: -2px; color: #fff;
+  text-shadow: 0 0 40px rgba(255,106,0,.25);
+}
+.cs-maint-msg { font-size: clamp(15px, 2.4vw, 18px); color: #b9b9b9; line-height: 1.6; margin: 0 auto 26px; max-width: 460px; font-weight: 400; }
+
+.cs-maint-dots { display: flex; gap: 10px; justify-content: center; margin-bottom: 30px; }
+.cs-maint-dots span {
+  width: 9px; height: 9px; border-radius: 50%; background: #FF6A00;
+  animation: csPulse 1.2s ease-in-out infinite;
+}
+.cs-maint-dots span:nth-child(2) { animation-delay: .2s; }
+.cs-maint-dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes csPulse { 0%, 100% { transform: scale(.6); opacity: .35; } 50% { transform: scale(1); opacity: 1; } }
+
+.cs-maint-wa {
+  display: inline-flex; align-items: center; gap: 10px; text-decoration: none;
+  background: linear-gradient(135deg, #FF6A00, #ff8533); color: #fff; font-weight: 700;
+  padding: 14px 26px; border-radius: 999px; font-size: 15px;
+  box-shadow: 0 10px 30px rgba(255,106,0,.35); transition: transform .25s ease, box-shadow .25s ease;
+}
+.cs-maint-wa:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(255,106,0,.5); }
+.cs-maint-wa i { font-size: 19px; }
+
+@media (max-width: 480px) {
+  .cs-maint-kicker { letter-spacing: 2px; }
+  .cs-maint-wa { width: 100%; justify-content: center; }
+}
