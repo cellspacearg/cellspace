@@ -1,34 +1,37 @@
 // ========================================
-// CELL SPACE - INDEX.JS  +  INTEGRACIÓN CMS (12.B)
+// CELL SPACE - INDEX.JS  +  CMS (12.B + fixes visuales)
 // ========================================
 
-/* [12.B] Fallback hardcodeado: se usa SOLO si Supabase no trae destacados. */
 var featuredFallback = [
   { id: 1, name: "Chimera Tool Premium - 5000 Teléfonos", category: "Licencias", brand: "Chimera", price: 181.00, old_price: 220.00, image_url: "assets/products/chimera.png", rating: 5, badge: "OFERTA", stock: 15 },
   { id: 2, name: "Z3X Box - Samsung Edition", category: "Hardware", brand: "Z3X", price: 145.00, old_price: null, image_url: "assets/products/z3x.png", rating: 4, badge: null, stock: 8 },
   { id: 3, name: "NCK Dongle - Full Activation", category: "Licencias", brand: "NCK", price: 89.00, old_price: 120.00, image_url: "assets/products/nck.png", rating: 5, badge: "OFERTA", stock: 25 },
   { id: 4, name: "Medusa Pro 2 Box", category: "Hardware", brand: "Medusa", price: 299.00, old_price: 350.00, image_url: "assets/products/medusa.png", rating: 5, badge: "Últimas unidades", stock: 3 }
 ];
-var currentFeatured = featuredFallback.slice(); /* [12.B] la lista que realmente se está mostrando */
+var currentFeatured = featuredFallback.slice();
 
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
   });
 }
-function money(n) { return Number(n || 0).toFixed(2); }
+/* [FIX] formato argentino */
+function money(n) {
+  n = Number(n) || 0;
+  return (n % 1 === 0)
+    ? n.toLocaleString('es-AR')
+    : n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 
-/* [12.B] trae destacados del CMS; si falla o no hay, usa el fallback */
 async function loadFeatured() {
   try {
     if (typeof supabase === 'undefined' || !supabase) return featuredFallback.slice();
-    const { data, error } = await supabase
-      .from('products').select('*')
-      .eq('is_featured', true).eq('is_active', true)
-      .or('is_hidden.is.null,is_hidden.eq.false')
-      .order('created_at', { ascending: false }).limit(8);
+    const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
     if (error) throw error;
-    return (data && data.length) ? data : featuredFallback.slice();
+    var visibles = (data || []).filter(function (p) {
+      return p.is_featured === true && p.is_hidden !== true && p.status !== 'draft';
+    });
+    return visibles.length ? visibles.slice(0, 8) : featuredFallback.slice();
   } catch (e) {
     console.warn('[CMS] home: destacados en fallback', e && e.message);
     return featuredFallback.slice();
@@ -44,7 +47,6 @@ function setCart(newCart) {
   localStorage.setItem('cellspace_cart', JSON.stringify(newCart));
 }
 
-/* [12.B] render unificado (CMS o fallback), con imagen real */
 function paintFeatured(list) {
   currentFeatured = list;
   var grid = document.getElementById('featuredProducts');
@@ -65,9 +67,10 @@ function paintFeatured(list) {
     for (var j = rating; j < 5; j++) stars += '☆';
     var cat = esc(product.category || '');
 
+    /* [FIX] imagen absolute + cover */
     var imageHtml = product.image_url
-      ? '<div class="product-image-placeholder" style="position:relative;overflow:hidden;padding:0;">' +
-          '<img src="' + esc(product.image_url) + '" alt="' + esc(product.name) + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;">' +
+      ? '<div class="product-image-placeholder" style="position:relative;overflow:hidden;aspect-ratio:1/1;padding:0;">' +
+          '<img src="' + esc(product.image_url) + '" alt="' + esc(product.name) + '" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;">' + /* 👈 cover → contain si querés la foto entera */
         '</div>'
       : '<div class="product-image-placeholder">' +
           '<i class="fas fa-box-open" style="font-size:48px;color:var(--orange);opacity:0.5;"></i>' +
@@ -100,7 +103,6 @@ function renderFeaturedProducts() {
 }
 
 function addToCart(productId) {
-  /* [12.B] busca en la lista que se está mostrando (CMS o fallback) */
   var product = currentFeatured.find(function (p) { return p.id == productId; });
   if (!product) return;
   var cart = getCart();
