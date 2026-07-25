@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Producto | Cell Space Argentina</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css?v=15">
+  <link rel="stylesheet" href="css/producto.css?v=1">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="pd-ambient" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="header-top">
+      <div class="container">
+        <div class="header-top-content">
+          <a href="index.html" class="logo"><img src="assets/logo.png" alt="Cell Space Argentina"><div class="logo-text"><span class="logo-main">CELL SPACE</span><span class="logo-sub">ARGENTINA</span></div></a>
+          <div class="header-actions">
+            <a href="tienda.html" class="header-action"><i class="fas fa-arrow-left"></i><span>Volver a la tienda</span></a>
+            <a href="#" class="header-action cart-action" onclick="toggleCart(); return false;"><i class="fas fa-shopping-cart"></i><span>Carrito</span><span class="cart-count" id="cartCount">0</span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="pd-main">
+    <div class="container">
+      <nav class="pd-crumbs" id="pdCrumbs"><a href="index.html">Inicio</a> <span>/</span> <a href="tienda.html">Tienda</a> <span>/</span> <span id="pdCrumbCat">Producto</span></nav>
+      <div id="pdRoot"><div class="pd-loading"><i class="fas fa-spinner fa-spin"></i><p>Cargando producto…</p></div></div>
+    </div>
+  </main>
+
+  <!-- Lightbox -->
+  <div class="pd-lightbox" id="pdLightbox"><button class="pd-lb-close" id="pdLbClose"><i class="fas fa-times"></i></button><img id="pdLbImg" src="" alt=""></div>
+
+  <!-- Carrito modal (mínimo, reusa estilos del sitio) -->
+  <div class="cart-modal-overlay" id="cartModal"><div class="cart-modal"><div class="cart-modal-header"><h2><i class="fas fa-shopping-cart"></i> Tu Carrito</h2><button onclick="toggleCart()" class="close-btn"><i class="fas fa-times"></i></button></div><div class="cart-modal-body" id="cartItems"></div><div class="cart-modal-footer"><div class="cart-total"><span>Total:</span><span class="total-price" id="cartTotal">$0</span></div><button class="btn-checkout" onclick="checkout()">Finalizar Compra</button></div></div></div>
+
+  <script src="js/config.js?v=2"></script>
+  <script src="js/producto.js?v=1"></script>
+  <script src="js/site-config.js?v=2"></script>
+</body>
+</html>
