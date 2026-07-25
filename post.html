@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nota | Cell Space Argentina</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css?v=15">
+  <link rel="stylesheet" href="css/cms-public.css?v=1">
+  <link rel="stylesheet" href="css/post.css?v=1">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="read-bar" id="readBar"></div>
+  <div class="bg-ambient" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="header-top">
+      <div class="container">
+        <div class="header-top-content">
+          <a href="index.html" class="logo"><img src="assets/logo.png" alt="Cell Space Argentina"><div class="logo-text"><span class="logo-main">CELL SPACE</span><span class="logo-sub">ARGENTINA</span></div></a>
+          <div class="header-actions">
+            <a href="blog.html" class="header-action"><i class="fas fa-arrow-left"></i><span>Todo el blog</span></a>
+            <a href="index.html" class="header-action"><i class="fas fa-home"></i><span>Inicio</span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="post-main">
+    <div class="container">
+      <div id="postRoot"><div class="post-loading"><i class="fas fa-spinner fa-spin"></i><p>Cargando nota…</p></div></div>
+    </div>
+  </main>
+
+  <div class="post-lightbox" id="postLightbox"><button class="post-lb-close" id="postLbClose"><i class="fas fa-times"></i></button><img id="postLbImg" src="" alt=""></div>
+
+  <script src="js/config.js?v=2"></script>
+  <script src="js/post.js?v=1"></script>
+  <script src="js/site-config.js?v=3"></script>
+</body>
+</html>
