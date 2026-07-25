@@ -1,5 +1,5 @@
 // ========================================
-// TIENDA CON SUPABASE  +  INTEGRACIÓN CMS (12.B fix)
+// TIENDA CON SUPABASE  +  CMS (12.B + fixes visuales)
 // ========================================
 
 let cart = JSON.parse(localStorage.getItem('cellspace_cart') || '[]');
@@ -9,24 +9,24 @@ function esc(s) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
   });
 }
-function money(n) { return Number(n || 0).toFixed(2); }
+/* [FIX] formato de precio argentino: $130.000 (sin decimales si es entero) */
+function money(n) {
+  n = Number(n) || 0;
+  return (n % 1 === 0)
+    ? n.toLocaleString('es-AR')
+    : n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 
-/* [12.B-fix] MISMA regla que el panel: visible salvo Borrador u Oculto.
-   Tolerante a null/undefined (datos viejos de la migración). NO mira is_active. */
+/* Misma regla que el panel: visible salvo Borrador u Oculto (tolerante a null) */
 function isVisible(p) {
-  if (p.is_hidden === true) return false;   // el admin lo ocultó
-  if (p.status === 'draft') return false;   // el admin lo dejó en borrador
-  return true;                              // cualquier otra cosa → se muestra
+  if (p.is_hidden === true) return false;
+  if (p.status === 'draft') return false;
+  return true;
 }
 
 async function loadProducts() {
   try {
-    /* Traigo TODO y filtro en JS con isVisible → imposible que se desincronice con el panel */
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false });
-
+    const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
     if (error) { console.error('Error cargando productos:', error); return []; }
     return (data || []).filter(isVisible);
   } catch (e) {
@@ -38,7 +38,6 @@ async function loadProducts() {
 async function renderProducts(productsToRender) {
   const grid = document.getElementById('productsGrid');
   if (!grid) return;
-
   if (!productsToRender) productsToRender = await loadProducts();
 
   if (productsToRender.length === 0) {
@@ -54,14 +53,21 @@ async function renderProducts(productsToRender) {
     const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
     const cat = esc(product.category || '');
 
+    /* [FIX] imagen en absolute + cover → no estira; aspect-ratio de respaldo */
     const imageHtml = product.image_url
-      ? '<div class="product-image-placeholder" style="position:relative;overflow:hidden;padding:0;">' +
-          '<img src="' + esc(product.image_url) + '" alt="' + esc(product.name) + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;">' +
+      ? '<div class="product-image-placeholder" style="position:relative;overflow:hidden;aspect-ratio:1/1;padding:0;">' +
+          '<img src="' + esc(product.image_url) + '" alt="' + esc(product.name) + '" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;">' + /* 👈 cambiá cover por contain si querés la foto entera */
         '</div>'
       : '<div class="product-image-placeholder">' +
           '<i class="fas fa-box-open" style="font-size:48px;color:var(--orange);"></i>' +
           '<span style="font-size:12px;color:#888;">' + cat + '</span>' +
         '</div>';
+
+    /* [FIX] descripción solo si existe (adiós al "..." huérfano) */
+    const desc = (product.description || '').trim();
+    const descHtml = desc
+      ? '<p style="color:#888;font-size:13px;margin-bottom:15px;">' + esc(desc.length > 90 ? desc.substring(0, 90) + '...' : desc) + '</p>'
+      : '';
 
     return '' +
       '<div class="product-card">' +
@@ -74,7 +80,7 @@ async function renderProducts(productsToRender) {
             '<span class="price-current">$' + money(product.price) + '</span>' +
             oldPriceHtml +
           '</div>' +
-          '<p style="color:#888;font-size:13px;margin-bottom:15px;">' + esc((product.description || '').substring(0, 80)) + '...</p>' +
+          descHtml +
           '<div class="product-actions">' +
             '<button class="btn-add-cart" onclick="addToCart(\'' + esc(product.id) + '\')">' +
               '<i class="fas fa-shopping-cart"></i> Agregar' +
@@ -97,13 +103,7 @@ function addToCart(productId) {
     const existingItem = cart.find(function (item) { return item.id == productId; });
     if (existingItem) { existingItem.quantity += 1; }
     else {
-      cart.push({
-        id: product.id,
-        name: product.name,
-        price: Number(product.price) || 0,
-        image: product.image_url || null,
-        quantity: 1
-      });
+      cart.push({ id: product.id, name: product.name, price: Number(product.price) || 0, image: product.image_url || null, quantity: 1 });
     }
     saveCart(); updateCartCount(); showNotification('✅ Producto agregado al carrito');
   });
