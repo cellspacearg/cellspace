@@ -70,7 +70,7 @@ async function renderProducts(productsToRender) {
       : '';
 
     return '' +
-      '<div class="product-card">' +
+      '<div class="product-card" data-pid="' + esc(product.id) + '" style="cursor:pointer;">' +
         badgeHtml +
         imageHtml +
         '<div class="product-info">' +
