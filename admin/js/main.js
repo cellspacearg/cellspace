@@ -3,18 +3,17 @@ import { checkSession } from './hooks/useAuth.js';
 import { loginView, loginViewOnMount } from './views/login.js';
 import { dashboardView, dashboardViewOnMount } from './views/dashboard.js';
 import { productsView, productsViewOnMount } from './views/products.js';
+import { categoriesView, categoriesViewOnMount } from './views/categories.js';
 import { servicesView, servicesViewOnMount } from './views/services.js';
 import { pagesView, pagesViewOnMount } from './views/pages.js';
 import { builderView, builderViewOnMount } from './views/builder.js';
 import { mediaView, mediaViewOnMount } from './views/media.js';
 import { blogView, blogViewOnMount } from './views/blog.js';
 import { settingsView, settingsViewOnMount } from './views/settings.js';
-import { productsView, productsViewOnMount } from './views/products.js';
 
 function showError(msg){ const app=document.getElementById('app'); if(app){ app.innerHTML=`<div style="max-width:600px;margin:60px auto;padding:30px;background:#151515;border:1px solid #ff4444;border-radius:16px;color:#fff;font-family:Montserrat,sans-serif;"><h2 style="color:#ff4444;">⚠️ Error al cargar el panel</h2><p style="color:#ccc;">Copiá este mensaje y mandáselo a tu asistente:</p><pre style="background:#0a0a0a;padding:15px;border-radius:8px;color:#ff9999;white-space:pre-wrap;word-break:break-word;font-size:13px;">${msg}</pre></div>`; } }
 window.addEventListener('error', e=>showError(e.message+'\n'+(e.filename||'')));
 window.addEventListener('unhandledrejection', e=>showError(String(e.reason)));
-
 try {
   const auth = async () => await checkSession();
   const routes = {
