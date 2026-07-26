@@ -3,287 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Servicio Técnico | Cell Space Argentina</title>
+  <title>Servicio | Cell Space Argentina</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="css/styles.css?v=15">
-  <link rel="stylesheet" href="css/cms-public.css?v=1">
-  <link rel="stylesheet" href="css/servicios-public.css?v=1">
+  <link rel="stylesheet" href="css/servicio.css?v=1">
   <link rel="stylesheet" href="css/cs-auth.css?v=1">
-  <link rel="stylesheet" href="css/imei-check.css?v=1">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <div class="particles" id="particles"></div>
-
-  <div class="announcement-bar">
-    <div class="announcement-wrapper">
-      <div class="announcement-scroll">
-        <div class="announcement-item"><i class="fas fa-truck"></i><span>Envíos a todo el país por OCA y Andreani</span></div>
-        <div class="announcement-item"><i class="fas fa-shield-alt"></i><span>Garantía en todos los productos</span></div>
-        <div class="announcement-item"><i class="fas fa-dollar-sign"></i><span>Compra mínima $150.000 pesos</span></div>
-        <div class="announcement-item"><i class="fas fa-bolt"></i><span>Pedidos despachados en 24hs hábiles</span></div>
-        <div class="announcement-item"><i class="fas fa-boxes"></i><span>Stock y precios actualizados</span></div>
-        <div class="announcement-item"><i class="fas fa-lock"></i><span>Pago 100% seguro</span></div>
-        <div class="announcement-item"><i class="fas fa-truck"></i><span>Envíos a todo el país por OCA y Andreani</span></div>
-        <div class="announcement-item"><i class="fas fa-shield-alt"></i><span>Garantía en todos los productos</span></div>
-        <div class="announcement-item"><i class="fas fa-dollar-sign"></i><span>Compra mínima $150.000 pesos</span></div>
-        <div class="announcement-item"><i class="fas fa-bolt"></i><span>Pedidos despachados en 24hs hábiles</span></div>
-        <div class="announcement-item"><i class="fas fa-boxes"></i><span>Stock y precios actualizados</span></div>
-        <div class="announcement-item"><i class="fas fa-lock"></i><span>Pago 100% seguro</span></div>
-      </div>
-    </div>
-  </div>
+  <div class="sv-ambient" aria-hidden="true"></div>
 
   <header class="site-header">
     <div class="header-top">
       <div class="container">
         <div class="header-top-content">
-          <a href="index.html" class="logo">
-            <img src="assets/logo.png" alt="Cell Space Argentina">
-            <div class="logo-text"><span class="logo-main">CELL SPACE</span><span class="logo-sub">ARGENTINA</span></div>
-          </a>
-          <div class="header-search">
-            <input type="text" placeholder="Buscar servicios, reparaciones, equipos..." class="search-input">
-            <button class="search-btn"><i class="fas fa-search"></i></button>
-          </div>
+          <a href="index.html" class="logo"><img src="assets/logo.png" alt="Cell Space Argentina"><div class="logo-text"><span class="logo-main">CELL SPACE</span><span class="logo-sub">ARGENTINA</span></div></a>
           <div class="header-actions">
-            <div id="guestActions">
-              <a href="register-client.html" class="header-action" style="color: var(--orange); font-weight: 700;"><i class="fas fa-user-plus"></i><span>Regístrate</span></a>
-              <a href="login.html" class="btn-login-header"><i class="fas fa-sign-in-alt"></i><span>Iniciar Sesión</span></a>
-            </div>
-            <div id="userActions" style="display: none;">
-              <div class="user-dropdown" id="userDropdown">
-                <button class="user-btn" onclick="toggleUserDropdown()">
-                  <div class="user-avatar-small"><span id="userInitial">?</span></div>
-                  <div class="user-info"><span class="user-name" id="userNameDisplay">Usuario</span><span class="user-badge" id="userRoleBadge">Cliente</span></div>
-                  <span class="dropdown-arrow">▼</span>
-                </button>
-                <div class="dropdown-menu" id="userDropdownMenu">
-                  <a href="perfil.html" class="dropdown-item"><i class="fas fa-user-cog"></i> Mi Perfil</a>
-                  <a href="mis-pedidos.html" class="dropdown-item"><i class="fas fa-box"></i> Mis Pedidos</a>
-                  <div id="adminMenu" style="display: none;"><div class="dropdown-divider"></div><div class="dropdown-header">Administración</div><a href="admin/index.html" class="dropdown-item"><i class="fas fa-cog"></i> Panel Admin</a></div>
-                  <div class="dropdown-divider"></div>
-                  <a href="#" class="dropdown-item logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
-                </div>
-              </div>
-            </div>
+            <a href="servicios.html" class="header-action"><i class="fas fa-arrow-left"></i><span>Volver a servicios</span></a>
             <a href="https://wa.me/5493782437674" target="_blank" class="header-action"><i class="fas fa-headset"></i><span>Soporte</span></a>
-            <a href="#" class="header-action cart-action" onclick="toggleCart(); return false;"><i class="fas fa-shopping-cart"></i><span>Carrito</span><span class="cart-count" id="cartCount">0</span></a>
           </div>
         </div>
       </div>
     </div>
-    <nav class="main-navigation">
-      <div class="container">
-        <ul class="nav-menu">
-          <li><a href="index.html" class="nav-link">INICIO</a></li>
-          <li><a href="tienda.html" class="nav-link">TIENDA</a></li>
-          <li><a href="servicios.html" class="nav-link active">SERVICIO TÉCNICO</a></li>
-          <li><a href="herramientas.html" class="nav-link">HERRAMIENTAS</a></li>
-          <li><a href="index.html#contacto" class="nav-link">CONTACTO</a></li>
-        </ul>
-      </div>
-    </nav>
   </header>
 
-  <main class="shop-main">
+  <main class="sv-main">
     <div class="container">
-
-      <section class="service-hero">
-        <div class="container">
-          <div class="service-hero-content">
-            <div class="service-badge">SERVICIO TÉCNICO PROFESIONAL</div>
-            <h1 class="service-title">REPARAMOS TODO, COMO TIENE QUE SER</h1>
-            <p class="service-subtitle">Técnicos especializados, herramientas profesionales y repuestos de alta calidad. Garantía en todos nuestros trabajos.</p>
-            <div class="service-features">
-              <div class="service-feature"><i class="fas fa-stethoscope"></i><span>Diagnóstico Profesional</span></div>
-              <div class="service-feature"><i class="fas fa-cogs"></i><span>Repuestos Originales</span></div>
-              <div class="service-feature"><i class="fas fa-certificate"></i><span>Garantía Escrita</span></div>
-              <div class="service-feature"><i class="fas fa-clock"></i><span>Atención Rápida</span></div>
-            </div>
-            <div class="service-buttons">
-              <a href="https://wa.me/5493782437674" target="_blank" class="btn-service-primary"><i class="fas fa-tools"></i> SOLICITAR REPARACIÓN</a>
-              <a href="#precios" class="btn-service-secondary"><i class="fas fa-tag"></i> VER PRECIOS</a>
-            </div>
-          </div>
-          <div class="service-hero-image">
-            <img src="assets/technician.jpg" alt="Técnico Cell Space" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 600 400%22%3E%3Crect fill=%22%231a1a1a%22 width=%22600%22 height=%22400%22/%3E%3Ctext fill=%22%23FF6A00%22 font-family=%22Montserrat%22 font-size=%2240%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22%3ETécnico%3C/text%3E%3C/svg%3E'">
-          </div>
-        </div>
-      </section>
-
-      <section class="services-section">
-        <div class="section-header">
-          <h2 class="section-title"><i class="fas fa-wrench"></i> ¿QUÉ PODEMOS REPARAR?</h2>
-          <p class="section-subtitle">Servicio técnico para todos tus dispositivos</p>
-        </div>
-        <div class="services-grid">
-          <div class="service-card"><div class="service-number">1</div><div class="service-icon"><i class="fas fa-mobile-alt"></i></div><h3>CELULARES</h3><p>Reemplazo de pantalla, batería, conectores, cámaras, micrófono, parlantes y más.</p><a href="#precios" class="service-link">Ver servicios <i class="fas fa-arrow-right"></i></a></div>
-          <div class="service-card"><div class="service-number">2</div><div class="service-icon"><i class="fas fa-tablet-alt"></i></div><h3>TABLETS</h3><p>Pantallas, baterías, conectores de carga, problemas de software y más.</p><a href="#precios" class="service-link">Ver servicios <i class="fas fa-arrow-right"></i></a></div>
-          <div class="service-card"><div class="service-number">3</div><div class="service-icon"><i class="fas fa-gamepad"></i></div><h3>CONSOLAS</h3><p>Reparación de hardware, limpieza, actualización de software y más.</p><a href="#precios" class="service-link">Ver servicios <i class="fas fa-arrow-right"></i></a></div>
-          <div class="service-card"><div class="service-number">4</div><div class="service-icon"><i class="fas fa-desktop"></i></div><h3>PC DE ESCRITORIO</h3><p>Diagnóstico, reparación de hardware, actualizaciones y mantenimiento.</p><a href="#precios" class="service-link">Ver servicios <i class="fas fa-arrow-right"></i></a></div>
-          <div class="service-card"><div class="service-number">5</div><div class="service-icon"><i class="fas fa-microchip"></i></div><h3>ARMADO DE PC</h3><p>Armamos tu PC a medida, asesoramiento profesional y garantía.</p><a href="#precios" class="service-link">Ver servicios <i class="fas fa-arrow-right"></i></a></div>
-          <div class="service-card"><div class="service-number">6</div><div class="service-icon"><i class="fas fa-laptop"></i></div><h3>NOTEBOOK</h3><p>Reparación de placa, pantalla, teclado, bisagras, sistema de refrigeración y más.</p><a href="#precios" class="service-link">Ver servicios <i class="fas fa-arrow-right"></i></a></div>
-          <div class="service-card"><div class="service-number">7</div><div class="service-icon"><i class="fas fa-laptop-medical"></i></div><h3>NETBOOK</h3><p>Solución a problemas de rendimiento, hardware y software.</p><a href="#precios" class="service-link">Ver servicios <i class="fas fa-arrow-right"></i></a></div>
-          <div class="service-card"><div class="service-number">8</div><div class="service-icon"><i class="fab fa-apple"></i></div><h3>MAC / APPLE</h3><p>Reparación de Macs, cambio de pantalla, batería, upgrades y más.</p><a href="#precios" class="service-link">Ver servicios <i class="fas fa-arrow-right"></i></a></div>
-          <div class="service-card"><div class="service-number">9</div><div class="service-icon"><i class="fas fa-watch"></i></div><h3>APPLE WATCH</h3><p>Cambio de pantalla, batería, correa, problemas de carga y más.</p><a href="#precios" class="service-link">Ver servicios <i class="fas fa-arrow-right"></i></a></div>
-          <div class="service-card"><div class="service-number">10</div><div class="service-icon"><i class="fas fa-compact-disc"></i></div><h3>SOFTWARE</h3><p>Flasheo, desbloqueos, recupero de datos, instalación de sistemas y más.</p><a href="#precios" class="service-link">Ver servicios <i class="fas fa-arrow-right"></i></a></div>
-        </div>
-      </section>
-
-      <!-- ============================================================
-           SECCIÓN CMS: SERVICIOS Y PRECIOS (12.C)
-           Se llena sola desde el panel. Si no hay servicios, se oculta
-           y el sitio queda idéntico a antes. El ancla #precios hace que
-           el botón "VER PRECIOS" del hero baje hasta acá.
-           ============================================================ -->
-      <section class="svc-cms" id="precios">
-        <div class="svc-cms-head svc-reveal">
-          <div class="svc-cms-titles">
-            <span class="svc-kicker"><i class="fas fa-screwdriver-wrench"></i> Catálogo del taller</span>
-            <h2 class="svc-h2">Servicios &amp; precios</h2>
-            <p class="svc-lead">Reparaciones publicadas con precio orientativo. Tocá cualquiera para ver el detalle, la galería y solicitarla por WhatsApp.</p>
-          </div>
-          <div class="svc-cms-tools">
-            <div class="svc-search"><i class="fas fa-search"></i><input type="text" id="svcSearch" placeholder="Buscar reparación, marca o modelo..."></div>
-            <span class="svc-count" id="svcCount"></span>
-          </div>
-        </div>
-        <div class="svc-chips svc-reveal" id="svcChips"></div>
-        <div id="svcBody"><div class="svc-loading"><i class="fas fa-spinner fa-spin"></i></div></div>
-      </section>
-
-      <section class="process-section">
-        <div class="section-header"><h2 class="section-title"><i class="fas fa-cogs"></i> NUESTRO PROCESO DE REPARACIÓN</h2></div>
-        <div class="process-steps">
-          <div class="process-step"><div class="step-icon"><i class="fas fa-hand-holding"></i></div><h4>RECIBIMOS</h4><p>Recibimos tu equipo y realizamos un diagnóstico completo.</p></div>
-          <div class="process-arrow"><i class="fas fa-chevron-right"></i></div>
-          <div class="process-step"><div class="step-icon"><i class="fas fa-file-invoice-dollar"></i></div><h4>PRESUPUESTO</h4><p>Te enviamos el presupuesto sin compromiso y el tiempo de reparación.</p></div>
-          <div class="process-arrow"><i class="fas fa-chevron-right"></i></div>
-          <div class="process-step"><div class="step-icon"><i class="fas fa-tools"></i></div><h4>REPARAMOS</h4><p>Utilizamos herramientas profesionales y repuestos de calidad.</p></div>
-          <div class="process-arrow"><i class="fas fa-chevron-right"></i></div>
-          <div class="process-step"><div class="step-icon"><i class="fas fa-check-circle"></i></div><h4>PRUEBAS</h4><p>Probamos tu equipo en todas sus funciones antes de entregarlo.</p></div>
-          <div class="process-arrow"><i class="fas fa-chevron-right"></i></div>
-          <div class="process-step"><div class="step-icon"><i class="fas fa-box-open"></i></div><h4>ENTREGA</h4><p>Entregamos tu equipo con garantía escrita y soporte post reparación.</p></div>
-        </div>
-      </section>
-
-      <section class="why-us-section">
-        <div class="section-header"><h2 class="section-title"><i class="fas fa-award"></i> ¿POR QUÉ ELEGIR CELL SPACE?</h2></div>
-        <div class="why-us-grid">
-          <div class="why-us-item"><div class="why-icon"><i class="fas fa-user-tie"></i></div><h4>Técnicos Especializados</h4><p>Años de experiencia en todo tipo de dispositivos.</p></div>
-          <div class="why-us-item"><div class="why-icon"><i class="fas fa-file-contract"></i></div><h4>Garantía Escrita</h4><p>Todos nuestros trabajos tienen garantía por escrito.</p></div>
-          <div class="why-us-item"><div class="why-icon"><i class="fas fa-tools"></i></div><h4>Herramientas Profesionales</h4><p>Equipos de última generación para diagnósticos precisos.</p></div>
-          <div class="why-us-item"><div class="why-icon"><i class="fas fa-tachometer-alt"></i></div><h4>Atención Rápida</h4><p>Sabemos lo importante que es tu equipo, por eso trabajamos rápido.</p></div>
-          <div class="why-us-item"><div class="why-icon"><i class="fas fa-certificate"></i></div><h4>Repuestos de Calidad</h4><p>Utilizamos repuestos originales o de la más alta calidad.</p></div>
-          <div class="why-us-item"><div class="why-icon"><i class="fas fa-headset"></i></div><h4>Soporte Post Venta</h4><p>Te acompañamos incluso después de la reparación.</p></div>
-        </div>
-      </section>
-
-      <section class="cta-section">
-        <div class="cta-content">
-          <h2>¿TENÉS UN EQUIPO PARA REPARAR?</h2>
-          <p>Solicitá tu presupuesto ahora mismo sin compromiso.</p>
-          <a href="https://wa.me/5493782437674" target="_blank" class="btn-cta-large"><i class="fab fa-whatsapp"></i> SOLICITAR PRESUPUESTO</a>
-          <p class="cta-small">o escribinos por <a href="https://wa.me/5493782437674" target="_blank">WhatsApp</a></p>
-        </div>
-        <div class="cta-image"><img src="assets/repair-cta.jpg" alt="Reparación" onerror="this.style.display='none'"></div>
-      </section>
-
-      <section class="brands-section">
-        <h3 class="brands-title">TRABAJAMOS CON LAS MEJORES MARCAS</h3>
-        <div class="brands-grid">
-          <div class="brand-text"><i class="fab fa-apple"></i><span>Apple</span></div>
-          <div class="brand-text"><i class="fas fa-mobile-alt"></i><span>Samsung</span></div>
-          <div class="brand-text"><i class="fas fa-mobile"></i><span>Motorola</span></div>
-          <div class="brand-text"><i class="fas fa-mobile-screen"></i><span>Xiaomi</span></div>
-          <div class="brand-text"><i class="fas fa-laptop"></i><span>ASUS</span></div>
-          <div class="brand-text"><i class="fas fa-print"></i><span>HP</span></div>
-          <div class="brand-text"><i class="fas fa-desktop"></i><span>Dell</span></div>
-          <div class="brand-text"><i class="fas fa-laptop-code"></i><span>Lenovo</span></div>
-          <div class="brand-text"><i class="fab fa-playstation"></i><span>PlayStation</span></div>
-          <div class="brand-text"><i class="fab fa-xbox"></i><span>Xbox</span></div>
-          <div class="brand-text"><i class="fas fa-gamepad"></i><span>Nintendo</span></div>
-        </div>
-      </section>
-
-      <section class="shop-benefits" style="margin-top: 40px;">
-        <div class="benefit"><i class="fas fa-truck"></i><div><strong>ENVÍOS A TODO EL PAÍS</strong><span>Rápidos y seguros</span></div></div>
-        <div class="benefit"><i class="fas fa-shield-alt"></i><div><strong>PAGOS 100% SEGUROS</strong><span>MercadoPago / Transferencia</span></div></div>
-        <div class="benefit"><i class="fas fa-credit-card"></i><div><strong>HASTA 12 CUOTAS</strong><span>Con tarjetas seleccionadas</span></div></div>
-        <div class="benefit"><i class="fas fa-headset"></i><div><strong>SOPORTE 24/7</strong><span>Estamos para ayudarte</span></div></div>
-      </section>
+      <nav class="sv-crumbs" id="svCrumbs"><a href="index.html">Inicio</a><span>/</span><a href="servicios.html">Servicio Técnico</a><span>/</span><span id="svCrumb">Servicio</span></nav>
+      <div id="svRoot"><div class="sv-loading"><i class="fas fa-spinner fa-spin"></i><p>Cargando servicio…</p></div></div>
     </div>
   </main>
 
-  <footer class="site-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <img src="assets/logo.png" alt="Cell Space" class="footer-logo">
-          <p>Tu espacio de confianza en tecnología.</p>
-          <div class="social-links"><a href="#"><i class="fab fa-instagram"></i></a><a href="#"><i class="fab fa-facebook"></i></a><a href="#"><i class="fab fa-youtube"></i></a></div>
-        </div>
-        <div class="footer-col"><h4>INFORMACIÓN</h4><ul><li><a href="#">Sobre nosotros</a></li><li><a href="#">Términos y condiciones</a></li><li><a href="#">Política de privacidad</a></li></ul></div>
-        <div class="footer-col"><h4>CATEGORÍAS</h4><ul><li><a href="#">Celulares</a></li><li><a href="#">Accesorios</a></li><li><a href="#">Herramientas</a></li></ul></div>
-        <div class="footer-col"><h4>CONTACTO</h4><ul class="contact-info"><li><i class="fab fa-whatsapp"></i> +54 9 3782 437674</li><li><i class="fas fa-envelope"></i> cellspacearg@gmail.com</li><li><i class="fas fa-map-marker-alt"></i> Saladas, Corrientes</li></ul></div>
-      </div>
-      <div class="footer-bottom"><p>&copy; 2026 Cell Space Argentina. Todos los derechos reservados.</p></div>
-    </div>
-  </footer>
-
-  <div class="cart-modal-overlay" id="cartModal">
-    <div class="cart-modal">
-      <div class="cart-modal-header"><h2><i class="fas fa-shopping-cart"></i> Tu Carrito</h2><button onclick="toggleCart()" class="close-btn"><i class="fas fa-times"></i></button></div>
-      <div class="cart-modal-body" id="cartItems"></div>
-      <div class="cart-modal-footer"><div class="cart-total"><span>Total:</span><span class="total-price" id="cartTotal">$0</span></div><button class="btn-checkout" onclick="checkout()">Finalizar Compra</button></div>
-    </div>
-  </div>
+  <div class="sv-lightbox" id="svLightbox"><button class="sv-lb-close" id="svLbClose"><i class="fas fa-times"></i></button><img id="svLbImg" src="" alt=""></div>
 
   <script src="js/config.js?v=2"></script>
-  <script src="js/auth-middleware.js"></script>
-  <script src="js/tienda.js?v=5"></script>
-  <script src="js/servicios-public.js?v=1"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', async () => { await controlVisibility(); });
-  </script>
+  <script src="js/servicio.js?v=1"></script>
   <script src="js/site-config.js?v=2"></script>
-  <script src="js/cs-auth.js?v=1"></script>
-  <script src="js/imei-catalog.js?v=1"></script>
-  <script src="js/imei-servicio.js?v=1"></script>
-
-  <a href="https://wa.me/5493782437674" target="_blank" class="wa-float" aria-label="WhatsApp">
-  <i class="fab fa-whatsapp"></i>
-</a>
-
-<button id="imeiPanelTrigger" class="imei-float" aria-label="Check IMEI">
-  <i class="fas fa-mobile-alt"></i>
-</button>
-
-<div class="imei-panel-overlay" id="imeiPanelOverlay"></div>
-
-<aside class="imei-side-panel" id="imeiCheckSection">
-  <div class="imei-panel-header">
-    <h3><i class="fas fa-mobile-alt"></i> Check IMEI</h3>
-    <button class="imei-panel-close" id="imeiPanelClose" aria-label="Cerrar">&times;</button>
-  </div>
-
-  <div class="imei-balance-row">
-    <span>Tu saldo: <strong id="imeiUserBalance">--</strong></span>
-    <a href="perfil.html#saldo" class="imei-topup-link">Cargar saldo</a>
-  </div>
-
-  <input type="text" id="imeiInputCheck" class="imei-input" placeholder="Ingresá el IMEI (marcá *#06# en el equipo)" maxlength="20">
-
-  <select id="imeiServiceSelect" class="imei-select"></select>
-
-  <button id="imeiCheckBtn" class="btn-imei-consult">
-    <i class="fas fa-search"></i> Consultar (<span id="imeiSelectedPrice">--</span>)
-  </button>
-
-  <div id="imeiCheckResult" class="imei-check-result" style="display:none;"></div>
-</aside>
 </body>
 </html>
