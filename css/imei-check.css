@@ -1,0 +1,148 @@
+/* ========================================
+   BOTÓN FLOTANTE "CHECK IMEI"
+   ======================================== */
+.imei-float {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  width: 60px;
+  height: 60px;
+  background: var(--orange, #FF6A00);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(255,106,0,0.4);
+  z-index: 9999;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.imei-float:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(255,106,0,0.55);
+}
+.imei-float i { color: #fff; font-size: 26px; }
+@media (max-width: 600px) {
+  .imei-float { width: 52px; height: 52px; bottom: 16px; left: 16px; }
+  .imei-float i { font-size: 22px; }
+}
+
+/* ========================================
+   OVERLAY (fondo oscuro detrás del panel)
+   ======================================== */
+.imei-panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 9998;
+}
+.imei-panel-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ========================================
+   PANEL LATERAL
+   ======================================== */
+.imei-side-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 380px;
+  max-width: 92vw;
+  background: #14181d;
+  border-left: 1px solid rgba(255,106,0,0.25);
+  box-shadow: -8px 0 30px rgba(0,0,0,0.4);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  z-index: 9999;
+  overflow-y: auto;
+  padding: 24px;
+}
+.imei-side-panel.open {
+  transform: translateX(0);
+}
+
+.imei-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.imei-panel-header h3 {
+  color: var(--orange, #FF6A00);
+  font-size: 18px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.imei-panel-close {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 26px;
+  cursor: pointer;
+  line-height: 1;
+}
+.imei-panel-close:hover { color: #fff; }
+
+/* ========================================
+   CONTENIDO DEL FORMULARIO (dentro del panel)
+   ======================================== */
+.imei-balance-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  color: var(--muted, #999);
+  font-size: 14px;
+}
+.imei-topup-link { color: var(--orange); font-weight: 600; text-decoration: none; }
+.imei-input, .imei-select {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 14px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: white;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 15px;
+}
+.btn-imei-consult {
+  width: 100%;
+  padding: 15px;
+  background: var(--orange);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+}
+.btn-imei-consult:disabled { opacity: 0.6; cursor: not-allowed; }
+.imei-check-result {
+  margin-top: 20px;
+  padding: 18px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+}
+.imei-result-header { color: #4CAF50; font-weight: 700; margin-bottom: 12px; }
+.imei-result-error { color: #ff5555; font-weight: 600; }
+.imei-result-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 14px;
+  color: var(--muted, #ccc);
+}
+.imei-result-row strong { color: white; }
