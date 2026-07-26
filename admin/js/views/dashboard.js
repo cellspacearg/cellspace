@@ -33,6 +33,10 @@ export async function dashboardView() {
               <span>Productos</span>
               <span class="nav-badge">0</span>
             </a>
+            <a href="#/categories" class="nav-item">
+              <i class="fas fa-tags"></i>
+              <span>Categorías</span>
+            </a>
             <a href="#/services" class="nav-item">
               <i class="fas fa-tools"></i>
               <span>Servicios</span>
