@@ -341,16 +341,6 @@
   <script src="js/index.js?v=2"></script>
   
   <script>
-    // Inicializar control de visibilidad del header y productos al cargar
-    document.addEventListener('DOMContentLoaded', async () => {
-      await controlVisibility();
-      
-      // Si tenés una función para cargar productos destacados en index.js, se ejecutará aquí
-      if (typeof renderFeaturedProducts === 'function') {
-        renderFeaturedProducts();
-      }
-    });
-    
     function openIMEIChecker() {
       document.getElementById('imeiModal').classList.add('active');
     }
