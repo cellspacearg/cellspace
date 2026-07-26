@@ -9,7 +9,7 @@ let currentStorages = []; // ['256GB','512GB']
 let currentColors = [];   // [{name,hex,image}]
 let currentSpecs = [];    // [{icon,label,value}]
 
-const CATEGORIES = ['Celulares','Accesorios','Herramientas','Licencias','Hardware','Software','Repuestos','Otros'];
+const FALLBACK_CATEGORIES = ['Accesorios','Celulares nuevos','Celulares usados','Notebooks / Computadoras','Repuestos generales','Consolas y gamer','Ofertas / Liquidación','Licencias / Software','FRP por servidor','Archivos','Herramientas','Repuestos al por mayor'];
 const SPEC_ICONS = [
   ['fa-mobile-screen','Pantalla'],['fa-microchip','Procesador'],['fa-memory','RAM'],
   ['fa-hard-drive','Memoria'],['fa-camera','Cámara'],['fa-battery-full','Batería'],
@@ -22,7 +22,12 @@ export async function productsView() {
   const state = store.getState();
   const userName = state.user?.email?.split('@')[0] || 'Admin';
   const userInitial = userName.charAt(0).toUpperCase();
-  const catOptions = CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
+  let categoryNames = FALLBACK_CATEGORIES;
+  try {
+    const { data, error } = await supabase.from('categories').select('name').order('sort_order', { ascending: true });
+    if (!error && data && data.length) categoryNames = data.map(c => c.name);
+  } catch (e) { console.warn('No se pudieron cargar categorías, uso lista de respaldo', e); }
+  const catOptions = categoryNames.map(c => `<option value="${c}">${c}</option>`).join('');
   const specIconOpts = SPEC_ICONS.map(([v,l]) => `<option value="${v}">${l}</option>`).join('');
   window.__SPEC_ICON_OPTS = specIconOpts;
 
