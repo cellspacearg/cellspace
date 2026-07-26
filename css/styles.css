@@ -4112,3 +4112,33 @@ body::after {
     font-size: 20px;
   }
 }
+/* ======================================== 
+   BOTÓN FLOTANTE DE WHATSAPP (todas las páginas)
+   ======================================== */
+.wa-float {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 60px;
+  height: 60px;
+  background: #25D366;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
+  z-index: 9999;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.wa-float:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.55);
+}
+.wa-float i {
+  color: #fff;
+  font-size: 30px;
+}
+@media (max-width: 600px) {
+  .wa-float { width: 52px; height: 52px; bottom: 16px; right: 16px; }
+  .wa-float i { font-size: 26px; }
+}
