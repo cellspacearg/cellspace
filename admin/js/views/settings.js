@@ -27,6 +27,7 @@ export async function settingsView() {
         <div class="nav-section"><span class="nav-section-title">Principal</span><a href="#/dashboard" class="nav-item"><i class="fas fa-home"></i><span>Dashboard</span></a></div>
         <div class="nav-section"><span class="nav-section-title">Contenido</span>
           <a href="#/products" class="nav-item"><i class="fas fa-box"></i><span>Productos</span></a>
+          <a href="#/categories" class="nav-item"><i class="fas fa-tags"></i><span>Categorías</span></a>
           <a href="#/services" class="nav-item"><i class="fas fa-tools"></i><span>Servicios</span></a>
           <a href="#/pages" class="nav-item"><i class="fas fa-file-alt"></i><span>Páginas</span></a>
           <a href="#/blog" class="nav-item"><i class="fas fa-newspaper"></i><span>Blog</span></a></div>
