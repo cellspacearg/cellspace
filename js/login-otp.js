@@ -18,22 +18,13 @@ function setupLoginForm() {
     const identifier = document.getElementById('loginIdentifier').value.trim();
     const password = document.getElementById('loginPassword').value;
     
-    let email = identifier;
-    
-    // Si es username, buscar email
+    // El login es por email. Si no parece un email, avisamos claro en vez
+    // de intentar buscar un "username" que no existe en la base.
     if (!identifier.includes('@')) {
-      const { data, error } = await supabase
-        .from('users')
-        .select('email')
-        .eq('username', identifier.toLowerCase())
-        .single();
-      
-      if (error || !data) {
-        alert(' Usuario no encontrado');
-        return;
-      }
-      email = data.email;
+      alert('⚠️ Ingresá tu email para iniciar sesión');
+      return;
     }
+    const email = identifier;
     
     try {
       const otp = generateOTP();
@@ -115,15 +106,11 @@ async function verifyOTP() {
     await supabase.from('otp_codes').delete().eq('email', email);
     sessionStorage.clear();
     
-    // Redirección según rol
-    const { data: userData } = await supabase
-      .from('users')
-      .select('role')
-      .eq('email', email)
-      .single();
+    // Redirección según rol (fuente real: my_role() en la base, no una tabla 'users' que no existe)
+    const { data: role } = await supabase.rpc('my_role');
     
-    if (userData?.role === 'technician') {
-      window.location.href = 'technician-zone.html';
+    if (role === 'technician') {
+      window.location.href = 'central-space.html';
     } else {
       window.location.href = 'index.html';
     }
