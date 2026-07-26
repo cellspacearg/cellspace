@@ -1,11 +1,14 @@
 // ========================================
 // TIENDA · SUPABASE + CMS (12.B) — lista viva + ficha
+// + categorías dinámicas por rol + filtros ampliados
 // ========================================
 
 let cart = JSON.parse(localStorage.getItem('cellspace_cart') || '[]');
 let activeCategory = 'all';
 let sliderCalibrated = false;
 let navigating = false;
+let allCategoriesCache = [];
+let lastProductsList = [];
 
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -20,6 +23,15 @@ function isVisible(p) {
   if (p.is_hidden === true) return false;
   if (p.status === 'draft') return false;
   return true;
+}
+
+/* ---------- rol del usuario (usa CSAuth de cs-auth.js) ---------- */
+function withRole(cb) {
+  if (window.CSAuth) {
+    window.CSAuth.onReady(function (state) { cb(state.role === 'visitor' ? 'guest' : state.role); });
+  } else {
+    cb('guest');
+  }
 }
 
 /* ---------- interacciones del listado (se inyectan una sola vez) ---------- */
@@ -50,7 +62,7 @@ function attachCardFx(grid) {
   grid.dataset.fx = '1';
   grid.addEventListener('click', function (e) {
     if (navigating) return;
-    if (e.target.closest('.btn-add-cart') || e.target.closest('.btn-wishlist')) return; // los botones siguen haciendo lo suyo
+    if (e.target.closest('.btn-add-cart') || e.target.closest('.btn-wishlist')) return;
     var card = e.target.closest('.product-card');
     if (!card || !card.dataset.pid) return;
     navigating = true;
@@ -58,6 +70,35 @@ function attachCardFx(grid) {
     var url = 'producto.html?id=' + encodeURIComponent(card.dataset.pid);
     setTimeout(function () { window.location.href = url; }, 220);
   });
+}
+
+/* ---------- categorías dinámicas (tabla categories) ---------- */
+async function loadCategories() {
+  try {
+    var r = await supabase.from('categories').select('*').order('sort_order', { ascending: true });
+    if (r.error) { console.warn('No se pudieron cargar categorías:', r.error.message); return []; }
+    return r.data || [];
+  } catch (e) { console.warn('[categories] fallback', e && e.message); return []; }
+}
+
+function renderCategorySidebar(categories, role) {
+  var list = document.getElementById('categoryList');
+  if (!list) return;
+  var visible = categories.filter(function (c) {
+    return !c.technician_only || role === 'technician' || role === 'admin';
+  });
+  var items = visible.map(function (c) {
+    return '<li><a href="#" onclick="filterByCategory(\'' + esc(c.name) + '\'); return false;">' +
+      '<i class="' + esc(c.icon || 'fas fa-th') + '"></i> ' + esc(c.name) + '</a></li>';
+  }).join('');
+  list.innerHTML =
+    '<li class="active"><a href="#" onclick="filterByCategory(\'all\'); return false;"><i class="fas fa-th"></i> Todos los productos</a></li>' +
+    items;
+}
+
+async function initCategories() {
+  allCategoriesCache = await loadCategories();
+  withRole(function (role) { renderCategorySidebar(allCategoriesCache, role); });
 }
 
 /* ---------- datos ---------- */
@@ -79,11 +120,38 @@ function calibrateSlider(products) {
   var l = document.getElementById('maxPriceLabel'); if (l) l.textContent = '$' + top.toLocaleString('es-AR');
 }
 
+/* ---------- llena los <select> de marca/modelo/memoria a partir de lo que hay cargado ---------- */
+function populateFilterOptions(products) {
+  var brandSel = document.getElementById('filterBrand');
+  var modelSel = document.getElementById('filterModel');
+  var storageSel = document.getElementById('filterStorage');
+
+  if (brandSel && !brandSel.dataset.filled) {
+    var brands = Array.from(new Set(products.map(function (p) { return (p.brand || '').trim(); }).filter(Boolean))).sort();
+    brandSel.innerHTML = '<option value="">Todas las marcas</option>' + brands.map(function (b) { return '<option value="' + esc(b) + '">' + esc(b) + '</option>'; }).join('');
+    brandSel.dataset.filled = '1';
+  }
+  if (modelSel && !modelSel.dataset.filled) {
+    var models = Array.from(new Set(products.map(function (p) { return (p.model || '').trim(); }).filter(Boolean))).sort();
+    modelSel.innerHTML = '<option value="">Todos los modelos</option>' + models.map(function (m) { return '<option value="' + esc(m) + '">' + esc(m) + '</option>'; }).join('');
+    modelSel.dataset.filled = '1';
+  }
+  if (storageSel && !storageSel.dataset.filled) {
+    var storages = new Set();
+    products.forEach(function (p) { (Array.isArray(p.storage_options) ? p.storage_options : []).forEach(function (s) { if (s) storages.add(s); }); });
+    var storageList = Array.from(storages).sort();
+    storageSel.innerHTML = '<option value="">Cualquier memoria</option>' + storageList.map(function (s) { return '<option value="' + esc(s) + '">' + esc(s) + '</option>'; }).join('');
+    storageSel.dataset.filled = '1';
+  }
+}
+
 async function renderProducts(productsToRender) {
   var grid = document.getElementById('productsGrid');
   if (!grid) return;
   if (!productsToRender) productsToRender = await loadProducts();
+  lastProductsList = productsToRender;
   calibrateSlider(productsToRender);
+  populateFilterOptions(productsToRender);
 
   if (productsToRender.length === 0) {
     grid.innerHTML = '<p style="text-align:center;padding:40px;color:#888;">No se encontraron productos</p>';
@@ -138,26 +206,36 @@ function filterByCategory(category) {
     var hit = links.find(function (a) { return (a.getAttribute('onclick') || '').indexOf("'" + category + "'") !== -1; });
     if (hit) hit.parentElement.classList.add('active');
   } catch (e) {}
-  loadProducts().then(function (products) {
-    var list = (category === 'all') ? products : products.filter(function (p) { return (p.category || '').toLowerCase() === category.toLowerCase(); });
-    renderProducts(list);
-  });
+  applyFilters();
 }
+
 function applyFilters() {
   var ps = document.getElementById('priceSlider');
-  var max = ps ? parseFloat(ps.value) : Infinity;
+  var maxPrice = ps ? parseFloat(ps.value) : Infinity;
+  var brand = (document.getElementById('filterBrand') && document.getElementById('filterBrand').value) || '';
+  var model = (document.getElementById('filterModel') && document.getElementById('filterModel').value) || '';
+  var storage = (document.getElementById('filterStorage') && document.getElementById('filterStorage').value) || '';
+  var onlyInstallments = document.getElementById('filterInstallments') && document.getElementById('filterInstallments').checked;
+  var onlyDiscount = document.getElementById('filterDiscount') && document.getElementById('filterDiscount').checked;
+
   loadProducts().then(function (products) {
     var list = products;
     if (activeCategory !== 'all') list = list.filter(function (p) { return (p.category || '').toLowerCase() === activeCategory.toLowerCase(); });
-    list = list.filter(function (p) { return (Number(p.price) || 0) <= max; });
+    list = list.filter(function (p) { return (Number(p.price) || 0) <= maxPrice; });
+    if (brand) list = list.filter(function (p) { return (p.brand || '') === brand; });
+    if (model) list = list.filter(function (p) { return (p.model || '') === model; });
+    if (storage) list = list.filter(function (p) { return Array.isArray(p.storage_options) && p.storage_options.indexOf(storage) !== -1; });
+    if (onlyInstallments) list = list.filter(function (p) { return !!(p.installments && String(p.installments).trim()); });
+    if (onlyDiscount) list = list.filter(function (p) { return p.old_price && Number(p.old_price) > Number(p.price); });
     renderProducts(list);
   });
 }
+
 function sortProducts() {
   var sort = document.getElementById('sortSelect') && document.getElementById('sortSelect').value;
-  loadProducts().then(function (products) {
+  var base = lastProductsList.length ? lastProductsList : null;
+  (base ? Promise.resolve(base) : loadProducts()).then(function (products) {
     var list = products.slice();
-    if (activeCategory !== 'all') list = list.filter(function (p) { return (p.category || '').toLowerCase() === activeCategory.toLowerCase(); });
     if (sort === 'price-asc') list.sort(function (a, b) { return (Number(a.price) || 0) - (Number(b.price) || 0); });
     else if (sort === 'price-desc') list.sort(function (a, b) { return (Number(b.price) || 0) - (Number(a.price) || 0); });
     else if (sort === 'rating') list.sort(function (a, b) { return (Number(b.rating) || 0) - (Number(a.rating) || 0); });
@@ -230,12 +308,18 @@ function updateProductsCount(count) { var el = document.getElementById('products
 /* ---------- init ---------- */
 document.addEventListener('DOMContentLoaded', function () {
   injectListFx();
+  initCategories();
   renderProducts();
   updateCartCount();
   attachCardFx(document.getElementById('productsGrid'));
 
   var ps = document.getElementById('priceSlider');
   if (ps) ps.addEventListener('input', function () { var l = document.getElementById('maxPriceLabel'); if (l) l.textContent = '$' + Number(ps.value).toLocaleString('es-AR'); });
+
+  ['filterBrand', 'filterModel', 'filterStorage', 'filterInstallments', 'filterDiscount'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('change', applyFilters);
+  });
 
   var cm = document.getElementById('cartModal');
   if (cm) cm.addEventListener('click', function (e) { if (e.target === cm) toggleCart(); });
