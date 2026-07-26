@@ -69,7 +69,8 @@ async function renderTools() {
   const grid = document.getElementById('toolsGrid');
   if (!grid) return;
   
-  const user = firebase.auth().currentUser;
+  const { data: { session } } = await supabase.auth.getSession();
+const user = session?.user || null;
   if (!user) {
     grid.innerHTML = '<p style="text-align:center;padding:40px;color:#888;">🔒 Debés iniciar sesión como técnico para ver las herramientas</p>';
     return;
