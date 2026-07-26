@@ -1,115 +1,124 @@
 // ========================================
-// CELL SPACE - IMEI CHECKER
-// Modo: Verificación Manual por WhatsApp
+// CHEQUEO DE IMEI - servicios.html (panel lateral)
 // ========================================
 
-console.log('🔍 Cell Space IMEI System Loaded');
+const EDGE_FUNCTION_URL = 'https://cfoajkbzsqyimbfjhfsa.supabase.co/functions/v1/imei-check';
+
+function populateImeiSelect() {
+  const select = document.getElementById('imeiServiceSelect');
+  if (!select || !window.IMEI_CATALOG) return;
+
+  const categories = {};
+  window.IMEI_CATALOG.forEach(s => {
+    if (!categories[s.category]) categories[s.category] = [];
+    categories[s.category].push(s);
+  });
+
+  select.innerHTML = Object.keys(categories).map(cat => {
+    const options = categories[cat].map(s =>
+      `<option value="${s.slug}" data-price="${s.price}">${s.name} — $${s.price.toFixed(2)}</option>`
+    ).join('');
+    return `<optgroup label="${cat}">${options}</optgroup>`;
+  }).join('');
+
+  updateSelectedPrice();
+}
+
+function updateSelectedPrice() {
+  const select = document.getElementById('imeiServiceSelect');
+  const priceEl = document.getElementById('imeiSelectedPrice');
+  if (!select || !priceEl) return;
+  const opt = select.options[select.selectedIndex];
+  priceEl.textContent = opt ? `$${parseFloat(opt.dataset.price).toFixed(2)}` : '--';
+}
+
+async function loadUserBalance() {
+  const balanceEl = document.getElementById('imeiUserBalance');
+  if (!balanceEl) return;
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) { balanceEl.textContent = 'Iniciá sesión'; return; }
+
+  const { data, error } = await supabase.from('profiles').select('balance').eq('id', session.user.id).maybeSingle();
+  balanceEl.textContent = (!error && data) ? `$${Number(data.balance).toFixed(2)}` : '$0.00';
+}
+
+async function runImeiCheck() {
+  const btn = document.getElementById('imeiCheckBtn');
+  const resultBox = document.getElementById('imeiCheckResult');
+  const imei = document.getElementById('imeiInputCheck').value.trim();
+  const service = document.getElementById('imeiServiceSelect').value;
+
+  if (!imei || imei.replace(/[^0-9A-Za-z]/g, '').length < 10) {
+    alert('⚠️ Ingresá un IMEI válido');
+    return;
+  }
+
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    alert('⚠️ Necesitás iniciar sesión para consultar un IMEI');
+    window.location.href = 'login.html';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Consultando...';
+  resultBox.style.display = 'none';
+
+  try {
+    const resp = await fetch(EDGE_FUNCTION_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ imei, service }),
+    });
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      resultBox.innerHTML = `<div class="imei-result-error">❌ ${data.error || 'No se pudo completar la consulta'}</div>`;
+      resultBox.style.display = 'block';
+      return;
+    }
+
+    const rows = Object.entries(data.result || {})
+      .filter(([k]) => k !== 'raw')
+      .map(([k, v]) => `<div class="imei-result-row"><span>${k}</span><strong>${v}</strong></div>`)
+      .join('') || `<div class="imei-result-row">${data.result?.raw || 'Sin datos'}</div>`;
+
+    resultBox.innerHTML = `
+      <div class="imei-result-header">✅ ${data.service} — se descontaron $${Number(data.price_charged).toFixed(2)}</div>
+      ${rows}
+    `;
+    resultBox.style.display = 'block';
+    loadUserBalance();
+  } catch (err) {
+    resultBox.innerHTML = `<div class="imei-result-error">❌ Error de conexión, intentá de nuevo</div>`;
+    resultBox.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-search"></i> Consultar (<span id="imeiSelectedPrice"></span>)';
+    updateSelectedPrice();
+  }
+}
+
+// ---- Abrir / cerrar el panel lateral ----
+function openImeiPanel() {
+  document.getElementById('imeiCheckSection')?.classList.add('open');
+  document.getElementById('imeiPanelOverlay')?.classList.add('open');
+}
+function closeImeiPanel() {
+  document.getElementById('imeiCheckSection')?.classList.remove('open');
+  document.getElementById('imeiPanelOverlay')?.classList.remove('open');
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-  createParticles();
-  setupSearchTabs();
-  setupIMEIInput();
-  
-  // Configurar botón para redirigir a WhatsApp
-  const btn = document.getElementById('searchBtn');
-  const input = document.getElementById('imeiInput');
-  
-  if (btn) {
-    btn.addEventListener('click', () => {
-      const imei = input.value.trim();
-      
-      if (!imei || imei.length < 14) {
-        alert('⚠️ Ingresá un IMEI válido (14-16 dígitos)');
-        return;
-      }
-      
-      // Redirigir a WhatsApp con el IMEI pre-completado
-      const message = `Hola! 👋\nNecesito verificar un IMEI:\n\n📱 *${imei}*\n\n¿Me pueden ayudar con la verificación?`;
-      const whatsappUrl = `https://wa.me/5493782437674?text=${encodeURIComponent(message)}`;
-      
-      window.open(whatsappUrl, '_blank');
-    });
-  }
-  
-  // Mostrar sección informativa
-  const section = document.getElementById('resultsSection');
-  if (section) {
-    section.innerHTML = `
-      <div style="text-align:center;padding:60px 20px;background:linear-gradient(135deg, rgba(255,106,0,0.1) 0%, rgba(255,106,0,0.05) 100%);border-radius:16px;margin:40px auto;max-width:600px;border:2px solid rgba(255,106,0,0.2);">
-        <div style="font-size:5rem;margin-bottom:20px;">📱</div>
-        <h2 style="color:var(--orange);margin:0 0 15px 0;font-size:1.8rem;">Verificación de IMEI</h2>
-        <p style="color:var(--muted);margin:0 0 25px 0;font-size:1.1rem;line-height:1.6;">
-          Para garantizar la precisión de la información, realizamos verificaciones <strong>manualmente</strong>.
-        </p>
-        
-        <div style="background:rgba(255,255,255,0.05);padding:25px;border-radius:12px;margin:25px 0;">
-          <h3 style="color:white;margin:0 0 15px 0;font-size:1.2rem;">¿Cómo funciona?</h3>
-          <ol style="text-align:left;color:var(--muted);margin:0;padding-left:20px;line-height:1.8;">
-            <li>Ingresá tu IMEI en el campo de arriba</li>
-            <li>Hacé clic en "Consultar"</li>
-            <li>Te redirigiremos a WhatsApp con los datos</li>
-            <li>Te respondemos en minutos con el reporte completo</li>
-          </ol>
-        </div>
-        
-        <div style="background:rgba(76,175,80,0.1);padding:20px;border-radius:12px;margin:20px 0;border-left:4px solid #4CAF50;">
-          <p style="margin:0 0 10px 0;color:#4CAF50;font-weight:700;">✅ Ventajas:</p>
-          <ul style="text-align:left;color:var(--muted);margin:0;padding-left:20px;">
-            <li>Verificación 100% precisa</li>
-            <li>Respuesta rápida (5-10 min)</li>
-            <li>Asesoramiento personalizado</li>
-            <li>Sin costo de consulta</li>
-          </ul>
-        </div>
-        
-        <a href="https://wa.me/5493782437674?text=Hola!%20Necesito%20verificar%20un%20IMEI" 
-           target="_blank" 
-           style="display:inline-flex;align-items:center;gap:10px;padding:15px 35px;background:#25D366;color:white;text-decoration:none;border-radius:30px;font-weight:700;font-size:1.1rem;margin-top:20px;box-shadow:0 4px 15px rgba(37,211,102,0.3);transition:transform 0.3s;">
-          <span>💬</span>
-          <span>Consultar por WhatsApp</span>
-        </a>
-        
-        <p style="color:var(--muted);margin:20px 0 0 0;font-size:0.9rem;">
-          Horario de atención: Lun-Sáb 9:00 - 20:00
-        </p>
-      </div>
-    `;
-    section.style.display = 'block';
-  }
+  populateImeiSelect();
+  loadUserBalance();
+  document.getElementById('imeiServiceSelect')?.addEventListener('change', updateSelectedPrice);
+  document.getElementById('imeiCheckBtn')?.addEventListener('click', runImeiCheck);
+
+  document.getElementById('imeiPanelTrigger')?.addEventListener('click', openImeiPanel);
+  document.getElementById('imeiPanelClose')?.addEventListener('click', closeImeiPanel);
+  document.getElementById('imeiPanelOverlay')?.addEventListener('click', closeImeiPanel);
 });
-
-// PARTÍCULAS DE FONDO
-function createParticles() {
-  const container = document.getElementById('particles');
-  if (!container) return;
-  for (let i = 0; i < 20; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle';
-    p.style.left = Math.random() * 100 + '%';
-    p.style.animationDuration = (8 + Math.random() * 15) + 's';
-    p.style.animationDelay = Math.random() * 10 + 's';
-    p.style.width = p.style.height = (1 + Math.random() * 3) + 'px';
-    p.style.opacity = 0.1 + Math.random() * 0.4;
-    container.appendChild(p);
-  }
-}
-
-// TABS DE BÚSQUEDA
-function setupSearchTabs() {
-  document.querySelectorAll('.search-tab').forEach(tab => {
-    tab.addEventListener('click', function() {
-      document.querySelectorAll('.search-tab').forEach(t => t.classList.remove('active'));
-      this.classList.add('active');
-    });
-  });
-}
-
-// VALIDACIÓN DE INPUT
-function setupIMEIInput() {
-  const input = document.getElementById('imeiInput');
-  input.addEventListener('input', function() {
-    this.value = this.value.replace(/[^0-9A-Fa-f]/g, '');
-  });
-}
-
-console.log('✅ IMEI Checker en modo manual listo');
