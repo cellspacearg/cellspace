@@ -21,6 +21,7 @@ try {
     '/login':     { component: loginView,     onMount: loginViewOnMount,     beforeEnter: async () => { const a=await auth(); if(a){ window.location.hash='#/dashboard'; return false; } return true; } },
     '/dashboard': { component: dashboardView, onMount: dashboardViewOnMount, beforeEnter: auth },
     '/products':  { component: productsView,  onMount: productsViewOnMount,  beforeEnter: auth },
+    '/categories':{ component: categoriesView, onMount: categoriesViewOnMount, beforeEnter: auth },
     '/services':  { component: servicesView,  onMount: servicesViewOnMount,  beforeEnter: auth },
     '/pages':     { component: pagesView,     onMount: pagesViewOnMount,     beforeEnter: auth },
     '/builder':   { component: builderView,   onMount: builderViewOnMount,   beforeEnter: auth },
