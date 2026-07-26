@@ -250,17 +250,9 @@
   <script src="js/herramientas.js"></script>
   
   <script>
-    // Verificar acceso (solo técnicos y admin)
+    // Verificar acceso (solo técnicos y admin) — se mantiene, es específico de esta página
     document.addEventListener('DOMContentLoaded', async () => {
-      const hasAccess = await checkAccess('technician');
-      if (!hasAccess) return;
-      
-      await controlVisibility();
-      
-      // Cargar herramientas si la función existe en herramientas.js
-      if (typeof renderTools === 'function') {
-        renderTools();
-      }
+      await checkAccess('technician');
     });
   </script>
   <script src="js/site-config.js?v=1"></script>
