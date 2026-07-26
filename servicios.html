@@ -115,30 +115,6 @@
         </div>
       </section>
 
-      <section class="imei-check-section" id="imeiCheckSection">
-        <div class="section-header">
-          <h2 class="section-title"><i class="fas fa-mobile-alt"></i> VERIFICÁ TU EQUIPO POR IMEI</h2>
-          <p class="section-subtitle">Conocé el estado real de un equipo antes de comprarlo o repararlo</p>
-        </div>
-
-        <div class="imei-check-card">
-          <div class="imei-balance-row">
-            <span>Tu saldo: <strong id="imeiUserBalance">--</strong></span>
-            <a href="perfil.html#saldo" class="imei-topup-link">Cargar saldo</a>
-          </div>
-
-          <input type="text" id="imeiInputCheck" class="imei-input" placeholder="Ingresá el IMEI (marcá *#06# en el equipo)" maxlength="20">
-
-          <select id="imeiServiceSelect" class="imei-select"></select>
-
-          <button id="imeiCheckBtn" class="btn-imei-consult">
-            <i class="fas fa-search"></i> Consultar (<span id="imeiSelectedPrice">--</span>)
-          </button>
-
-          <div id="imeiCheckResult" class="imei-check-result" style="display:none;"></div>
-        </div>
-      </section>
-
       <section class="services-section">
         <div class="section-header">
           <h2 class="section-title"><i class="fas fa-wrench"></i> ¿QUÉ PODEMOS REPARAR?</h2>
@@ -282,5 +258,33 @@
   <a href="https://wa.me/5493782437674" target="_blank" class="wa-float" aria-label="WhatsApp">
   <i class="fab fa-whatsapp"></i>
 </a>
+
+<button id="imeiPanelTrigger" class="imei-float" aria-label="Check IMEI">
+  <i class="fas fa-mobile-alt"></i>
+</button>
+
+<div class="imei-panel-overlay" id="imeiPanelOverlay"></div>
+
+<aside class="imei-side-panel" id="imeiCheckSection">
+  <div class="imei-panel-header">
+    <h3><i class="fas fa-mobile-alt"></i> Check IMEI</h3>
+    <button class="imei-panel-close" id="imeiPanelClose" aria-label="Cerrar">&times;</button>
+  </div>
+
+  <div class="imei-balance-row">
+    <span>Tu saldo: <strong id="imeiUserBalance">--</strong></span>
+    <a href="perfil.html#saldo" class="imei-topup-link">Cargar saldo</a>
+  </div>
+
+  <input type="text" id="imeiInputCheck" class="imei-input" placeholder="Ingresá el IMEI (marcá *#06# en el equipo)" maxlength="20">
+
+  <select id="imeiServiceSelect" class="imei-select"></select>
+
+  <button id="imeiCheckBtn" class="btn-imei-consult">
+    <i class="fas fa-search"></i> Consultar (<span id="imeiSelectedPrice">--</span>)
+  </button>
+
+  <div id="imeiCheckResult" class="imei-check-result" style="display:none;"></div>
+</aside>
 </body>
 </html>
