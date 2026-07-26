@@ -144,18 +144,6 @@
           <li><a href="herramientas.html" class="nav-link">HERRAMIENTAS</a></li>
           <li><a href="index.html#contacto" class="nav-link">CONTACTO</a></li>
         </ul>
-        
-        <div class="nav-buttons">
-          <button onclick="openIMEIChecker()" class="btn-imei-check">
-            <i class="fas fa-mobile-alt"></i>
-            <span>Check IMEI</span>
-          </button>
-          
-          <a href="https://wa.me/5493782437674" target="_blank" class="btn-whatsapp">
-            <i class="fab fa-whatsapp"></i>
-            <span>WhatsApp</span>
-          </a>
-        </div>
       </div>
     </nav>
   </header>
@@ -359,31 +347,8 @@
     </div>
   </div>
 
-  <!-- MODAL CHECK IMEI -->
-  <div id="imeiModal" class="modal-imei">
-    <div class="modal-imei-content">
-      <button class="modal-close" onclick="closeIMEIChecker()">&times;</button>
-      <h2>📱 Verificación de IMEI</h2>
-      <p>Ingresá el IMEI del dispositivo para verificar su estado</p>
-      
-      <form id="imeiForm">
-        <div class="form-group">
-          <label>IMEI del dispositivo</label>
-          <input type="text" id="imeiInput" placeholder="Ej: 356789012345678" maxlength="15" required>
-          <small>El IMEI se encuentra marcando *#06# en el teléfono</small>
-        </div>
-        
-        <button type="submit" class="btn-check-imei">
-          <i class="fas fa-search"></i> Verificar IMEI
-        </button>
-      </form>
-      
-      <div id="imeiResult" class="imei-result" style="display:none;"></div>
-    </div>
-  </div>
-
   <!-- ========================================
-       SCRIPTS (LIMPIOS Y SIN DUPLICADOS)
+       SCRIPTS
        ======================================== -->
   <script src="js/config.js?v=2"></script>
   <script src="js/auth-middleware.js"></script>
@@ -391,8 +356,7 @@
   
   <script src="js/site-config.js?v=2"></script>
   <script src="js/cs-auth.js?v=1"></script>
-
-  <a href="https://wa.me/5493782437674" target="_blank" class="wa-float" aria-label="WhatsApp">
+<a href="https://wa.me/5493782437674" target="_blank" class="wa-float" aria-label="WhatsApp">
   <i class="fab fa-whatsapp"></i>
 </a>
 </body>
