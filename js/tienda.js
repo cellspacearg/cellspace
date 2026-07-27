@@ -5,6 +5,7 @@
 
 let cart = JSON.parse(localStorage.getItem('cellspace_cart') || '[]');
 let activeCategory = 'all';
+let searchTerm = '';
 let sliderCalibrated = false;
 let navigating = false;
 let allCategoriesCache = [];
@@ -227,6 +228,12 @@ function applyFilters() {
     if (storage) list = list.filter(function (p) { return Array.isArray(p.storage_options) && p.storage_options.indexOf(storage) !== -1; });
     if (onlyInstallments) list = list.filter(function (p) { return !!(p.installments && String(p.installments).trim()); });
     if (onlyDiscount) list = list.filter(function (p) { return p.old_price && Number(p.old_price) > Number(p.price); });
+    if (searchTerm) {
+      var q = searchTerm.toLowerCase();
+      list = list.filter(function (p) {
+        return (p.name || '').toLowerCase().indexOf(q) !== -1 || (p.description || '').toLowerCase().indexOf(q) !== -1;
+      });
+    }
     renderProducts(list);
   });
 }
@@ -309,7 +316,18 @@ function updateProductsCount(count) { var el = document.getElementById('products
 document.addEventListener('DOMContentLoaded', function () {
   injectListFx();
   initCategories();
-  renderProducts();
+
+  var urlParams = new URLSearchParams(window.location.search);
+  var q = urlParams.get('q');
+  if (q) {
+    searchTerm = q;
+    var searchInput = document.getElementById('headerSearchInput');
+    if (searchInput) searchInput.value = q;
+    applyFilters();
+  } else {
+    renderProducts();
+  }
+
   updateCartCount();
   attachCardFx(document.getElementById('productsGrid'));
 
