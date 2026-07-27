@@ -4142,3 +4142,21 @@ body::after {
   .wa-float { width: 52px; height: 52px; bottom: 16px; right: 16px; }
   .wa-float i { font-size: 26px; }
 }
+/* ======================================== 
+   SELECTS DE FORMULARIOS (registro técnico)
+   ======================================== */
+.cs-select {
+  width: 100%;
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 10px;
+  color: white;
+  font-size: 15px;
+  font-family: 'Montserrat', sans-serif;
+  outline: none;
+}
+.cs-select option {
+  background: #151515;
+  color: white;
+}
