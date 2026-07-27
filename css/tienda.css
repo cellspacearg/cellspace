@@ -448,6 +448,71 @@ body {
   color: var(--text);
 }
 
+/* ---------- desplegable propio (reemplaza la lista nativa del navegador) ---------- */
+.cs-select-wrap {
+  position: relative;
+  margin-bottom: 10px;
+}
+.cs-select-wrap select.filter-select {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  margin: 0;
+}
+.cs-select-trigger {
+  width: 100%;
+  padding: 10px 35px 10px 15px;
+  background: var(--dark);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: 'Montserrat', sans-serif;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+  display: block;
+}
+.cs-select-trigger::after {
+  content: '';
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  width: 10px;
+  height: 6px;
+  transform: translateY(-50%);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23FF6A00' d='M1 1l5 5 5-5'/%3E%3C/svg%3E") no-repeat center / contain;
+  transition: transform .2s ease;
+}
+.cs-select-wrap.open .cs-select-trigger::after { transform: translateY(-50%) rotate(180deg); }
+.cs-select-wrap.open .cs-select-trigger { border-color: var(--primary); }
+
+.cs-select-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--dark);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.5);
+  z-index: 50;
+}
+.cs-select-wrap.open .cs-select-panel { display: block; }
+
+.cs-select-option {
+  padding: 10px 15px;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+}
+.cs-select-option:hover { background: rgba(255,106,0,0.15); }
+.cs-select-option.selected { background: var(--primary); color: #fff; }
+
 .filter-search:focus,
 .filter-select:focus {
   border-color: var(--primary);
