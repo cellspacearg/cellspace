@@ -12,6 +12,24 @@
   <link rel="stylesheet" href="css/cms-public.css?v=1">
   <link rel="stylesheet" href="css/cs-auth.css?v=1">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .cf-box { background: rgba(21,21,21,0.95); border: 1px solid rgba(255,106,0,0.3); border-radius: 20px; padding: 30px; }
+    .cf-group { margin-bottom: 15px; }
+    .cf-group label { display:block; color:white; font-weight:600; margin-bottom:6px; font-size:13px; }
+    .cf-group input, .cf-group select, .cf-group textarea {
+      width:100%; padding:12px 16px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15);
+      border-radius:10px; color:white; font-family:'Montserrat',sans-serif; outline:none; font-size:14px;
+    }
+    .cf-group select { cursor:pointer; }
+    .cf-row2 { display:grid; grid-template-columns:1fr 1fr; gap:15px; }
+    .cf-row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:15px; }
+    .cf-section-title { color:white; font-size:16px; font-weight:700; margin:25px 0 15px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1); }
+    .cf-section-title:first-child { margin-top:0; padding-top:0; border-top:none; }
+    .cf-check { display:flex; align-items:center; gap:10px; color:white; font-size:14px; margin-bottom:15px; cursor:pointer; }
+    .pay-option { display:flex; gap:12px; align-items:flex-start; padding:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.12); border-radius:10px; cursor:pointer; color:white; font-size:14px; }
+    .pay-option:has(input:checked) { border-color: var(--orange); background: rgba(255,106,0,0.08); }
+    .pay-option input { margin-top:3px; accent-color: var(--orange); }
+  </style>
 </head>
 <body>
   <div class="particles" id="particles"></div>
@@ -48,38 +66,109 @@
       <div id="checkoutContent" style="display:grid; grid-template-columns: 1.3fr 1fr; gap:30px; align-items:start;">
 
         <!-- FORMULARIO -->
-        <div class="login-box" style="background: rgba(21,21,21,0.95); border: 1px solid rgba(255,106,0,0.3); border-radius: 20px; padding: 30px;">
-          <h2 style="color:white; font-size:18px; margin-bottom:20px;"><i class="fas fa-user" style="color:var(--orange);"></i> Tus datos</h2>
-
+        <div class="cf-box">
           <form id="checkoutForm">
-            <div class="form-group" style="margin-bottom:15px;">
-              <label style="display:block;color:white;font-weight:600;margin-bottom:6px;font-size:13px;">Nombre completo</label>
-              <input type="text" id="buyerName" required style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:white;font-family:'Montserrat',sans-serif;outline:none;">
+
+            <div class="cf-section-title"><i class="fas fa-user" style="color:var(--orange);"></i> Datos de facturación</div>
+
+            <div class="cf-row2">
+              <div class="cf-group"><label>Nombre *</label><input type="text" id="firstName" required></div>
+              <div class="cf-group"><label>Apellido *</label><input type="text" id="lastName" required></div>
             </div>
-            <div class="form-group" style="margin-bottom:15px;">
-              <label style="display:block;color:white;font-weight:600;margin-bottom:6px;font-size:13px;">Email</label>
-              <input type="email" id="buyerEmail" required style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:white;font-family:'Montserrat',sans-serif;outline:none;">
-            </div>
-            <div class="form-group" style="margin-bottom:15px;">
-              <label style="display:block;color:white;font-weight:600;margin-bottom:6px;font-size:13px;">Teléfono</label>
-              <input type="tel" id="buyerPhone" required placeholder="3782-XXXXXX" style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:white;font-family:'Montserrat',sans-serif;outline:none;">
-            </div>
-            <div class="form-group" style="margin-bottom:15px;">
-              <label style="display:block;color:white;font-weight:600;margin-bottom:6px;font-size:13px;">Dirección de envío</label>
-              <input type="text" id="shipAddress" required style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:white;font-family:'Montserrat',sans-serif;outline:none;">
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px;">
-              <div class="form-group">
-                <label style="display:block;color:white;font-weight:600;margin-bottom:6px;font-size:13px;">Ciudad</label>
-                <input type="text" id="shipCity" required style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:white;font-family:'Montserrat',sans-serif;outline:none;">
+            <div class="cf-group"><label>Nombre de la empresa (opcional)</label><input type="text" id="company"></div>
+
+            <div class="cf-row2">
+              <div class="cf-group"><label>Tipo de documento *</label>
+                <select id="documentType" required>
+                  <option value="DNI">DNI</option>
+                  <option value="CUIT">CUIT</option>
+                  <option value="Pasaporte">Pasaporte</option>
+                </select>
               </div>
-              <div class="form-group">
-                <label style="display:block;color:white;font-weight:600;margin-bottom:6px;font-size:13px;">Provincia</label>
-                <input type="text" id="shipProvince" required style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:white;font-family:'Montserrat',sans-serif;outline:none;">
-              </div>
+              <div class="cf-group"><label>Número de documento *</label><input type="text" id="documentNumber" required></div>
             </div>
 
-            <h2 style="color:white; font-size:18px; margin-bottom:15px;"><i class="fas fa-credit-card" style="color:var(--orange);"></i> Método de pago</h2>
+            <div class="cf-group"><label>Condición fiscal *</label>
+              <select id="taxCondition" required>
+                <option value="CF - Consumidor Final">CF - Consumidor Final</option>
+                <option value="Responsable Inscripto">Responsable Inscripto</option>
+                <option value="Monotributista">Monotributista</option>
+                <option value="Exento">Exento</option>
+              </select>
+            </div>
+
+            <div class="cf-group"><label>Calle *</label><input type="text" id="billStreet" required></div>
+            <div class="cf-row3">
+              <div class="cf-group"><label>Altura *</label><input type="text" id="billNumber" required></div>
+              <div class="cf-group"><label>Piso (opcional)</label><input type="text" id="billFloor"></div>
+              <div class="cf-group"><label>Depto (opcional)</label><input type="text" id="billApartment"></div>
+            </div>
+            <div class="cf-row2">
+              <div class="cf-group"><label>Código postal *</label><input type="text" id="billPostal" required></div>
+              <div class="cf-group"><label>Provincia *</label>
+                <select id="billProvince" required>
+                  <option value="">Seleccionar...</option>
+                  <option>Buenos Aires</option><option>CABA</option><option>Catamarca</option>
+                  <option>Chaco</option><option>Chubut</option><option>Córdoba</option>
+                  <option>Corrientes</option><option>Entre Ríos</option><option>Formosa</option>
+                  <option>Jujuy</option><option>La Pampa</option><option>La Rioja</option>
+                  <option>Mendoza</option><option>Misiones</option><option>Neuquén</option>
+                  <option>Río Negro</option><option>Salta</option><option>San Juan</option>
+                  <option>San Luis</option><option>Santa Cruz</option><option>Santa Fe</option>
+                  <option>Santiago del Estero</option><option>Tierra del Fuego</option><option>Tucumán</option>
+                </select>
+              </div>
+            </div>
+            <div class="cf-group"><label>Localidad *</label><input type="text" id="billCity" required></div>
+
+            <div class="cf-row2">
+              <div class="cf-group"><label>Teléfono *</label><input type="tel" id="buyerPhone" required placeholder="3782-XXXXXX"></div>
+              <div class="cf-group"><label>Email *</label><input type="email" id="buyerEmail" required></div>
+            </div>
+
+            <label class="cf-check">
+              <input type="checkbox" id="shipDifferent" style="accent-color:var(--orange);width:16px;height:16px;">
+              Enviar a una dirección diferente
+            </label>
+
+            <div id="shippingBlock" style="display:none;">
+              <div class="cf-section-title"><i class="fas fa-truck" style="color:var(--orange);"></i> Dirección de envío</div>
+              <div class="cf-group"><label>Calle *</label><input type="text" id="shipStreet"></div>
+              <div class="cf-row3">
+                <div class="cf-group"><label>Altura *</label><input type="text" id="shipNumber"></div>
+                <div class="cf-group"><label>Piso (opcional)</label><input type="text" id="shipFloor"></div>
+                <div class="cf-group"><label>Depto (opcional)</label><input type="text" id="shipApartment"></div>
+              </div>
+              <div class="cf-row2">
+                <div class="cf-group"><label>Código postal *</label><input type="text" id="shipPostal"></div>
+                <div class="cf-group"><label>Provincia *</label>
+                  <select id="shipProvince">
+                    <option value="">Seleccionar...</option>
+                    <option>Buenos Aires</option><option>CABA</option><option>Catamarca</option>
+                    <option>Chaco</option><option>Chubut</option><option>Córdoba</option>
+                    <option>Corrientes</option><option>Entre Ríos</option><option>Formosa</option>
+                    <option>Jujuy</option><option>La Pampa</option><option>La Rioja</option>
+                    <option>Mendoza</option><option>Misiones</option><option>Neuquén</option>
+                    <option>Río Negro</option><option>Salta</option><option>San Juan</option>
+                    <option>San Luis</option><option>Santa Cruz</option><option>Santa Fe</option>
+                    <option>Santiago del Estero</option><option>Tierra del Fuego</option><option>Tucumán</option>
+                  </select>
+                </div>
+              </div>
+              <div class="cf-group"><label>Localidad *</label><input type="text" id="shipCity"></div>
+            </div>
+
+            <div class="cf-section-title" style="margin-top:15px;"><i class="fas fa-truck-fast" style="color:var(--orange);"></i> Envío</div>
+            <p style="color:#aaa; font-size:13px; background:rgba(255,106,0,0.08); border:1px solid rgba(255,106,0,0.2); border-radius:8px; padding:12px 14px;">
+              Coordinamos el envío por WhatsApp una vez confirmado tu pedido (Andreani, OCA o el medio que prefieras).
+            </p>
+
+            <div class="cf-group">
+              <label>Notas del pedido (opcional)</label>
+              <textarea id="orderNotes" rows="3" placeholder="Notas sobre tu pedido, por ejemplo: horario de entrega, referencias, etc."></textarea>
+            </div>
+
+            <div class="cf-section-title"><i class="fas fa-credit-card" style="color:var(--orange);"></i> Método de pago</div>
             <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
               <label class="pay-option">
                 <input type="radio" name="payMethod" value="mercadopago" checked>
@@ -103,7 +192,7 @@
         </div>
 
         <!-- RESUMEN -->
-        <div class="login-box" style="background: rgba(21,21,21,0.95); border: 1px solid rgba(255,106,0,0.3); border-radius: 20px; padding: 25px;">
+        <div class="cf-box" style="padding:25px;">
           <h2 style="color:white; font-size:18px; margin-bottom:20px;"><i class="fas fa-receipt" style="color:var(--orange);"></i> Tu pedido</h2>
           <div id="orderItemsList" style="display:flex; flex-direction:column; gap:14px; margin-bottom:20px;"></div>
           <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:15px; display:flex; justify-content:space-between; font-size:18px; font-weight:800; color:white;">
@@ -115,12 +204,6 @@
       </div>
     </div>
   </main>
-
-  <style>
-    .pay-option { display:flex; gap:12px; align-items:flex-start; padding:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.12); border-radius:10px; cursor:pointer; color:white; font-size:14px; }
-    .pay-option:has(input:checked) { border-color: var(--orange); background: rgba(255,106,0,0.08); }
-    .pay-option input { margin-top:3px; accent-color: var(--orange); }
-  </style>
 
   <!-- Scripts -->
   <script src="js/config.js"></script>
