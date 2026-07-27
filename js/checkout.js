@@ -13,6 +13,7 @@ function money(n) {
 }
 
 function getCart() { return JSON.parse(localStorage.getItem('cellspace_cart') || '[]'); }
+function val(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
 
 function renderOrderSummary() {
   var cart = getCart();
@@ -40,6 +41,19 @@ function renderOrderSummary() {
   document.getElementById('orderTotal').textContent = '$' + money(total);
 }
 
+function setupShipToggle() {
+  var chk = document.getElementById('shipDifferent');
+  var block = document.getElementById('shippingBlock');
+  if (!chk) return;
+  chk.addEventListener('change', function () {
+    block.style.display = chk.checked ? 'block' : 'none';
+    ['shipStreet', 'shipNumber', 'shipPostal', 'shipProvince', 'shipCity'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.required = chk.checked;
+    });
+  });
+}
+
 async function submitCheckout(e) {
   e.preventDefault();
   var cart = getCart();
@@ -51,19 +65,49 @@ async function submitCheckout(e) {
   btn.disabled = true; btnText.style.display = 'none'; btnLoader.style.display = 'inline-block';
 
   var payMethod = document.querySelector('input[name="payMethod"]:checked').value;
+  var shipDifferent = document.getElementById('shipDifferent').checked;
 
   var payload = {
     items: cart.map(function (i) { return { id: i.id, name: i.name, price: i.price, quantity: i.quantity }; }),
     buyer: {
-      name: document.getElementById('buyerName').value.trim(),
-      email: document.getElementById('buyerEmail').value.trim(),
-      phone: document.getElementById('buyerPhone').value.trim(),
+      firstName: val('firstName'),
+      lastName: val('lastName'),
+      name: val('firstName') + ' ' + val('lastName'),
+      company: val('company'),
+      email: val('buyerEmail'),
+      phone: val('buyerPhone'),
+      documentType: val('documentType'),
+      documentNumber: val('documentNumber'),
+      taxCondition: val('taxCondition'),
     },
-    shipping: {
-      address: document.getElementById('shipAddress').value.trim(),
-      city: document.getElementById('shipCity').value.trim(),
-      province: document.getElementById('shipProvince').value.trim(),
+    billing: {
+      street: val('billStreet'),
+      number: val('billNumber'),
+      floor: val('billFloor'),
+      apartment: val('billApartment'),
+      postalCode: val('billPostal'),
+      province: val('billProvince'),
+      city: val('billCity'),
     },
+    shipToDifferentAddress: shipDifferent,
+    shipping: shipDifferent ? {
+      street: val('shipStreet'),
+      number: val('shipNumber'),
+      floor: val('shipFloor'),
+      apartment: val('shipApartment'),
+      postalCode: val('shipPostal'),
+      province: val('shipProvince'),
+      city: val('shipCity'),
+    } : {
+      street: val('billStreet'),
+      number: val('billNumber'),
+      floor: val('billFloor'),
+      apartment: val('billApartment'),
+      postalCode: val('billPostal'),
+      province: val('billProvince'),
+      city: val('billCity'),
+    },
+    orderNotes: val('orderNotes'),
     paymentMethod: payMethod,
   };
 
@@ -73,16 +117,14 @@ async function submitCheckout(e) {
     if (data.error) throw new Error(data.error);
 
     if (payMethod === 'mercadopago') {
-      // Redirige a Mercado Pago a pagar
       window.location.href = data.init_point;
     } else {
-      // Transferencia / Binance: mandamos a WhatsApp con el número de pedido
       localStorage.removeItem('cellspace_cart');
-      var walletInfo = payMethod === 'binance'
-        ? '\n\nMétodo: Binance (USDT)'
-        : '\n\nMétodo: Transferencia bancaria';
-      var msg = '¡Hola! Hice el pedido *' + data.order_number + '*' + walletInfo +
-        '\nTotal: $' + money(payload.items.reduce(function (s, i) { return s + (Number(i.price) || 0) * i.quantity; }, 0)) +
+      var methodLabel = payMethod === 'binance' ? 'Binance (USDT)' : 'Transferencia bancaria';
+      var total = payload.items.reduce(function (s, i) { return s + (Number(i.price) || 0) * i.quantity; }, 0);
+      var msg = '¡Hola! Hice el pedido *' + data.order_number + '*' +
+        '\nMétodo: ' + methodLabel +
+        '\nTotal: $' + money(total) +
         '\n\nTe mando el comprobante para confirmar.';
       var wa = (window.CMS_CONFIG && window.CMS_CONFIG.whatsapp ? String(window.CMS_CONFIG.whatsapp).replace(/[^0-9]/g, '') : '5493782437674');
       window.location.href = 'https://wa.me/' + wa + '?text=' + encodeURIComponent(msg);
@@ -96,6 +138,7 @@ async function submitCheckout(e) {
 
 document.addEventListener('DOMContentLoaded', function () {
   renderOrderSummary();
+  setupShipToggle();
   var form = document.getElementById('checkoutForm');
   if (form) form.addEventListener('submit', submitCheckout);
 });
