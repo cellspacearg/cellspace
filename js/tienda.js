@@ -358,12 +358,7 @@ function updateQuantity(id, d) {
 }
 function checkout() {
   if (!cart.length) { alert('Tu carrito está vacío'); return; }
-  var msg = '¡Hola! Quiero hacer el siguiente pedido:\n\n';
-  cart.forEach(function (i) { msg += '- ' + i.name + ' x' + i.quantity + ' = $' + money((Number(i.price) || 0) * i.quantity) + '\n'; });
-  var t = cart.reduce(function (s, i) { return s + (Number(i.price) || 0) * i.quantity; }, 0);
-  msg += '\nTotal: $' + money(t);
-  var wa = (window.CMS_CONFIG && window.CMS_CONFIG.whatsapp ? String(window.CMS_CONFIG.whatsapp).replace(/[^0-9]/g, '') : '5493782437674');
-  window.open('https://wa.me/' + wa + '?text=' + encodeURIComponent(msg), '_blank');
+  window.location.href = 'checkout.html';
 }
 function addToWishlist() { showNotification('❤️ Producto agregado a favoritos'); }
 function showNotification(message) {
