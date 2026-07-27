@@ -2,13 +2,7 @@
 // INICIO · CMS (12.B) — destacados vivos + ficha
 // ========================================
 
-var featuredFallback = [
-  { id: 1, name: "Chimera Tool Premium - 5000 Teléfonos", category: "Licencias", brand: "Chimera", price: 181.00, old_price: 220.00, image_url: "assets/products/chimera.png", rating: 5, badge: "OFERTA", stock: 15 },
-  { id: 2, name: "Z3X Box - Samsung Edition", category: "Hardware", brand: "Z3X", price: 145.00, old_price: null, image_url: "assets/products/z3x.png", rating: 4, badge: null, stock: 8 },
-  { id: 3, name: "NCK Dongle - Full Activation", category: "Licencias", brand: "NCK", price: 89.00, old_price: 120.00, image_url: "assets/products/nck.png", rating: 5, badge: "OFERTA", stock: 25 },
-  { id: 4, name: "Medusa Pro 2 Box", category: "Hardware", brand: "Medusa", price: 299.00, old_price: 350.00, image_url: "assets/products/medusa.png", rating: 5, badge: "Últimas unidades", stock: 3 }
-];
-var currentFeatured = featuredFallback.slice();
+var currentFeatured = [];
 var navigating = false;
 
 function esc(s) {
@@ -55,14 +49,15 @@ function attachCardFx(grid) {
   });
 }
 
+/* ---------- destacados: sin datos de relleno, solo lo que carguen como destacado real ---------- */
 async function loadFeatured() {
   try {
-    if (typeof supabase === 'undefined' || !supabase) return featuredFallback.slice();
+    if (typeof supabase === 'undefined' || !supabase) return [];
     var r = await supabase.from('products').select('*').order('created_at', { ascending: false });
     if (r.error) throw r.error;
     var vis = (r.data || []).filter(function (p) { return p.is_featured === true && p.is_hidden !== true && p.status !== 'draft'; });
-    return vis.length ? vis.slice(0, 8) : featuredFallback.slice();
-  } catch (e) { console.warn('[CMS] home fallback', e && e.message); return featuredFallback.slice(); }
+    return vis.slice(0, 8);
+  } catch (e) { console.warn('[CMS] no se pudieron cargar destacados', e && e.message); return []; }
 }
 
 function getCart() { return (typeof window.cart !== 'undefined') ? window.cart : JSON.parse(localStorage.getItem('cellspace_cart') || '[]'); }
@@ -70,7 +65,18 @@ function setCart(c) { if (typeof window.cart !== 'undefined') window.cart = c; l
 
 function paintFeatured(list) {
   currentFeatured = list;
-  var grid = document.getElementById('featuredProducts'); if (!grid) return;
+  var section = document.getElementById('featuredSection');
+  var grid = document.getElementById('featuredProducts');
+  if (!grid) return;
+
+  if (!list.length) {
+    // No hay productos reales marcados como destacados: se oculta la sección entera,
+    // en vez de mostrar datos inventados.
+    if (section) section.style.display = 'none';
+    return;
+  }
+  if (section) section.style.display = '';
+
   grid.innerHTML = list.map(function (product) {
     var badgeHtml = '';
     if (product.badge) {
@@ -158,8 +164,6 @@ function showNotification(message) {
   setTimeout(function () { n.style.opacity = '0'; n.style.transition = 'opacity 0.3s'; setTimeout(function () { n.remove(); }, 300); }, 3000);
 }
 
-function openIMEIChecker() { var m = document.getElementById('imeiModal'); if (m) { m.classList.add('active'); document.body.style.overflow = 'hidden'; } }
-function closeIMEIChecker() { var m = document.getElementById('imeiModal'); if (m) { m.classList.remove('active'); document.body.style.overflow = ''; } }
 function initSmoothScroll() {
   document.querySelectorAll('a[href^="#"]').forEach(function (link) {
     link.addEventListener('click', function (e) {
@@ -179,21 +183,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   var cm = document.getElementById('cartModal');
   if (cm) cm.addEventListener('click', function (e) { if (e.target === cm) toggleCart(); });
-  var im = document.getElementById('imeiModal');
-  if (im) im.addEventListener('click', function (e) { if (e.target === im) closeIMEIChecker(); });
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') { closeIMEIChecker(); var m = document.getElementById('cartModal'); if (m && m.classList.contains('active')) toggleCart(); }
-  });
-  var f = document.getElementById('imeiForm');
-  if (f) f.addEventListener('submit', function (e) {
-    e.preventDefault();
-    var imei = document.getElementById('imeiInput').value.trim();
-    if (imei.length < 10) { alert('⚠️ IMEI inválido. Debe tener al menos 10 dígitos'); return; }
-    var r = document.getElementById('imeiResult');
-    r.innerHTML = '<p style="text-align:center;color:#888;">Verificando...</p>'; r.style.display = 'block';
-    setTimeout(function () {
-      r.innerHTML = '<div style="text-align:center;"><i class="fas fa-check-circle" style="font-size:48px;color:#4CAF50;margin-bottom:15px;"></i><h3 style="color:#4CAF50;margin-bottom:10px;">IMEI Verificado</h3><p><strong>IMEI:</strong> ' + esc(imei) + '</p><p><strong>Estado:</strong> Disponible</p></div>';
-    }, 1500);
-  });
+
   console.log('✅ index.js cargado correctamente');
 });
