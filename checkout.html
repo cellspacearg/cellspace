@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finalizar Compra | Cell Space Argentina</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css?v=15">
+  <link rel="stylesheet" href="css/tienda.css?v=2">
+  <link rel="stylesheet" href="css/cms-public.css?v=1">
+  <link rel="stylesheet" href="css/cs-auth.css?v=1">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="particles" id="particles"></div>
+
+  <header class="site-header">
+    <div class="header-top">
+      <div class="container">
+        <div class="header-top-content">
+          <a href="index.html" class="logo">
+            <img src="assets/logo.png" alt="Cell Space">
+            <div class="logo-text">
+              <span class="logo-main">CELL SPACE</span>
+              <span class="logo-sub">ARGENTINA</span>
+            </div>
+          </a>
+          <div class="header-actions">
+            <a href="tienda.html" class="header-action"><i class="fas fa-arrow-left"></i><span>Volver a la tienda</span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="shop-main">
+    <div class="container" style="max-width:900px;">
+      <h1 class="shop-title" style="margin:30px 0;">FINALIZAR COMPRA</h1>
+
+      <div id="emptyCartMsg" style="display:none; text-align:center; padding:60px 20px; color:#888;">
+        <i class="fas fa-shopping-cart" style="font-size:48px; margin-bottom:15px;"></i>
+        <p>Tu carrito está vacío.</p>
+        <a href="tienda.html" class="btn-service-primary" style="display:inline-block;margin-top:15px;">Ir a la tienda</a>
+      </div>
+
+      <div id="checkoutContent" style="display:grid; grid-template-columns: 1.3fr 1fr; gap:30px; align-items:start;">
+
+        <!-- FORMULARIO -->
+        <div class="login-box" style="background: rgba(21,21,21,0.95); border: 1px solid rgba(255,106,0,0.3); border-radius: 20px; padding: 30px;">
+          <h2 style="color:white; font-size:18px; margin-bottom:20px;"><i class="fas fa-user" style="color:var(--orange);"></i> Tus datos</h2>
+
+          <form id="checkoutForm">
+            <div class="form-group" style="margin-bottom:15px;">
+              <label style="display:block;color:white;font-weight:600;margin-bottom:6px;font-size:13px;">Nombre completo</label>
+              <input type="text" id="buyerName" required style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:white;font-family:'Montserrat',sans-serif;outline:none;">
+            </div>
+            <div class="form-group" style="margin-bottom:15px;">
+              <label style="display:block;color:white;font-weight:600;margin-bottom:6px;font-size:13px;">Email</label>
+              <input type="email" id="buyerEmail" required style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:white;font-family:'Montserrat',sans-serif;outline:none;">
+            </div>
+            <div class="form-group" style="margin-bottom:15px;">
+              <label style="display:block;color:white;font-weight:600;margin-bottom:6px;font-size:13px;">Teléfono</label>
+              <input type="tel" id="buyerPhone" required placeholder="3782-XXXXXX" style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:white;font-family:'Montserrat',sans-serif;outline:none;">
+            </div>
+            <div class="form-group" style="margin-bottom:15px;">
+              <label style="display:block;color:white;font-weight:600;margin-bottom:6px;font-size:13px;">Dirección de envío</label>
+              <input type="text" id="shipAddress" required style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:white;font-family:'Montserrat',sans-serif;outline:none;">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px;">
+              <div class="form-group">
+                <label style="display:block;color:white;font-weight:600;margin-bottom:6px;font-size:13px;">Ciudad</label>
+                <input type="text" id="shipCity" required style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:white;font-family:'Montserrat',sans-serif;outline:none;">
+              </div>
+              <div class="form-group">
+                <label style="display:block;color:white;font-weight:600;margin-bottom:6px;font-size:13px;">Provincia</label>
+                <input type="text" id="shipProvince" required style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:white;font-family:'Montserrat',sans-serif;outline:none;">
+              </div>
+            </div>
+
+            <h2 style="color:white; font-size:18px; margin-bottom:15px;"><i class="fas fa-credit-card" style="color:var(--orange);"></i> Método de pago</h2>
+            <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+              <label class="pay-option">
+                <input type="radio" name="payMethod" value="mercadopago" checked>
+                <span><strong>Mercado Pago</strong><br><small style="color:#888;">Tarjeta, débito o dinero en cuenta — pago inmediato</small></span>
+              </label>
+              <label class="pay-option">
+                <input type="radio" name="payMethod" value="transferencia">
+                <span><strong>Transferencia bancaria</strong><br><small style="color:#888;">Te mandamos los datos y confirmás por WhatsApp</small></span>
+              </label>
+              <label class="pay-option">
+                <input type="radio" name="payMethod" value="binance">
+                <span><strong>Binance (USDT)</strong><br><small style="color:#888;">Para compras desde el exterior — confirmás por WhatsApp</small></span>
+              </label>
+            </div>
+
+            <button type="submit" id="checkoutSubmitBtn" class="btn-service-primary" style="width:100%; padding:16px; font-size:16px;">
+              <span id="checkoutBtnText"><i class="fas fa-lock"></i> Confirmar pedido</span>
+              <span id="checkoutBtnLoader" style="display:none;"><i class="fas fa-spinner fa-spin"></i> Procesando...</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- RESUMEN -->
+        <div class="login-box" style="background: rgba(21,21,21,0.95); border: 1px solid rgba(255,106,0,0.3); border-radius: 20px; padding: 25px;">
+          <h2 style="color:white; font-size:18px; margin-bottom:20px;"><i class="fas fa-receipt" style="color:var(--orange);"></i> Tu pedido</h2>
+          <div id="orderItemsList" style="display:flex; flex-direction:column; gap:14px; margin-bottom:20px;"></div>
+          <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:15px; display:flex; justify-content:space-between; font-size:18px; font-weight:800; color:white;">
+            <span>Total</span>
+            <span id="orderTotal" style="color:var(--orange);">$0</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <style>
+    .pay-option { display:flex; gap:12px; align-items:flex-start; padding:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.12); border-radius:10px; cursor:pointer; color:white; font-size:14px; }
+    .pay-option:has(input:checked) { border-color: var(--orange); background: rgba(255,106,0,0.08); }
+    .pay-option input { margin-top:3px; accent-color: var(--orange); }
+  </style>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/site-config.js?v=2"></script>
+  <script src="js/cs-auth.js?v=1"></script>
+  <script src="js/checkout.js"></script>
+
+  <a href="https://wa.me/5493782437674" target="_blank" class="wa-float" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+</body>
+</html>
