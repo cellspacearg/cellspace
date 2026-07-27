@@ -122,6 +122,67 @@ function calibrateSlider(products) {
 }
 
 /* ---------- llena los <select> de marca/modelo/memoria a partir de lo que hay cargado ---------- */
+/* ---------- reemplaza visualmente los <select> nativos por un desplegable propio ---------- */
+function closeAllCustomSelects(except) {
+  document.querySelectorAll('.cs-select-wrap.open').forEach(function (w) {
+    if (w !== except) w.classList.remove('open');
+  });
+}
+function buildCustomSelect(select) {
+  if (select.dataset.enhanced) {
+    // ya existe: solo actualizar las opciones del panel
+    var panel = select.parentElement.querySelector('.cs-select-panel');
+    if (panel) fillCustomPanel(select, panel);
+    return;
+  }
+  select.dataset.enhanced = '1';
+
+  var wrap = document.createElement('div');
+  wrap.className = 'cs-select-wrap';
+  select.parentNode.insertBefore(wrap, select);
+  wrap.appendChild(select);
+
+  var trigger = document.createElement('button');
+  trigger.type = 'button';
+  trigger.className = 'cs-select-trigger';
+  trigger.textContent = select.options[select.selectedIndex] ? select.options[select.selectedIndex].textContent : '';
+  wrap.appendChild(trigger);
+
+  var panel = document.createElement('div');
+  panel.className = 'cs-select-panel';
+  wrap.appendChild(panel);
+  fillCustomPanel(select, panel);
+
+  trigger.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var willOpen = !wrap.classList.contains('open');
+    closeAllCustomSelects();
+    if (willOpen) wrap.classList.add('open');
+  });
+}
+function fillCustomPanel(select, panel) {
+  panel.innerHTML = '';
+  Array.prototype.forEach.call(select.options, function (opt) {
+    var item = document.createElement('div');
+    item.className = 'cs-select-option' + (opt.value === select.value ? ' selected' : '');
+    item.textContent = opt.textContent;
+    item.addEventListener('click', function () {
+      select.value = opt.value;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      var wrap = select.closest('.cs-select-wrap');
+      wrap.querySelector('.cs-select-trigger').textContent = opt.textContent;
+      wrap.querySelectorAll('.cs-select-option').forEach(function (o) { o.classList.remove('selected'); });
+      item.classList.add('selected');
+      wrap.classList.remove('open');
+    });
+    panel.appendChild(item);
+  });
+}
+function enhanceCustomSelects() {
+  document.querySelectorAll('select.filter-select').forEach(buildCustomSelect);
+}
+document.addEventListener('click', function () { closeAllCustomSelects(); });
+
 function populateFilterOptions(products) {
   var brandSel = document.getElementById('filterBrand');
   var modelSel = document.getElementById('filterModel');
@@ -144,6 +205,7 @@ function populateFilterOptions(products) {
     storageSel.innerHTML = '<option value="">Cualquier memoria</option>' + storageList.map(function (s) { return '<option value="' + esc(s) + '">' + esc(s) + '</option>'; }).join('');
     storageSel.dataset.filled = '1';
   }
+  enhanceCustomSelects();
 }
 
 async function renderProducts(productsToRender) {
