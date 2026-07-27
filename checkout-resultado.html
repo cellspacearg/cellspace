@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resultado del Pago | Cell Space Argentina</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css?v=15">
+</head>
+<body>
+  <div class="particles" id="particles"></div>
+  <main class="shop-main">
+    <div class="container" style="max-width:560px; text-align:center; padding:80px 20px;">
+      <div id="resultBox"></div>
+      <a href="tienda.html" class="btn-service-primary" style="display:inline-block; margin-top:25px;">Volver a la tienda</a>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var status = params.get('status');
+      var order = params.get('order');
+      var box = document.getElementById('resultBox');
+
+      var content = {
+        success: {
+          icon: 'fa-circle-check', color: '#4CAF50',
+          title: '¡Pago aprobado!',
+          text: 'Tu pedido <strong>' + (order || '') + '</strong> se confirmó correctamente. Te vamos a contactar para coordinar el envío.'
+        },
+        pending: {
+          icon: 'fa-clock', color: '#FF6A00',
+          title: 'Pago pendiente',
+          text: 'Tu pedido <strong>' + (order || '') + '</strong> está siendo procesado. Te avisamos apenas se confirme.'
+        },
+        failure: {
+          icon: 'fa-circle-xmark', color: '#ff4444',
+          title: 'El pago no se pudo completar',
+          text: 'Tu pedido <strong>' + (order || '') + '</strong> no se pudo procesar. Podés intentar de nuevo o escribirnos por WhatsApp.'
+        }
+      };
+
+      if (status === 'success' && window.localStorage) localStorage.removeItem('cellspace_cart');
+
+      var c = content[status] || content.pending;
+      box.innerHTML =
+        '<i class="fas ' + c.icon + '" style="font-size:64px;color:' + c.color + ';margin-bottom:20px;"></i>' +
+        '<h1 style="color:white;font-size:26px;margin-bottom:12px;">' + c.title + '</h1>' +
+        '<p style="color:#aaa;font-size:15px;line-height:1.6;">' + c.text + '</p>';
+    })();
+  </script>
+
+  <a href="https://wa.me/5493782437674" target="_blank" class="wa-float" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+</body>
+</html>
