@@ -22,3 +22,21 @@
 
   console.log('✅ Supabase inicializado correctamente');
 })();
+
+// ========================================
+// BUSCADOR DEL HEADER (usado en todas las páginas)
+// ========================================
+window.performSearch = function () {
+  var input = document.getElementById('headerSearchInput');
+  var q = input ? input.value.trim() : '';
+  if (!q) return;
+  window.location.href = 'tienda.html?q=' + encodeURIComponent(q);
+};
+document.addEventListener('DOMContentLoaded', function () {
+  var input = document.getElementById('headerSearchInput');
+  if (input) {
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); performSearch(); }
+    });
+  }
+});
