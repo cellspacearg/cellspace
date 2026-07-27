@@ -9,9 +9,14 @@
   <link rel="stylesheet" href="css/styles.css?v=15">
   <link rel="stylesheet" href="css/cms-public.css?v=1">
   <link rel="stylesheet" href="css/cs-auth.css?v=1">
-  
-  <!-- Supabase SDK (Reemplaza a Firebase) -->
+
+  <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- EmailJS -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script type="text/javascript">
+    (function () { emailjs.init("EYej4cfwI1OIadkG5"); })();
+  </script>
 </head>
 <body>
   <div class="particles" id="particles"></div>
@@ -24,154 +29,157 @@
           <h1>Registro <span style="color:var(--orange)">Cliente</span></h1>
           <p style="color: var(--muted); font-size: 14px; margin-top: 10px;">Creá tu cuenta para acceder a la tienda</p>
         </div>
-        
+
         <form id="registerClientForm">
-          <div class="form-group">
-            <label>Nombre de Usuario</label>
-            <input type="text" id="clientUsername" placeholder="Ej: nahuel_encinas" required minlength="3">
-            <small style="color:var(--muted);font-size:12px;">Mínimo 3 caracteres, sin espacios</small>
-          </div>
-          
           <div class="form-group">
             <label>Nombre Completo</label>
             <input type="text" id="clientName" placeholder="Tu nombre completo" required>
           </div>
-          
+
           <div class="form-group">
             <label>Email</label>
             <input type="email" id="clientEmail" placeholder="tu@email.com" required>
           </div>
-          
+
           <div class="form-group">
             <label>Teléfono</label>
             <input type="tel" id="clientPhone" placeholder="3782-XXXXXX" required>
           </div>
-          
+
           <div class="form-group">
             <label>Contraseña</label>
             <input type="password" id="clientPassword" placeholder="Mínimo 6 caracteres" required minlength="6">
           </div>
-          
+
           <button type="submit" id="submitBtn" class="btn btn-primary btn-block">
             <span id="btnText">Crear Cuenta</span>
             <span id="btnLoader" style="display:none;"><i class="fas fa-spinner fa-spin"></i> Procesando...</span>
           </button>
         </form>
-        
+
         <div class="login-footer">
           <p>¿Ya tenés cuenta? <a href="login.html" style="color: var(--orange); text-decoration: none; font-weight: 600;">Iniciar sesión</a></p>
-          <p style="margin-top:10px;">¿Sos técnico? <a href="register-technician.html" style="color: var(--orange); text-decoration: none; font-weight: 600;">Registrate como técnico</a></p>
+          <p style="margin-top:10px;">¿Sos técnico? <a href="register-technician.html" style="color: var(--orange); text-decoration: none; font-weight: 600;">Solicitar acceso técnico</a></p>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- MODAL OTP -->
+  <div id="otpModal" class="otp-modal" style="display: none;">
+    <div class="otp-modal-content">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="font-size: 4rem; margin-bottom: 10px;">🔐</div>
+        <h2 style="color: var(--orange); margin: 0 0 10px; font-size: 24px;">Código de Verificación</h2>
+      </div>
+
+      <p style="color: #888; margin-bottom: 20px; text-align: center;">
+        Se ha enviado un código de 6 dígitos a<br>
+        <strong id="otpEmail" style="color: white; font-size: 1.1rem;"></strong>
+      </p>
+
+      <div class="otp-inputs" style="display: flex; gap: 10px; justify-content: center; margin: 30px 0;">
+        <input type="text" class="otp-input" maxlength="1" data-index="0" inputmode="numeric" pattern="[0-9]*">
+        <input type="text" class="otp-input" maxlength="1" data-index="1" inputmode="numeric" pattern="[0-9]*">
+        <input type="text" class="otp-input" maxlength="1" data-index="2" inputmode="numeric" pattern="[0-9]*">
+        <input type="text" class="otp-input" maxlength="1" data-index="3" inputmode="numeric" pattern="[0-9]*">
+        <input type="text" class="otp-input" maxlength="1" data-index="4" inputmode="numeric" pattern="[0-9]*">
+        <input type="text" class="otp-input" maxlength="1" data-index="5" inputmode="numeric" pattern="[0-9]*">
+      </div>
+
+      <p style="color: #ff4444; font-size: 12px; margin: 10px 0; text-align: center; min-height: 18px;" id="otpError"></p>
+
+      <button id="otpVerifyBtn" class="btn btn-primary" style="width: 100%; padding: 15px; background: var(--orange); border: none; border-radius: 12px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; font-family: 'Montserrat', sans-serif;">
+        <i class="fas fa-check-circle"></i> Verificar y crear cuenta
+      </button>
+
+      <p style="color: #888; font-size: 12px; margin: 20px 0; text-align: center;">
+        ¿No recibiste el código? <a href="#" id="otpResendLink" style="color: var(--orange); font-weight: 600;">Reenviar</a>
+      </p>
+    </div>
+  </div>
+
   <!-- SCRIPTS -->
   <script src="js/config.js"></script>
+  <script src="js/register-otp.js"></script>
   <script>
+    let pendingClient = null;
+
     document.getElementById('registerClientForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      
+
       const submitBtn = document.getElementById('submitBtn');
       const btnText = document.getElementById('btnText');
       const btnLoader = document.getElementById('btnLoader');
-      
-      const username = document.getElementById('clientUsername').value.trim().toLowerCase().replace(/\s+/g, '_');
+
       const name = document.getElementById('clientName').value.trim();
       const email = document.getElementById('clientEmail').value.trim().toLowerCase();
       const phone = document.getElementById('clientPhone').value.trim();
       const password = document.getElementById('clientPassword').value;
-      
-      // Validar username
-      if (username.length < 3) {
-        alert('⚠️ El nombre de usuario debe tener al menos 3 caracteres');
-        return;
-      }
-      
-      // Mostrar estado de carga
+
       submitBtn.disabled = true;
       btnText.style.display = 'none';
       btnLoader.style.display = 'inline-block';
-      
+
       try {
-        // 1. Verificar que el username no exista en la tabla 'users'
-        const { data: existingUser, error: checkError } = await supabase
-          .from('users')
-          .select('username')
-          .eq('username', username)
-          .maybeSingle();
-          
-        if (checkError) throw checkError;
-        
-        if (existingUser) {
-          alert('⚠️ Ese nombre de usuario ya está en uso. Probá con otro.');
-          resetButton();
-          return;
-        }
-        
-        // 2. Crear usuario en Supabase Auth
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: email,
-          password: password,
-          options: {
-            data: {
-              name: name,
-              role: 'client' // Guardamos el rol en los metadatos
-            }
-          }
-        });
-        
-        if (authError) {
-          if (authError.message.includes('already registered') || authError.message.includes('User already registered')) {
-            alert('⚠️ Ese email ya está registrado. Iniciá sesión o usá otro email.');
-          } else {
-            alert('❌ Error al crear la cuenta: ' + authError.message);
-          }
-          resetButton();
-          return;
-        }
-        
-        // 3. Guardar datos adicionales en la tabla pública 'users'
-        const { error: dbError } = await supabase
-          .from('users')
-          .insert({
-            id: authData.user.id, // Usamos el UUID que genera Supabase
-            username: username,
-            name: name,
-            email: email,
-            phone: phone,
-            role: 'client'
-          });
-          
-        if (dbError) {
-          console.error('Error DB:', dbError);
-          alert('❌ Error al guardar los datos del perfil. Intentalo de nuevo.');
-          resetButton();
-          return;
-        }
-        
-        // Éxito
-        alert('✅ ¡Cuenta creada exitosamente!\n\nAhora podés iniciar sesión con tu email y contraseña.');
-        window.location.href = 'login.html';
-        
+        pendingClient = { name, email, phone, password };
+        await sendRegisterOTP(email);
+        openRegisterOTPModal(email);
       } catch (error) {
-        console.error('Error general:', error);
-        alert('❌ Ocurrió un error inesperado: ' + error.message);
-        resetButton();
-      }
-      
-      function resetButton() {
+        console.error('Error:', error);
+        alert('❌ No se pudo enviar el código de verificación: ' + (error.message || 'Error desconocido'));
+      } finally {
         submitBtn.disabled = false;
         btnText.style.display = 'inline-block';
         btnLoader.style.display = 'none';
       }
     });
+
+    async function createClientAccount() {
+      const { name, email, phone, password } = pendingClient;
+
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: email,
+        password: password,
+        options: { data: { name: name, role: 'client' } }
+      });
+
+      if (authError) {
+        if (authError.message.includes('already registered') || authError.message.includes('User already registered')) {
+          throw new Error('Ese email ya está registrado. Iniciá sesión o usá otro email.');
+        }
+        throw new Error('Error al crear la cuenta: ' + authError.message);
+      }
+
+      const { error: dbError } = await supabase.from('profiles').upsert({
+        id: authData.user.id,
+        full_name: name,
+        email: email,
+        phone: phone,
+        role: 'client'
+      });
+
+      if (dbError) {
+        console.error('Error DB:', dbError);
+        throw new Error('La cuenta se creó pero hubo un error guardando tu perfil. Contactanos por WhatsApp.');
+      }
+
+      closeRegisterOTPModal();
+      alert('✅ ¡Cuenta creada y verificada exitosamente!\n\nAhora podés iniciar sesión con tu email y contraseña.');
+      window.location.href = 'login.html';
+    }
+
+    document.getElementById('otpVerifyBtn').addEventListener('click', () => {
+      if (!pendingClient) return;
+      verifyRegisterOTP(pendingClient.email, createClientAccount);
+    });
+    document.getElementById('otpResendLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      if (pendingClient) resendRegisterOTP(pendingClient.email);
+    });
+    setupOTPInputs();
   </script>
   <script src="js/site-config.js?v=1"></script>
   <script src="js/cs-auth.js?v=1"></script>
-
-  <a href="https://wa.me/5493782437674" target="_blank" class="wa-float" aria-label="WhatsApp">
-  <i class="fab fa-whatsapp"></i>
-</a>
 </body>
 </html>
