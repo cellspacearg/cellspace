@@ -4160,3 +4160,11 @@ body::after {
   background: #151515;
   color: white;
 }
+/* ======================================== 
+   ESPACIADO ENTRE REGÍSTRATE E INICIAR SESIÓN
+   ======================================== */
+#guestActions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
