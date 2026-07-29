@@ -23,6 +23,7 @@ function money(n) {
 function isVisible(p) {
   if (p.is_hidden === true) return false;
   if (p.status === 'draft') return false;
+  if (p.review_status === 'pending' || p.review_status === 'rejected') return false;
   return true;
 }
 
