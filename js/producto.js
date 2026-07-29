@@ -130,12 +130,45 @@
     /* stock + vendidos */
     var stockN = Number(P.stock) || 0;
     var soldN = Number(P.sold_count) || 0;
-    var stockParts = [];
-    if (soldN > 0) stockParts.push('<span class="pd-sold">'+soldN+' vendidos</span>');
-    if (stockN <= 0) stockParts.push('<span class="pd-stock pd-stock-out"><i class="fas fa-circle-xmark"></i> Sin stock</span>');
-    else if (stockN <= 3) stockParts.push('<span class="pd-stock pd-stock-low"><i class="fas fa-fire"></i> ¡Últimas '+stockN+' unidades!</span>');
-    else stockParts.push('<span class="pd-stock"><i class="fas fa-circle-check"></i> Stock disponible: '+stockN+' unidades</span>');
-    var stockHtml = '<div class="pd-stockline">'+stockParts.join('')+'</div>';
+
+    /* línea estilo Mercado Libre: "Usado · 12 vendidos" */
+    var mlParts = [esc(CONDITION_LABELS[P.device_condition] || 'Nuevo')];
+    if (soldN > 0) mlParts.push(soldN + ' vendidos');
+    var mlLineHtml = '<div class="pd-mlline">'+mlParts.join(' · ')+'</div>';
+
+    var stockHtml = stockN <= 0
+      ? '<div class="pd-stockbox"><span class="pd-stock pd-stock-out"><i class="fas fa-circle-xmark"></i> Sin stock</span></div>'
+      : '<div class="pd-stockbox">'+
+          '<strong class="pd-stock-title">Stock disponible</strong>'+
+          (stockN <= 3
+            ? '<span class="pd-stock pd-stock-low"><i class="fas fa-fire"></i> ¡Últimas '+stockN+' unidades!</span>'
+            : '<span class="pd-stock-sub">('+stockN+' disponibles)</span>')+
+        '</div>';
+
+    /* selector de cantidad */
+    var maxQty = Math.max(stockN, 1);
+    var qtyOptions = '';
+    for (var q = 1; q <= Math.min(maxQty, 10); q++) {
+      qtyOptions += '<option value="'+q+'">'+q+(q===1?' unidad':' unidades')+'</option>';
+    }
+    var qtyHtml = stockN > 0
+      ? '<div class="pd-qty"><label for="pdQty">Cantidad:</label><select id="pdQty" class="pd-qty-select">'+qtyOptions+'</select></div>'
+      : '';
+
+    /* medios de pago */
+    var payMethodsHtml =
+      '<div class="pd-paymethods">'+
+        '<strong class="pd-pay-title">Medios de pago</strong>'+
+        '<div class="pd-pay-group"><span class="pd-pay-label">Tarjetas de crédito y débito</span>'+
+          '<div class="pd-pay-icons"><i class="fab fa-cc-visa"></i><i class="fab fa-cc-mastercard"></i><i class="fab fa-cc-amex"></i></div>'+
+        '</div>'+
+        '<div class="pd-pay-group"><span class="pd-pay-label">Dinero en cuenta y cuotas</span>'+
+          '<div class="pd-pay-icons"><i class="fas fa-wallet"></i> <span class="pd-pay-txt">Mercado Pago</span></div>'+
+        '</div>'+
+        '<div class="pd-pay-group"><span class="pd-pay-label">Transferencia y cripto</span>'+
+          '<div class="pd-pay-icons"><i class="fas fa-building-columns"></i> <span class="pd-pay-txt">Transferencia bancaria · Binance (USDT)</span></div>'+
+        '</div>'+
+      '</div>';
 
     /* precio por transferencia */
     var transferPrice = Number(P.price_transfer) || 0;
@@ -165,10 +198,10 @@
 
       '<div class="pd-buy">'+
         '<div class="pd-head">'+
+          mlLineHtml+
           (P.brand? '<span class="pd-brand">'+esc(P.brand)+'</span>' : '')+
           '<h1 class="pd-title">'+esc(P.name)+'</h1>'+
           (rating? '<div class="pd-rating"><span class="pd-stars">'+stars+'</span><span class="pd-rev">'+(P.reviews||0)+' opiniones</span></div>' : '')+
-          stockHtml+
           condBadge+ condNote+
         '</div>'+
 
@@ -183,12 +216,15 @@
 
         statesHtml+ storHtml+ colHtml+
 
+        stockHtml+
+        qtyHtml+
+
         '<div class="pd-cta">'+
-          '<button class="pd-btn-primary" id="pdAddCart"><i class="fas fa-cart-plus"></i> Agregar al carrito</button>'+
-          '<button class="pd-btn-wa" id="pdBuyWa"><i class="fab fa-whatsapp"></i> Comprar / consultar</button>'+
+          '<button class="pd-btn-primary" id="pdAddCart"'+(stockN<=0?' disabled':'')+'><i class="fas fa-cart-plus"></i> Agregar al carrito</button>'+
         '</div>'+
 
         trustHtml+
+        payMethodsHtml+
         '<div class="pd-perks">'+perksHtml+'</div>'+
         verifiedBadgeHtml+
       '</div>'+
@@ -211,9 +247,126 @@
           '<li><i class="fas fa-rotate-left"></i><div><strong>Devoluciones</strong><span>Si no es lo que esperabas, coordinamos el cambio.</span></div></li>'+
         '</ul>'+
       '</div>'+
+    '</section>'+
+
+    '<section class="pd-reviews" id="pdReviews" data-reveal>'+
+      '<h2 class="pd-rv-title">Opiniones del producto</h2>'+
+      '<div id="pdReviewsBody"><p class="pd-muted">Cargando opiniones...</p></div>'+
+      '<div id="pdReviewForm"></div>'+
     '</section>';
 
     updateCartCount();
+    loadReviews();
+  }
+
+  /* ---------- opiniones ---------- */
+  function starsFor(n){ return '★'.repeat(n)+'☆'.repeat(5-n); }
+
+  function loadReviews(){
+    var body=document.getElementById('pdReviewsBody'); if(!body) return;
+    if(typeof supabase==='undefined'||!supabase){ body.innerHTML='<p class="pd-muted">No se pudieron cargar las opiniones.</p>'; return; }
+
+    supabase.from('product_reviews').select('*').eq('product_id',P.id).order('created_at',{ascending:false})
+      .then(function(res){
+        if(res.error){ console.error(res.error); body.innerHTML='<p class="pd-muted">No se pudieron cargar las opiniones.</p>'; return; }
+        var list=res.data||[];
+        renderReviews(list);
+        renderReviewForm(list);
+      });
+  }
+
+  function renderReviews(list){
+    var body=document.getElementById('pdReviewsBody');
+    if(!list.length){ body.innerHTML='<p class="pd-muted">Todavía no hay opiniones de este producto. ¡Sé el primero en opinar!</p>'; return; }
+
+    var avg = list.reduce(function(s,r){return s+r.rating;},0)/list.length;
+    var counts={1:0,2:0,3:0,4:0,5:0};
+    list.forEach(function(r){ counts[r.rating]=(counts[r.rating]||0)+1; });
+
+    var barsHtml='';
+    for(var i=5;i>=1;i--){
+      var pct = list.length? Math.round(counts[i]/list.length*100) : 0;
+      barsHtml += '<div class="pd-rv-bar"><span class="pd-rv-bar-n">'+i+' ★</span>'+
+        '<div class="pd-rv-bar-track"><div class="pd-rv-bar-fill" style="width:'+pct+'%"></div></div></div>';
+    }
+
+    var itemsHtml = list.map(function(r){
+      var d = new Date(r.created_at).toLocaleDateString('es-AR');
+      return '<div class="pd-rv-item">'+
+        '<div class="pd-rv-item-top"><span class="pd-rv-item-stars">'+starsFor(r.rating)+'</span>'+
+        '<span class="pd-rv-item-meta">'+esc(r.author_name)+' · '+d+'</span></div>'+
+        (r.comment? '<p class="pd-rv-item-text">'+esc(r.comment).replace(/\n/g,'<br>')+'</p>' : '')+
+      '</div>';
+    }).join('');
+
+    body.innerHTML =
+      '<div class="pd-rv-summary">'+
+        '<div class="pd-rv-avg"><span class="pd-rv-avg-n">'+avg.toFixed(1)+'</span>'+
+        '<span class="pd-rv-avg-stars">'+starsFor(Math.round(avg))+'</span>'+
+        '<span class="pd-rv-avg-total">'+list.length+' calificacion'+(list.length===1?'':'es')+'</span></div>'+
+        '<div class="pd-rv-bars">'+barsHtml+'</div>'+
+      '</div>'+
+      '<div class="pd-rv-list">'+itemsHtml+'</div>';
+  }
+
+  function renderReviewForm(list){
+    var box=document.getElementById('pdReviewForm'); if(!box) return;
+
+    supabase.auth.getUser().then(function(res){
+      var user = res && res.data ? res.data.user : null;
+      if(!user){
+        box.innerHTML='<div class="pd-rv-login"><i class="fas fa-lock"></i> Para dejar tu opinión necesitás <a href="login.html">iniciar sesión</a>.</div>';
+        return;
+      }
+      var mine = list.find(function(r){ return r.user_id===user.id; });
+      if(mine){
+        box.innerHTML='<div class="pd-rv-login"><i class="fas fa-circle-check"></i> Ya dejaste tu opinión sobre este producto. '+
+          '<button type="button" class="pd-rv-del" id="pdRvDel">Eliminar mi opinión</button></div>';
+        document.getElementById('pdRvDel').addEventListener('click', function(){
+          if(!confirm('¿Eliminar tu opinión?')) return;
+          supabase.from('product_reviews').delete().eq('id',mine.id).then(function(r){
+            if(r.error){ notify('❌ No se pudo eliminar'); return; }
+            loadReviews();
+          });
+        });
+        return;
+      }
+
+      box.innerHTML =
+        '<div class="pd-rv-form">'+
+          '<strong class="pd-rv-form-title">Dejá tu opinión</strong>'+
+          '<div class="pd-rv-stars-pick" id="pdRvStars">'+
+            [1,2,3,4,5].map(function(n){ return '<button type="button" data-n="'+n+'" title="'+n+' estrellas">★</button>'; }).join('')+
+          '</div>'+
+          '<textarea id="pdRvText" rows="3" placeholder="Contá tu experiencia con el producto (opcional)"></textarea>'+
+          '<button type="button" class="pd-rv-send" id="pdRvSend">Publicar opinión</button>'+
+        '</div>';
+
+      var picked=0;
+      var starBtns=box.querySelectorAll('#pdRvStars button');
+      starBtns.forEach(function(b){
+        b.addEventListener('click', function(){
+          picked=parseInt(b.dataset.n);
+          starBtns.forEach(function(x){ x.classList.toggle('on', parseInt(x.dataset.n)<=picked); });
+        });
+      });
+
+      document.getElementById('pdRvSend').addEventListener('click', function(){
+        if(!picked){ notify('Elegí una puntuación'); return; }
+        var name = (user.user_metadata && user.user_metadata.name) || (user.email||'').split('@')[0];
+        supabase.from('product_reviews').insert({
+          product_id: P.id,
+          user_id: user.id,
+          author_name: name,
+          rating: picked,
+          comment: (document.getElementById('pdRvText').value||'').trim() || null
+        }).then(function(r){
+          if(r.error){ console.error(r.error); notify('❌ No se pudo publicar tu opinión'); return; }
+          notify('✅ ¡Gracias por tu opinión!');
+          loadReviews();
+        });
+      });
+    });
   }
 
   /* ---------- interacciones ---------- */
@@ -249,7 +402,6 @@
 
     /* agregar / comprar */
     var add = document.getElementById('pdAddCart'); if(add) add.addEventListener('click', addToCart);
-    var wa = document.getElementById('pdBuyWa'); if(wa) wa.addEventListener('click', buyWhatsApp);
 
     /* lightbox close */
     document.getElementById('pdLbClose').addEventListener('click', closeLightbox);
@@ -309,20 +461,12 @@
   function setCart(c){ localStorage.setItem('cellspace_cart', JSON.stringify(c)); }
   function addToCart(){
     var cart=getCart(); var id=P.id; var price=effectivePrice();
+    var qtySel=document.getElementById('pdQty');
+    var qty = qtySel ? (parseInt(qtySel.value)||1) : 1;
     var st=states(); var label=P.name; if(st.length&&st[activeState]) label+=' ('+st[activeState].label+')';
     var ex=cart.find(function(it){ return it.id==id; });
-    if(ex){ ex.quantity+=1; } else { cart.push({ id:id, name:label, price:price, image:gallery[activeImg]||P.image_url||null, quantity:1 }); }
+    if(ex){ ex.quantity+=qty; } else { cart.push({ id:id, name:label, price:price, image:gallery[activeImg]||P.image_url||null, quantity:qty }); }
     setCart(cart); updateCartCount(); pulse(document.getElementById('pdAddCart')); notify('✅ Agregado al carrito');
-  }
-  function buyWhatsApp(){
-    var st=states(); var price=effectivePrice();
-    var colors=Array.isArray(P.color_options)?P.color_options:[]; var storages=Array.isArray(P.storage_options)?P.storage_options:[];
-    var msg='¡Hola! Me interesa este producto:\n\n• '+P.name+
-      (st.length&&st[activeState]? '\n• Estado: '+st[activeState].label : '')+
-      (storages[activeStorage]? '\n• Capacidad: '+storages[activeStorage] : '')+
-      (colors[activeColor]? '\n• Color: '+colors[activeColor].name : '')+
-      '\n• Precio: $'+money(price)+'\n\n¿Lo tienen disponible?';
-    window.open('https://wa.me/'+waNumber()+'?text='+encodeURIComponent(msg),'_blank');
   }
   function updateCartCount(){
     var cart=getCart(); var n=cart.reduce(function(s,it){return s+it.quantity;},0);
