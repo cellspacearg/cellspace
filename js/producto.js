@@ -23,7 +23,7 @@
       if(res.error){ console.error(res.error); notFound('Error al cargar el producto.'); return; }
       if(!res.data){ notFound('Este producto no existe o no está disponible.'); return; }
       P = res.data;
-      if(P.is_hidden===true || P.status==='draft'){ notFound('Este producto no está disponible.'); return; }
+      if(P.is_hidden===true || P.status==='draft' || P.review_status==='pending' || P.review_status==='rejected'){ notFound('Este producto no está disponible.'); return; }
       gallery = (Array.isArray(P.images)&&P.images.length)? P.images.slice() : (P.image_url?[P.image_url]:[]);
       document.title = (P.name||'Producto') + ' | Cell Space Argentina';
       render();
@@ -98,6 +98,35 @@
 
     var descHtml = P.description ? '<div class="pd-desc">'+esc(P.description).replace(/\n/g,'<br>')+'</div>' : '<p class="pd-muted">Sin descripción.</p>';
 
+    /* evaluación técnica (usado / swap / reacondicionado) */
+    var CONDITION_LABELS = { usado:'Usado', swap:'Swap', reacondicionado:'Reacondicionado', nuevo:'Nuevo' };
+    var isUsed = P.device_condition && P.device_condition !== 'nuevo';
+    var ratings = P.component_ratings || {};
+    var RATING_LABELS = { screen:'Pantalla', battery:'Batería', camera:'Cámara', connectivity:'Conectividad', audio:'Audio', buttons:'Botones' };
+    var hasRatings = Object.keys(ratings).some(function(k){ return ratings[k]; });
+
+    var verifiedBadgeHtml = isUsed ? (
+      '<div class="pd-verified">' +
+        '<span class="pd-verified-badge"><i class="fas fa-shield-check"></i> CELL SPACE VERIFIED — '+esc(CONDITION_LABELS[P.device_condition]||P.device_condition)+'</span>' +
+        '<div class="pd-verified-list">' +
+          (P.imei_verified? '<span><i class="fas fa-check"></i> IMEI verificado</span>' : '') +
+          (P.battery_health? '<span><i class="fas fa-check"></i> Batería '+P.battery_health+'%</span>' : '') +
+          '<span><i class="fas fa-check"></i> Revisado por técnicos Cell Space</span>' +
+          '<span><i class="fas fa-check"></i> Garantía Cell Space</span>' +
+        '</div>' +
+      '</div>'
+    ) : '';
+
+    var evalPanelHtml = hasRatings ? (
+      '<ul class="pd-eval-list">' +
+      Object.keys(RATING_LABELS).filter(function(k){return ratings[k];}).map(function(k){
+        var v = ratings[k];
+        var starsEval = '★'.repeat(v)+'☆'.repeat(5-v);
+        return '<li><span>'+RATING_LABELS[k]+'</span><span class="pd-eval-stars">'+starsEval+'</span></li>';
+      }).join('') +
+      '</ul>'
+    ) : '<p class="pd-muted">Sin evaluación técnica cargada.</p>';
+
     document.getElementById('pdRoot').innerHTML =
     '<section class="pd-top">'+
       '<div class="pd-gallery">'+
@@ -132,6 +161,7 @@
         '</div>'+
 
         '<div class="pd-perks">'+perksHtml+'</div>'+
+        verifiedBadgeHtml+
       '</div>'+
     '</section>'+
 
@@ -139,10 +169,12 @@
       '<div class="pd-tabbar" id="pdTabbar">'+
         '<button class="pd-tab on" data-tab="desc">Descripción</button>'+
         '<button class="pd-tab" data-tab="specs">Características técnicas</button>'+
+        (isUsed? '<button class="pd-tab" data-tab="eval">Evaluación técnica</button>' : '')+
         '<button class="pd-tab" data-tab="ship">Envío y garantía</button>'+
       '</div>'+
       '<div class="pd-panel on" data-panel="desc">'+descHtml+'</div>'+
       '<div class="pd-panel" data-panel="specs">'+specsHtml+'</div>'+
+      (isUsed? '<div class="pd-panel" data-panel="eval">'+evalPanelHtml+'</div>' : '')+
       '<div class="pd-panel" data-panel="ship">'+
         '<ul class="pd-ship-list">'+
           '<li><i class="fas fa-truck"></i><div><strong>Envío a todo el país</strong><span>'+(P.shipping_note?esc(P.shipping_note):'Despachamos por OCA y Andreani en 24hs hábiles.')+'</span></div></li>'+
@@ -279,7 +311,7 @@
     var t=cart.reduce(function(s,it){return s+(Number(it.price)||0)*it.quantity;},0); document.getElementById('cartTotal').textContent='$'+money(t);
   }
   window.updQty=function(id,d){ var cart=getCart(); var it=cart.find(function(x){return x.id==id;}); if(!it)return; it.quantity+=d; if(it.quantity<=0)cart=cart.filter(function(x){return x.id!=id;}); setCart(cart); updateCartCount(); renderCart(); };
-  window.checkout=function(){ var cart=getCart(); if(!cart.length){alert('Tu carrito está vacío');return;} var msg='¡Hola! Quiero hacer el siguiente pedido:\n\n'; cart.forEach(function(it){msg+='- '+it.name+' x'+it.quantity+' = $'+money((Number(it.price)||0)*it.quantity)+'\n';}); var t=cart.reduce(function(s,it){return s+(Number(it.price)||0)*it.quantity;},0); msg+='\nTotal: $'+money(t); window.open('https://wa.me/'+waNumber()+'?text='+encodeURIComponent(msg),'_blank'); };
+  window.checkout=function(){ var cart=getCart(); if(!cart.length){alert('Tu carrito está vacío');return;} window.location.href='checkout.html'; };
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
