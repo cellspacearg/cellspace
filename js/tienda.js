@@ -281,6 +281,8 @@ function applyFilters() {
   var storage = (document.getElementById('filterStorage') && document.getElementById('filterStorage').value) || '';
   var onlyInstallments = document.getElementById('filterInstallments') && document.getElementById('filterInstallments').checked;
   var onlyDiscount = document.getElementById('filterDiscount') && document.getElementById('filterDiscount').checked;
+  var condition = (document.getElementById('filterCondition') && document.getElementById('filterCondition').value) || '';
+  var minBattery = (document.getElementById('filterBattery') && document.getElementById('filterBattery').value) || '';
 
   loadProducts().then(function (products) {
     var list = products;
@@ -291,6 +293,8 @@ function applyFilters() {
     if (storage) list = list.filter(function (p) { return Array.isArray(p.storage_options) && p.storage_options.indexOf(storage) !== -1; });
     if (onlyInstallments) list = list.filter(function (p) { return !!(p.installments && String(p.installments).trim()); });
     if (onlyDiscount) list = list.filter(function (p) { return p.old_price && Number(p.old_price) > Number(p.price); });
+    if (condition) list = list.filter(function (p) { return (p.device_condition || 'nuevo') === condition; });
+    if (minBattery) list = list.filter(function (p) { return Number(p.battery_health) >= Number(minBattery); });
     if (searchTerm) {
       var q = searchTerm.toLowerCase();
       list = list.filter(function (p) {
@@ -392,7 +396,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var ps = document.getElementById('priceSlider');
   if (ps) ps.addEventListener('input', function () { var l = document.getElementById('maxPriceLabel'); if (l) l.textContent = '$' + Number(ps.value).toLocaleString('es-AR'); });
 
-  ['filterBrand', 'filterModel', 'filterStorage', 'filterInstallments', 'filterDiscount'].forEach(function (id) {
+  ['filterBrand', 'filterModel', 'filterStorage', 'filterCondition', 'filterBattery', 'filterInstallments', 'filterDiscount'].forEach(function (id) {
     var el = document.getElementById(id);
     if (el) el.addEventListener('change', applyFilters);
   });
