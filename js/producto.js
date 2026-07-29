@@ -127,6 +127,32 @@
       '</ul>'
     ) : '<p class="pd-muted">Sin evaluación técnica cargada.</p>';
 
+    /* stock + vendidos */
+    var stockN = Number(P.stock) || 0;
+    var soldN = Number(P.sold_count) || 0;
+    var stockParts = [];
+    if (soldN > 0) stockParts.push('<span class="pd-sold">'+soldN+' vendidos</span>');
+    if (stockN <= 0) stockParts.push('<span class="pd-stock pd-stock-out"><i class="fas fa-circle-xmark"></i> Sin stock</span>');
+    else if (stockN <= 3) stockParts.push('<span class="pd-stock pd-stock-low"><i class="fas fa-fire"></i> ¡Últimas '+stockN+' unidades!</span>');
+    else stockParts.push('<span class="pd-stock"><i class="fas fa-circle-check"></i> Stock disponible: '+stockN+' unidades</span>');
+    var stockHtml = '<div class="pd-stockline">'+stockParts.join('')+'</div>';
+
+    /* precio por transferencia */
+    var transferPrice = Number(P.price_transfer) || 0;
+    var transferHtml = (transferPrice > 0 && transferPrice < price)
+      ? '<div class="pd-transfer"><i class="fas fa-building-columns"></i> <strong>$'+money(transferPrice)+'</strong> pagando por transferencia</div>'
+      : '';
+
+    /* bloque de confianza */
+    var trustItems = ['Equipo revisado por técnicos certificados'];
+    if (P.imei_verified) trustItems.push('IMEI verificado');
+    trustItems.push('Garantía Cell Space');
+    trustItems.push('Envíos a todo el país');
+    trustItems.push('Compra 100% segura');
+    var trustHtml = '<ul class="pd-trust">'+ trustItems.map(function(t){
+      return '<li><i class="fas fa-circle-check"></i> '+esc(t)+'</li>';
+    }).join('') +'</ul>';
+
     document.getElementById('pdRoot').innerHTML =
     '<section class="pd-top">'+
       '<div class="pd-gallery">'+
@@ -142,6 +168,7 @@
           (P.brand? '<span class="pd-brand">'+esc(P.brand)+'</span>' : '')+
           '<h1 class="pd-title">'+esc(P.name)+'</h1>'+
           (rating? '<div class="pd-rating"><span class="pd-stars">'+stars+'</span><span class="pd-rev">'+(P.reviews||0)+' opiniones</span></div>' : '')+
+          stockHtml+
           condBadge+ condNote+
         '</div>'+
 
@@ -149,6 +176,7 @@
           '<div class="pd-priceline">'+ (old? '<span class="pd-old">$'+money(old)+'</span>' : '') +'</div>'+
           '<div class="pd-price" id="pdPrice">$'+money(price)+'</div>'+
           saveHtml+
+          transferHtml+
           (P.installments? '<div class="pd-install"><i class="fas fa-credit-card"></i> '+esc(P.installments)+'</div>' : '')+
           (P.price_no_tax? '<div class="pd-notax">Precio sin impuestos: $'+money(P.price_no_tax)+'</div>' : '')+
         '</div>'+
@@ -160,6 +188,7 @@
           '<button class="pd-btn-wa" id="pdBuyWa"><i class="fab fa-whatsapp"></i> Comprar / consultar</button>'+
         '</div>'+
 
+        trustHtml+
         '<div class="pd-perks">'+perksHtml+'</div>'+
         verifiedBadgeHtml+
       '</div>'+
