@@ -15,6 +15,55 @@ function money(n) {
 function getCart() { return JSON.parse(localStorage.getItem('cellspace_cart') || '[]'); }
 function val(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
 
+function formatAddress(a) {
+  var parts = [];
+  if (a.street) parts.push(a.street + ' ' + (a.number || ''));
+  var line2 = [a.floor ? 'Piso ' + a.floor : '', a.apartment ? 'Depto ' + a.apartment : ''].filter(Boolean).join(', ');
+  if (line2) parts.push(line2);
+  if (a.city || a.province) parts.push([a.city, a.province].filter(Boolean).join(', '));
+  if (a.postalCode) parts.push('CP ' + a.postalCode);
+  return parts.join('<br>');
+}
+
+function buildItemsTableHtml(items) {
+  return items.map(function (it) {
+    var thumb = it.image
+      ? '<img src="' + esc(it.image) + '" width="44" height="44" style="border-radius:8px;object-fit:cover;display:block;">'
+      : '<div style="width:44px;height:44px;background:#0a0a0a;border-radius:8px;"></div>';
+    return '<tr>' +
+      '<td style="padding:8px 0;width:52px;">' + thumb + '</td>' +
+      '<td style="padding:8px 10px;color:#eee;font-size:13px;">' + esc(it.name) + '<br><span style="color:#777;font-size:11px;">x' + it.quantity + '</span></td>' +
+      '<td style="padding:8px 0;color:#fff;font-size:13px;text-align:right;white-space:nowrap;">$' + money((Number(it.price) || 0) * it.quantity) + '</td>' +
+      '</tr>';
+  }).join('');
+}
+
+var PAYMENT_LABELS = { mercadopago: 'Mercado Pago', transferencia: 'Transferencia bancaria', binance: 'Binance (USDT)' };
+
+async function sendOrderConfirmationEmail(orderNumber, payload) {
+  try {
+    var cart = getCart();
+    var total = payload.items.reduce(function (s, i) { return s + (Number(i.price) || 0) * i.quantity; }, 0);
+    var orderDate = new Date().toLocaleDateString('es-AR');
+
+    await emailjs.send('service_822cqyn', 'template_si8do59', {
+      to_email: payload.buyer.email,
+      user_name: payload.buyer.firstName || payload.buyer.name,
+      order_number: orderNumber,
+      order_date: orderDate,
+      items_table: buildItemsTableHtml(cart),
+      order_subtotal: '$' + money(total),
+      order_total: '$' + money(total),
+      payment_method: PAYMENT_LABELS[payload.paymentMethod] || payload.paymentMethod,
+      billing_address: formatAddress(payload.billing),
+      shipping_address: formatAddress(payload.shipping),
+    });
+  } catch (e) {
+    console.warn('No se pudo enviar el email de confirmación:', e);
+    // no cortamos el flujo de compra si el email falla
+  }
+}
+
 function renderOrderSummary() {
   var cart = getCart();
   var content = document.getElementById('checkoutContent');
@@ -115,6 +164,8 @@ async function submitCheckout(e) {
     var { data, error } = await supabase.functions.invoke('create-payment', { body: payload });
     if (error) throw error;
     if (data.error) throw new Error(data.error);
+
+    await sendOrderConfirmationEmail(data.order_number, payload);
 
     if (payMethod === 'mercadopago') {
       window.location.href = data.init_point;
