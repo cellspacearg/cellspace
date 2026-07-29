@@ -1174,3 +1174,24 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ========================================================
+   TARJETAS MÁS COMPACTAS (estilo Mercado Libre)
+   ======================================================== */
+.products-grid {
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 16px;
+}
+.product-title {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.price-current {
+  font-size: 19px;
+  font-weight: 700;
+}
+.price-old { font-size: 12.5px; }
+.product-info { padding: 14px; }
+.product-rating .stars { font-size: 12px; }
+.btn-add-cart { font-size: 13px; padding: 9px 12px; }
