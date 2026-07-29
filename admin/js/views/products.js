@@ -102,6 +102,10 @@ export async function productsView() {
             <div class="form-group"><label>Stock</label><input type="number" id="p_stock" min="0" value="0"></div>
           </div>
           <div class="form-row">
+            <div class="form-group"><label>Precio por transferencia</label><input type="number" id="p_price_transfer" step="0.01" min="0" placeholder="Con descuento por transferencia"></div>
+            <div class="form-group"><label>Cantidad vendida</label><input type="number" id="p_sold_count" min="0" value="0" placeholder="Se muestra como '12 vendidos'"></div>
+          </div>
+          <div class="form-row">
             <div class="form-group"><label>Estado</label><select id="p_status"><option value="active">Activo</option><option value="draft">Borrador</option></select></div>
             <div class="form-group"><label>Badge</label><input type="text" id="p_badge" placeholder="NUEVO, -20%..."></div>
           </div>
@@ -312,6 +316,8 @@ window.editProduct = async function (id) {
   set('p_condition_note',p.condition_note); set('p_installments',p.installments); set('p_price_no_tax',p.price_no_tax);
   set('p_warranty',p.warranty); set('p_shipping_note',p.shipping_note);
   set('p_device_condition', p.device_condition||'nuevo');
+  set('p_price_transfer', p.price_transfer);
+  set('p_sold_count', p.sold_count||0);
   set('p_battery_health', p.battery_health);
   document.getElementById('p_imei_verified').checked=!!p.imei_verified;
   const ratings = p.component_ratings||{};
@@ -430,6 +436,8 @@ async function saveProduct(e){
       brand:val('p_brand').trim()||null, model:val('p_model').trim()||null,
       price:parseFloat(val('p_price'))||0, old_price:val('p_old_price')?parseFloat(val('p_old_price')):null,
       stock:parseInt(val('p_stock'))||0, status, is_active:status==='active'&&!isHidden,
+      price_transfer:val('p_price_transfer')?parseFloat(val('p_price_transfer')):null,
+      sold_count:parseInt(val('p_sold_count'))||0,
       is_featured:document.getElementById('p_featured').checked, is_hidden:isHidden,
       badge:val('p_badge').trim()||null, description:val('p_desc').trim()||null,
       images:currentImages, image_url:currentImages[0]||null,
