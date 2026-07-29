@@ -118,10 +118,28 @@ export async function productsView() {
 
         <div class="psec"><h4 class="psec-t"><i class="fas fa-clipboard-check"></i> Condición del equipo</h4>
           <div class="form-row">
-            <div class="form-group"><label>Condición</label><input type="text" id="p_condition" placeholder="Muy bueno / Nuevo / Usado..."></div>
+            <div class="form-group"><label>Estado del equipo *</label>
+              <select id="p_device_condition">
+                <option value="nuevo">Nuevo</option>
+                <option value="usado">Usado</option>
+                <option value="swap">Swap</option>
+                <option value="reacondicionado">Reacondicionado</option>
+              </select>
+              <p class="field-hint">Usado, Swap y Reacondicionado quedan pendientes de tu revisión antes de publicarse.</p>
+            </div>
             <div class="form-group"><label>Etiqueta con check (opc.)</label><input type="text" id="p_condition_badge" placeholder="Bueno"></div>
           </div>
           <div class="form-row"><div class="form-group full"><label>Nota de condición</label><textarea id="p_condition_note" rows="2" placeholder="El producto tiene marcas en carcasa..."></textarea></div></div>
+          <div class="form-row">
+            <div class="form-group"><label>Batería (%)</label><input type="number" id="p_battery_health" min="0" max="100" placeholder="95"></div>
+            <div class="form-group checks" style="align-self:flex-end;"><label class="check"><input type="checkbox" id="p_imei_verified"><span>IMEI verificado</span></label></div>
+          </div>
+          <div class="form-row" style="flex-wrap:wrap;gap:12px;">
+            ${['screen:Pantalla','battery:Batería','camera:Cámara','connectivity:Conectividad','audio:Audio','buttons:Botones'].map(pair => {
+              const [key,label] = pair.split(':');
+              return `<div class="form-group" style="min-width:150px;"><label>${label}</label><select id="p_rating_${key}"><option value="">Sin calificar</option><option value="5">★★★★★</option><option value="4">★★★★☆</option><option value="3">★★★☆</option><option value="2">★★☆</option><option value="1">★☆</option></select></div>`;
+            }).join('')}
+          </div>
         </div>
 
         <div class="psec"><h4 class="psec-t"><i class="fas fa-layer-group"></i> Variantes de estado (precio por condición)</h4>
@@ -229,13 +247,19 @@ function renderProducts(list) {
     const price = '$'+Number(p.price||0).toLocaleString('es-AR');
     const oldP = p.old_price?'<span class="p-old">$'+Number(p.old_price).toLocaleString('es-AR')+'</span>':'';
     const specsN = Array.isArray(p.specs)?p.specs.length:0;
+    const pending = p.review_status === 'pending';
     return `<div class="admin-product-card">
       <div class="ap-thumb">${thumb?'<img src="'+thumb+'" alt="">':'<i class="fas fa-image"></i>'}</div>
       <div class="ap-body">
         <div class="ap-top"><span class="ap-cat">${p.category||'Sin categoría'}</span><span class="ap-state ${stateClass}">${state}</span>${p.is_featured?'<span class="ap-feat"><i class="fas fa-star"></i></span>':''}</div>
+        ${pending?'<div style="background:rgba(255,106,0,0.15);border:1px solid rgba(255,106,0,0.4);color:#FF6A00;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;margin:6px 0;display:inline-block;"><i class="fas fa-clock"></i> Pendiente de revisión</div>':''}
         <h4 class="ap-name">${escapeHtml(p.name)}</h4>
         <div class="ap-meta">${p.sku?'SKU: '+escapeHtml(p.sku)+' · ':''}Stock: ${p.stock??0}${specsN?' · <i class="fas fa-list-check"></i> '+specsN+' specs':''}</div>
         <div class="ap-price">${price} ${oldP}</div>
+        ${pending?`<div style="display:flex;gap:8px;margin-top:8px;">
+          <button type="button" class="btn-primary mini" style="flex:1;" onclick="approveProduct('${p.id}')"><i class="fas fa-check"></i> Aprobar</button>
+          <button type="button" class="btn-secondary mini" style="flex:1;" onclick="rejectProduct('${p.id}')"><i class="fas fa-xmark"></i> Rechazar</button>
+        </div>`:''}
       </div>
       <div class="ap-actions">
         <button title="Ver ficha pública" onclick="window.open('../producto.html?id=${p.id}','_blank')"><i class="fas fa-eye"></i></button>
@@ -246,6 +270,22 @@ function renderProducts(list) {
     </div>`;
   }).join('');
 }
+
+window.approveProduct = async function (id) {
+  try {
+    const { error } = await supabase.from('products').update({ review_status: 'approved' }).eq('id', id);
+    if (error) throw error;
+    toast('Publicación aprobada', 'ok'); loadProducts();
+  } catch (e) { toast('Error: ' + e.message, 'err'); }
+};
+window.rejectProduct = async function (id) {
+  if (!confirm('¿Rechazar esta publicación? Va a quedar oculta de la tienda hasta que la edites y la vuelvas a enviar a revisión.')) return;
+  try {
+    const { error } = await supabase.from('products').update({ review_status: 'rejected', is_hidden: true }).eq('id', id);
+    if (error) throw error;
+    toast('Publicación rechazada', 'ok'); loadProducts();
+  } catch (e) { toast('Error: ' + e.message, 'err'); }
+};
 
 /* ---------- MODAL ---------- */
 window.openProductModal = function () {
@@ -268,9 +308,14 @@ window.editProduct = async function (id) {
   document.getElementById('modalTitle').textContent='Editar Producto';
   set('p_name',p.name); set('p_sku',p.sku); set('p_category',p.category); set('p_brand',p.brand); set('p_model',p.model);
   set('p_price',p.price); set('p_old_price',p.old_price); set('p_stock',p.stock); set('p_status',p.status||'active');
-  set('p_badge',p.badge); set('p_desc',p.description); set('p_condition',p.condition); set('p_condition_badge',p.condition_badge);
+  set('p_badge',p.badge); set('p_desc',p.description); set('p_condition_badge',p.condition_badge);
   set('p_condition_note',p.condition_note); set('p_installments',p.installments); set('p_price_no_tax',p.price_no_tax);
   set('p_warranty',p.warranty); set('p_shipping_note',p.shipping_note);
+  set('p_device_condition', p.device_condition||'nuevo');
+  set('p_battery_health', p.battery_health);
+  document.getElementById('p_imei_verified').checked=!!p.imei_verified;
+  const ratings = p.component_ratings||{};
+  ['screen','battery','camera','connectivity','audio','buttons'].forEach(k => set('p_rating_'+k, ratings[k]||''));
   document.getElementById('p_featured').checked=!!p.is_featured;
   document.getElementById('p_hidden').checked=!!p.is_hidden;
   renderAllLists();
@@ -372,6 +417,14 @@ async function saveProduct(e){
     const states = currentStates.filter(s=>(s.label||'').trim()).map(s=>({label:s.label.trim(),price:s.price===''?null:Number(s.price),note:(s.note||'').trim(),recommended:!!s.recommended}));
     const colors = currentColors.filter(c=>(c.name||'').trim()).map(c=>({name:c.name.trim(),hex:c.hex||'#FF6A00',image:(c.image||'').trim()||null}));
     const specs = currentSpecs.filter(s=>(s.label||'').trim()&&(s.value||'').trim()).map(s=>({icon:s.icon||'fa-circle-info',label:s.label.trim(),value:s.value.trim()}));
+    const deviceCondition = val('p_device_condition')||'nuevo';
+    const ratingKeys = ['screen','battery','camera','connectivity','audio','buttons'];
+    const componentRatings = {};
+    ratingKeys.forEach(k => { const v = val('p_rating_'+k); if (v) componentRatings[k] = parseInt(v); });
+    // Nuevo se publica solo; usado/swap/reacondicionado quedan pendientes de tu revisión,
+    // salvo que ya estuvieran aprobados antes (para no volver a ocultar algo que editás).
+    const prevReviewStatus = currentEditId ? (allProducts.find(x=>x.id===currentEditId)?.review_status) : null;
+    const reviewStatus = deviceCondition==='nuevo' ? 'approved' : (prevReviewStatus==='approved' ? 'approved' : 'pending');
     const payload = {
       name:val('p_name').trim(), sku:val('p_sku').trim()||null, category:val('p_category')||null,
       brand:val('p_brand').trim()||null, model:val('p_model').trim()||null,
@@ -380,7 +433,11 @@ async function saveProduct(e){
       is_featured:document.getElementById('p_featured').checked, is_hidden:isHidden,
       badge:val('p_badge').trim()||null, description:val('p_desc').trim()||null,
       images:currentImages, image_url:currentImages[0]||null,
-      condition:val('p_condition').trim()||null, condition_badge:val('p_condition_badge').trim()||null, condition_note:val('p_condition_note').trim()||null,
+      condition_badge:val('p_condition_badge').trim()||null, condition_note:val('p_condition_note').trim()||null,
+      device_condition:deviceCondition, review_status:reviewStatus,
+      imei_verified:document.getElementById('p_imei_verified').checked,
+      battery_health:val('p_battery_health')?parseInt(val('p_battery_health')):null,
+      component_ratings:componentRatings,
       state_variants:states, storage_options:currentStorages, color_options:colors, specs,
       installments:val('p_installments').trim()||null, price_no_tax:val('p_price_no_tax')?parseFloat(val('p_price_no_tax')):null,
       warranty:val('p_warranty').trim()||null, shipping_note:val('p_shipping_note').trim()||null,
