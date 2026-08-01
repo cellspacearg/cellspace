@@ -1,0 +1,122 @@
+/* ============================================
+   CELL SPACE — Correcciones para móvil
+   Cargar SIEMPRE ÚLTIMO, después de los demás CSS.
+   ============================================ */
+
+/* --- Base: evita el scroll horizontal en toda la web --- */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+img, video, iframe, canvas, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Palabras largas (emails, URLs, SKUs) que estiran la página */
+p, h1, h2, h3, h4, h5, span, a, td, li, label {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Tablas: scroll propio en vez de romper el layout */
+table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+@media (max-width: 860px) {
+
+  /* --- Contenedores --- */
+  .container {
+    padding-left: 16px;
+    padding-right: 16px;
+    width: 100%;
+  }
+
+  /* --- Cualquier grilla de 2, 3 o 4 columnas pasa a 1 --- */
+  .cf-row2, .cf-row3 {
+    grid-template-columns: 1fr;
+  }
+
+  #checkoutContent {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* --- Formularios --- */
+  .cf-box {
+    padding: 20px 16px;
+    border-radius: 14px;
+  }
+
+  .cf-group input,
+  .cf-group select,
+  .cf-group textarea,
+  input, select, textarea {
+    font-size: 16px;   /* CLAVE: menos de 16px hace zoom automático en iPhone */
+    padding: 14px;
+    max-width: 100%;
+  }
+
+  .pay-option {
+    padding: 16px;
+  }
+
+  /* Botón de compra siempre a la vista */
+  #checkoutSubmitBtn {
+    position: sticky;
+    bottom: 12px;
+    z-index: 5;
+  }
+
+  /* --- Header --- */
+  .header-top-content {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .logo img {
+    max-height: 40px;
+  }
+
+  .logo-main { font-size: 16px; }
+  .logo-sub  { font-size: 10px; }
+
+  .header-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* --- Títulos --- */
+  h1, .shop-title { font-size: 24px; }
+  h2 { font-size: 20px; }
+  h3 { font-size: 17px; }
+
+  /* --- Botón flotante de WhatsApp: que no tape el botón de compra --- */
+  .wa-float {
+    bottom: 80px;
+    right: 14px;
+  }
+
+  /* --- Áreas táctiles mínimas (44px es el estándar) --- */
+  button, .btn-service-primary, .btn-primary, .btn-secondary, .nav-item {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .cf-section-title { font-size: 15px; }
+
+  h1, .shop-title { font-size: 21px; }
+}
