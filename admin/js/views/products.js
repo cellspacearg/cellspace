@@ -345,6 +345,13 @@ window.duplicateProduct = async function (id) {
 };
 
 /* ---------- listas en memoria ---------- */
+/* IMPORTANTE: este archivo es un módulo ES6, así que currentStates/currentColors/
+   currentSpecs NO existen en el scope global. Los handlers inline del HTML se
+   ejecutan en scope global, por eso van a través de estos setters expuestos. */
+window.setStateField = function (i, field, value) { if (currentStates[i]) currentStates[i][field] = value; };
+window.setColorField = function (i, field, value) { if (currentColors[i]) currentColors[i][field] = value; };
+window.setSpecField  = function (i, field, value) { if (currentSpecs[i])  currentSpecs[i][field]  = value; };
+
 function renderAllLists(){ renderImages(); renderStates(); renderStorages(); renderColors(); renderSpecs(); }
 
 window.addState = function(){ currentStates.push({label:'',price:'',note:'',recommended:false}); renderStates(); };
@@ -352,10 +359,10 @@ window.removeState = function(i){ currentStates.splice(i,1); renderStates(); };
 function renderStates(){
   document.getElementById('statesList').innerHTML = currentStates.map((s,i)=>`
     <div class="mini-row">
-      <input placeholder="Etiqueta (Bueno, Nuevo...)" value="${escAttr(s.label)}" oninput="currentStates[${i}].label=this.value">
-      <input type="number" step="0.01" placeholder="Precio" value="${escAttr(s.price)}" oninput="currentStates[${i}].price=this.value">
-      <input placeholder="Nota (opc.)" value="${escAttr(s.note)}" oninput="currentStates[${i}].note=this.value">
-      <label class="check mini-check"><input type="checkbox" ${s.recommended?'checked':''} onchange="currentStates[${i}].recommended=this.checked"><span>Recomendado</span></label>
+      <input placeholder="Etiqueta (Bueno, Nuevo...)" value="${escAttr(s.label)}" oninput="setStateField(${i},'label',this.value)">
+      <input type="number" step="0.01" placeholder="Precio" value="${escAttr(s.price)}" oninput="setStateField(${i},'price',this.value)">
+      <input placeholder="Nota (opc.)" value="${escAttr(s.note)}" oninput="setStateField(${i},'note',this.value)">
+      <label class="check mini-check"><input type="checkbox" ${s.recommended?'checked':''} onchange="setStateField(${i},'recommended',this.checked)"><span>Recomendado</span></label>
       <button type="button" class="del mini" onclick="removeState(${i})"><i class="fas fa-times"></i></button>
     </div>`).join('') || '<p class="field-hint">Sin variantes: se usará el precio principal.</p>';
 }
@@ -371,10 +378,10 @@ window.removeColor = function(i){ currentColors.splice(i,1); renderColors(); };
 function renderColors(){
   document.getElementById('colorsList').innerHTML = currentColors.map((c,i)=>`
     <div class="mini-row">
-      <input type="color" value="${escAttr(c.hex)||'#FF6A00'}" oninput="currentColors[${i}].hex=this.value;this.nextElementSibling.value=this.value">
-      <input placeholder="#hex" value="${escAttr(c.hex)}" oninput="currentColors[${i}].hex=this.value" style="max-width:90px">
-      <input placeholder="Nombre (Gris, Rojo...)" value="${escAttr(c.name)}" oninput="currentColors[${i}].name=this.value">
-      <input placeholder="Imagen opc. (URL)" value="${escAttr(c.image)}" oninput="currentColors[${i}].image=this.value">
+      <input type="color" value="${escAttr(c.hex)||'#FF6A00'}" oninput="setColorField(${i},'hex',this.value);this.nextElementSibling.value=this.value">
+      <input placeholder="#hex" value="${escAttr(c.hex)}" oninput="setColorField(${i},'hex',this.value)" style="max-width:90px">
+      <input placeholder="Nombre (Gris, Rojo...)" value="${escAttr(c.name)}" oninput="setColorField(${i},'name',this.value)">
+      <input placeholder="Imagen opc. (URL)" value="${escAttr(c.image)}" oninput="setColorField(${i},'image',this.value)">
       <button type="button" class="del mini" onclick="removeColor(${i})"><i class="fas fa-times"></i></button>
     </div>`).join('') || '<p class="field-hint">Sin colores cargados.</p>';
 }
@@ -386,9 +393,9 @@ function renderSpecs(){
   document.getElementById('specsList').innerHTML = currentSpecs.map((s,i)=>{
     const sel = opts.replace('value="'+s.icon+'"', 'value="'+s.icon+'" selected');
     return `<div class="mini-row">
-      <select onchange="currentSpecs[${i}].icon=this.value">${sel}</select>
-      <input placeholder="Etiqueta (Pantalla)" value="${escAttr(s.label)}" oninput="currentSpecs[${i}].label=this.value">
-      <input placeholder="Valor (6.8&quot;)" value="${escAttr(s.value)}" oninput="currentSpecs[${i}].value=this.value">
+      <select onchange="setSpecField(${i},'icon',this.value)">${sel}</select>
+      <input placeholder="Etiqueta (Pantalla)" value="${escAttr(s.label)}" oninput="setSpecField(${i},'label',this.value)">
+      <input placeholder="Valor (6.8&quot;)" value="${escAttr(s.value)}" oninput="setSpecField(${i},'value',this.value)">
       <button type="button" class="del mini" onclick="removeSpec(${i})"><i class="fas fa-times"></i></button>
     </div>`;
   }).join('') || '<p class="field-hint">Sin características cargadas.</p>';
