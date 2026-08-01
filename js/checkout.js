@@ -1,5 +1,6 @@
 // ========================================
 // CHECKOUT — resumen + creación de pedido (MP / transferencia / Binance)
+// Requiere sesión iniciada para comprar.
 // ========================================
 
 function esc(s) {
@@ -40,6 +41,69 @@ function buildItemsTableHtml(items) {
 
 var PAYMENT_LABELS = { mercadopago: 'Mercado Pago', transferencia: 'Transferencia bancaria', binance: 'Binance (USDT)' };
 
+/* ---------- sesión ---------- */
+
+async function getSession() {
+  try {
+    var res = await supabase.auth.getSession();
+    return (res && res.data && res.data.session) ? res.data.session : null;
+  } catch (e) {
+    console.warn('No se pudo leer la sesión:', e);
+    return null;
+  }
+}
+
+function loginUrl() {
+  var back = encodeURIComponent(window.location.pathname.split('/').pop() + window.location.search);
+  return 'login.html?redirect=' + back;
+}
+
+function showLoginGate() {
+  var content = document.getElementById('checkoutContent');
+  var empty = document.getElementById('emptyCartMsg');
+  if (content) content.style.display = 'none';
+  if (empty) empty.style.display = 'none';
+
+  if (document.getElementById('loginGate')) {
+    document.getElementById('loginGate').style.display = 'block';
+    return;
+  }
+
+  var gate = document.createElement('div');
+  gate.id = 'loginGate';
+  gate.style.cssText = 'background:rgba(21,21,21,0.95);border:1px solid rgba(255,106,0,0.3);border-radius:20px;padding:40px 30px;text-align:center;';
+  gate.innerHTML =
+    '<i class="fas fa-user-lock" style="font-size:42px;color:var(--orange);margin-bottom:16px;"></i>' +
+    '<h2 style="color:white;font-size:20px;margin-bottom:10px;">Iniciá sesión para comprar</h2>' +
+    '<p style="color:#aaa;font-size:14px;margin-bottom:22px;max-width:420px;margin-left:auto;margin-right:auto;">' +
+    'Necesitás una cuenta para finalizar la compra. Así podés seguir tu pedido y guardar tus datos para la próxima.</p>' +
+    '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">' +
+    '<a href="' + loginUrl() + '" class="btn-service-primary" style="display:inline-block;">Iniciar sesión</a>' +
+    '<a href="registro.html" class="btn-secondary" style="display:inline-block;padding:14px 22px;border-radius:10px;">Crear cuenta</a>' +
+    '</div>' +
+    '<p style="color:#666;font-size:12px;margin-top:18px;">Tu carrito se mantiene guardado.</p>';
+
+  if (content && content.parentNode) content.parentNode.insertBefore(gate, content);
+}
+
+function hideLoginGate() {
+  var gate = document.getElementById('loginGate');
+  if (gate) gate.style.display = 'none';
+}
+
+/* Lee el cuerpo del error que devuelve una Edge Function (supabase-js v2
+   no parsea el body cuando el status no es 2xx). */
+async function readFunctionError(error) {
+  try {
+    if (error && error.context && typeof error.context.json === 'function') {
+      return await error.context.json();
+    }
+  } catch (e) { /* ignorado */ }
+  return null;
+}
+
+/* ---------- email ---------- */
+
 async function sendOrderConfirmationEmail(orderNumber, payload) {
   try {
     var cart = getCart();
@@ -64,6 +128,8 @@ async function sendOrderConfirmationEmail(orderNumber, payload) {
   }
 }
 
+/* ---------- resumen ---------- */
+
 function renderOrderSummary() {
   var cart = getCart();
   var content = document.getElementById('checkoutContent');
@@ -72,7 +138,7 @@ function renderOrderSummary() {
   if (!cart.length) {
     content.style.display = 'none';
     emptyMsg.style.display = 'block';
-    return;
+    return false;
   }
 
   var list = document.getElementById('orderItemsList');
@@ -88,6 +154,16 @@ function renderOrderSummary() {
 
   var total = cart.reduce(function (s, i) { return s + (Number(i.price) || 0) * i.quantity; }, 0);
   document.getElementById('orderTotal').textContent = '$' + money(total);
+  return true;
+}
+
+function prefillFromSession(session) {
+  var email = session && session.user ? session.user.email : '';
+  var meta = (session && session.user && session.user.user_metadata) || {};
+  if (email && !val('buyerEmail')) document.getElementById('buyerEmail').value = email;
+  if (meta.first_name && !val('firstName')) document.getElementById('firstName').value = meta.first_name;
+  if (meta.last_name && !val('lastName')) document.getElementById('lastName').value = meta.last_name;
+  if (meta.phone && !val('buyerPhone')) document.getElementById('buyerPhone').value = meta.phone;
 }
 
 function setupShipToggle() {
@@ -103,10 +179,20 @@ function setupShipToggle() {
   });
 }
 
+/* ---------- submit ---------- */
+
 async function submitCheckout(e) {
   e.preventDefault();
   var cart = getCart();
   if (!cart.length) return;
+
+  // Revalidamos la sesión por si expiró mientras completaba el formulario
+  var session = await getSession();
+  if (!session) {
+    alert('Tu sesión expiró. Iniciá sesión de nuevo para completar la compra.');
+    window.location.href = loginUrl();
+    return;
+  }
 
   var btn = document.getElementById('checkoutSubmitBtn');
   var btnText = document.getElementById('checkoutBtnText');
@@ -117,7 +203,7 @@ async function submitCheckout(e) {
   var shipDifferent = document.getElementById('shipDifferent').checked;
 
   var payload = {
-    items: cart.map(function (i) { return { id: i.id, name: i.name, price: i.price, quantity: i.quantity }; }),
+    items: cart.map(function (i) { return { id: i.id, name: i.name, price: i.price, quantity: i.quantity, image: i.image || null }; }),
     buyer: {
       firstName: val('firstName'),
       lastName: val('lastName'),
@@ -161,9 +247,23 @@ async function submitCheckout(e) {
   };
 
   try {
-    var { data, error } = await supabase.functions.invoke('create-payment', { body: payload });
-    if (error) throw error;
-    if (data.error) throw new Error(data.error);
+    var res = await supabase.functions.invoke('create-payment', { body: payload });
+    var data = res.data;
+    var error = res.error;
+
+    if (error) {
+      var body = await readFunctionError(error);
+      if (body && body.code === 'AUTH_REQUIRED') {
+        alert('Necesitás iniciar sesión para comprar.');
+        window.location.href = loginUrl();
+        return;
+      }
+      if (body && body.code === 'NO_STOCK') {
+        throw new Error(body.error + '. Actualizá el carrito e intentá de nuevo.');
+      }
+      throw new Error((body && body.error) || error.message || 'Error al crear el pedido');
+    }
+    if (data && data.error) throw new Error(data.error);
 
     await sendOrderConfirmationEmail(data.order_number, payload);
 
@@ -187,9 +287,21 @@ async function submitCheckout(e) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-  renderOrderSummary();
+/* ---------- init ---------- */
+
+document.addEventListener('DOMContentLoaded', async function () {
+  var hasItems = renderOrderSummary();
   setupShipToggle();
+
+  var session = await getSession();
+  if (!session) {
+    if (hasItems) showLoginGate();
+    return;
+  }
+
+  hideLoginGate();
+  prefillFromSession(session);
+
   var form = document.getElementById('checkoutForm');
   if (form) form.addEventListener('submit', submitCheckout);
 });
