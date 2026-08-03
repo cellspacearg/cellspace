@@ -2021,17 +2021,6 @@ body::after {
   flex-wrap: wrap;
 }
 
-/* Variante A: texto plano */
-.brand-item {
-  font-size: 24px;
-  font-weight: 700;
-  color: white;
-  opacity: 0.6;
-  transition: opacity 0.3s;
-}
-
-.brand-item:hover { opacity: 1; }
-
 /* Variante B: logos en imagen */
 .brand-logo {
   width: 100px;
