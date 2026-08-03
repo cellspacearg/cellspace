@@ -1,202 +1,412 @@
 /* ============================================================
-   CELL SPACE — Responsive global
-   Cargar SIEMPRE ÚLTIMO, después de todos los demás CSS.
-   No modifica el escritorio: casi todo vive dentro de media queries.
+   CELL SPACE — Responsive global  ·  v2
+   Va SIEMPRE ÚLTIMO, después de styles.css, tienda.css y cs-auth.css.
+   El escritorio queda intacto: casi todo vive dentro de media queries.
    ============================================================ */
 
-/* ---------- Base de seguridad (aplica en todos los tamaños) ---------- */
-html, body {
-  max-width: 100%;
-  overflow-x: hidden;
-}
+/* ---------- Base de seguridad (todos los tamaños) ---------- */
+html, body { max-width: 100%; overflow-x: hidden; }
 
 *, *::before, *::after { box-sizing: border-box; }
 
-img, video, iframe, canvas, svg {
-  max-width: 100%;
-  height: auto;
-}
+img, video, iframe, canvas, svg { max-width: 100%; }
 
-/* Palabras largas (emails, URLs, SKUs) que estiran el layout */
-p, h1, h2, h3, h4, h5, span, a, td, li, label, .cart-item-title, .product-title {
+p, h1, h2, h3, h4, h5, span, a, td, li, label,
+.product-title, .product-title-premium, .cart-item-title {
   overflow-wrap: break-word;
 }
 
-table { max-width: 100%; }
-
-/* Menús desplegables: hover solo donde hay puntero real */
+/* Menús desplegables: hover solo con puntero real */
 @media (hover: none) {
   .has-dropdown:hover .dropdown { opacity: 0; visibility: hidden; }
 }
 .has-dropdown.open .dropdown {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
+  opacity: 1; visibility: visible; transform: translateY(0);
 }
 
 /* ============================================================
-   TABLET  (≤ 1024px)
+   ≤ 1024px  ·  TABLET
    ============================================================ */
 @media (max-width: 1024px) {
-  .container { padding-left: 18px; padding-right: 18px; }
+  .container,
+  .header-container,
+  .main-nav .nav-container,
+  .header-top-content,
+  .main-navigation .container {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
 
-  .footer-grid { grid-template-columns: repeat(2, 1fr); gap: 30px; }
+  .carousel { height: 420px; }
+
+  .cta-section { padding: 40px 26px; }
+  .process-section { padding: 40px 24px; }
+  .brands-section { padding: 40px 24px; }
 }
 
 /* ============================================================
-   MÓVIL  (≤ 768px)
+   ≤ 768px  ·  MÓVIL
    ============================================================ */
 @media (max-width: 768px) {
 
-  .container { padding-left: 16px; padding-right: 16px; }
+  .container,
+  .header-container,
+  .main-nav .nav-container,
+  .header-top-content,
+  .main-navigation .container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
 
   /* ---------- Barra de anuncios ---------- */
-  .announcement-bar { font-size: 12px; }
-  .announcement-item { padding: 0 14px; }
-  .announcement-item span { font-size: 11px; }
+  .announcement-bar,
+  .top-announcement-bar { padding: 9px 0; }
 
-  /* ---------- Header ---------- */
-  .header-top { padding: 12px 0; }
+  .announcement-scroll { gap: 34px; animation-duration: 22s; }
+  .announcement-item { font-size: 11.5px; gap: 7px; }
+  .announcement-item i,
+  .announcement-item .icon { font-size: 13px; }
+
+  /* ---------- HEADER A: index (.main-header-bar) ---------- */
+  .main-header-bar { padding: 10px 0; }
+
+  .header-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .header-left  { order: 1; }
+  .header-right { order: 2; margin-left: auto; gap: 14px; }
+  .header-center { order: 3; flex: 1 0 100%; max-width: none; }
+
+  .header-logo img { height: 36px; }
+  .header-brand-text .brand-name { font-size: 16px; }
+  .header-brand-text .brand-subtitle { font-size: 10px; letter-spacing: 1px; }
+
+  .header-link span:not(.badge) { display: none; }
+  .header-link svg { width: 24px; height: 24px; }
+
+  /* ---------- HEADER B: tienda/checkout (.site-header) ---------- */
+  .header-top { padding: 10px 0; }
 
   .header-top-content {
+    flex-direction: row;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
     align-items: center;
   }
 
-  .logo { gap: 10px; }
-  .logo img { height: 38px; }
-  .logo-main { font-size: 17px; }
-  .logo-sub { font-size: 10px; letter-spacing: 1px; }
+  .logo { gap: 9px; }
+  .logo img { height: 36px; }
+  .logo-main { font-size: 16px; }
+  .logo-sub { font-size: 9.5px; letter-spacing: 1px; }
 
-  .header-actions {
-    margin-left: auto;
-    gap: 14px;
-    align-items: center;
-  }
+  .header-actions { margin-left: auto; gap: 14px; align-items: center; }
 
-  /* Solo iconos: los textos ocupan demasiado */
   .header-action span,
   .btn-login-header span { display: none; }
 
-  .header-action i,
-  .btn-login-header i { font-size: 21px; }
+  .header-action i { font-size: 20px; }
 
-  .btn-login-header { padding: 8px 12px; }
+  .btn-login-header { padding: 9px 13px; }
 
-  .header-auth-group { display: flex; gap: 10px; align-items: center; }
+  #guestActions { gap: 10px; }
 
-  /* El buscador pasa a una fila propia, a lo ancho */
   .header-search {
     order: 3;
     flex: 1 0 100%;
     max-width: none;
+    width: 100%;
   }
 
-  .user-btn .user-info { display: none; }
+  /* Dropdown de usuario compacto */
+  .user-btn { padding: 4px 8px 4px 4px; gap: 6px; }
+  .user-btn .user-info,
   .user-btn .dropdown-arrow { display: none; }
+  .user-avatar-small { width: 32px; height: 32px; }
 
   .dropdown-menu {
     right: 0;
     left: auto;
-    min-width: 200px;
+    min-width: 210px;
+    max-width: calc(100vw - 32px);
   }
 
-  /* ---------- Navegación: se desliza en vez de apilarse ---------- */
+  /* ---------- NAVEGACIÓN: se desliza, no se apila ---------- */
+  .main-nav .nav-container {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .main-nav-menu,
   .nav-menu {
     display: flex;
+    flex-direction: row;
     flex-wrap: nowrap;
+    justify-content: flex-start;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    flex: 1;
+    min-width: 0;
   }
+
+  .main-nav-menu::-webkit-scrollbar,
   .nav-menu::-webkit-scrollbar { display: none; }
 
-  .nav-link {
-    padding: 13px 14px;
-    font-size: 12px;
+  .main-nav-menu .nav-link,
+  .nav-menu .nav-link {
+    padding: 12px 13px;
+    font-size: 11.5px;
     white-space: nowrap;
+    border-bottom-width: 3px;
+    justify-content: center;
   }
 
-  /* ---------- Formularios: 16px evita el zoom automático de iOS ---------- */
+  .nav-buttons {
+    margin-top: 0;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .btn-imei-check,
+  .btn-whatsapp { padding: 9px 13px; font-size: 12px; }
+
+  /* ---------- FORMULARIOS: 16px evita el zoom de iOS ---------- */
   input, select, textarea,
-  .search-input, .filter-search, .filter-select,
-  .sort-select, .cs-select-trigger {
-    font-size: 16px;
+  .header-search .search-input,
+  .form-group input,
+  .cs-select,
+  .sort-select,
+  .filter-search,
+  .filter-select,
+  .cs-select-trigger,
+  .modal-imei-content input {
+    font-size: 16px !important;
     max-width: 100%;
   }
 
-  /* ---------- Áreas táctiles mínimas ---------- */
-  button, .btn-filter, .btn-add-cart, .btn-checkout,
-  .btn-service-primary, .btn-primary, .btn-secondary,
-  .page-btn, .view-btn {
+  /* ---------- ÁREAS TÁCTILES ---------- */
+  button, .btn, .btn-block, .btn-filter, .btn-add-cart,
+  .btn-add-cart-premium, .btn-checkout, .btn-check-imei,
+  .btn-service-primary, .btn-service-secondary,
+  .btn-hero-primary, .btn-hero-secondary,
+  .btn-primary, .btn-secondary, .page-btn, .view-btn,
+  .search-btn, .header-search .search-btn {
     min-height: 44px;
   }
 
-  /* ---------- Tipografía general ---------- */
-  h1 { font-size: 26px; line-height: 1.25; }
-  h2 { font-size: 21px; }
-  h3 { font-size: 17px; }
+  /* ---------- HERO / CARRUSEL ---------- */
+  .hero { padding: 18px 16px; }
 
-  section { padding-top: 34px; padding-bottom: 34px; }
+  .carousel { height: 340px; border-radius: 14px; }
 
-  /* ---------- Cualquier grilla multi-columna a una sola ---------- */
+  .carousel-content {
+    padding: 22px 20px;
+    max-width: 100%;
+    left: 0; right: 0;
+    text-align: left;
+  }
+
+  .carousel-content h1 { font-size: 1.5rem; margin-bottom: 10px; }
+  .carousel-content h2 { font-size: 0.98rem; margin-bottom: 18px; }
+  .carousel-content .btn { padding: 12px 22px; font-size: 13px; }
+
+  .carousel-btn { width: 38px; height: 38px; font-size: 18px; }
+  .carousel-btn.prev { left: 8px; }
+  .carousel-btn.next { right: 8px; }
+  .carousel-dots { bottom: 14px; gap: 9px; }
+  .dot { width: 9px; height: 9px; }
+
+  .hero-buttons { flex-direction: column; gap: 12px; }
+  .hero-buttons a { justify-content: center; }
+
+  /* ---------- SECCIONES ---------- */
+  .home-section { padding: 36px 0; }
+  .services { padding: 40px 16px; }
+  .featured-section { padding: 40px 16px; }
+  .services-section,
+  .why-us-section,
+  .brands-section { margin-bottom: 44px; }
+
+  .section-title { font-size: 20px; gap: 10px; margin-bottom: 26px; }
+  .section-title i { font-size: 22px; }
+  .section-subtitle { font-size: 14px; }
+
+  .section-header { flex-direction: column; gap: 16px; text-align: center; }
+
+  /* ---------- TARJETAS ---------- */
+  .services-grid,
+  .benefits-grid,
+  .why-us-grid { grid-template-columns: 1fr; gap: 16px; }
+
+  .service-card { padding: 22px 18px; }
+  .service-card h3 { font-size: 17px; }
+  .service-icon { width: 60px; height: 60px; margin-bottom: 15px; }
+  .service-icon i { font-size: 26px; }
+
+  .benefit-card { padding: 22px 18px; }
+  .benefit-number { font-size: 36px; top: 14px; right: 14px; }
+
+  /* Destacados: 2 columnas, más compactas */
+  .products-grid-premium {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .product-image-container { height: 150px; }
+  .product-image { padding: 10px; }
+  .product-info-premium { padding: 12px; }
+  .product-title-premium { font-size: 13px; min-height: 36px; }
+  .current-price { font-size: 18px; }
+  .old-price { font-size: 12px; }
+  .product-desc-premium { display: none; }
+  .btn-add-cart-premium { padding: 11px; font-size: 13px; }
+  .product-category { font-size: 10px; }
+
+  /* ---------- SERVICIO TÉCNICO ---------- */
+  .service-hero { padding: 40px 0; margin-bottom: 34px; }
+  .service-hero .container { grid-template-columns: 1fr; gap: 26px; }
+  .service-title { font-size: 26px; }
+  .service-subtitle { font-size: 15px; }
+  .service-features { grid-template-columns: 1fr; gap: 12px; }
+  .service-buttons { flex-direction: column; gap: 12px; }
+  .btn-service-primary,
+  .btn-service-secondary { padding: 15px 22px; justify-content: center; }
+
+  .process-section { padding: 30px 18px; margin-bottom: 44px; }
+  .process-steps { flex-direction: column; gap: 22px; }
+  .process-arrow { transform: rotate(90deg); }
+  .step-icon { width: 62px; height: 62px; margin-bottom: 14px; }
+
+  .cta-section {
+    grid-template-columns: 1fr;
+    padding: 34px 20px;
+    gap: 24px;
+    margin-bottom: 44px;
+  }
+  .cta-content h2 { font-size: 23px; }
+  .cta-content p { font-size: 15px; }
+  .btn-cta-large { padding: 16px 26px; font-size: 15px; justify-content: center; width: 100%; }
+
+  /* ---------- CONTACTO ---------- */
+  .contact-section { padding: 34px 20px; }
+  .contact-box h2 { font-size: 23px; }
+  .contact-box p { font-size: 15px; }
+  .btn-whatsapp-large { padding: 15px 24px; font-size: 15px; width: 100%; justify-content: center; }
+
+  /* ---------- LOGIN / REGISTRO / OTP ---------- */
+  .login-page { padding: 30px 16px; min-height: auto; }
+  .login-box { padding: 26px 18px; border-radius: 16px; }
+  .login-logo { height: 60px; }
+  .login-header h1 { font-size: 21px; }
+
+  .otp-modal { padding: 12px; }
+  .otp-modal-content { padding: 26px 16px; }
+  .otp-inputs { gap: 7px; }
+  .otp-input { width: 42px; height: 52px; font-size: 20px; }
+  .otp-input:focus { transform: none; }
+
+  .modal-imei-content { padding: 28px 18px; }
+  .modal-imei-content h2 { font-size: 20px; }
+  .modal-close { top: 12px; right: 12px; width: 34px; height: 34px; font-size: 20px; }
+
+  /* ---------- FOOTERS (los dos sistemas) ---------- */
+  .footer-professional { padding: 40px 16px 24px; margin-top: 46px; }
+  .site-footer { padding: 40px 0 24px; margin-top: 46px; }
+
   .footer-grid { grid-template-columns: 1fr; gap: 26px; }
+
+  .footer-logo { height: 54px; }
+  .footer-brand img { height: 44px; }
 
   .footer-bottom {
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
     text-align: center;
   }
 
-  .social-links { justify-content: center; }
+  .social-links { justify-content: flex-start; }
 
-  .site-footer { padding: 40px 0 24px; margin-top: 50px; }
+  .contact-info li { align-items: flex-start; }
+  .contact-info i { flex-shrink: 0; margin-top: 4px; }
 
-  /* ---------- Modales como hoja inferior ---------- */
-  .cart-modal-overlay,
-  .modal-overlay { align-items: flex-end; }
+  /* ---------- CARRITO ---------- */
+  .cart-modal-overlay { align-items: flex-end; }
 
-  .cart-modal,
-  .modal-box {
+  .cart-modal-overlay .cart-modal {
     width: 100%;
     max-width: none;
     max-height: 88vh;
+    height: auto;
     border-radius: 16px 16px 0 0;
+    border-left: none;
+    transform: none;
   }
 
-  .cart-item img { width: 64px; height: 64px; }
+  .cart-item { padding: 12px; gap: 12px; }
+  .cart-item-img { width: 56px; height: 56px; }
 
-  /* ---------- Botón flotante de WhatsApp ---------- */
-  .wa-float {
-    bottom: 76px;
-    right: 14px;
-    width: 52px;
-    height: 52px;
-  }
+  .cart-controls button { width: 34px; height: 34px; font-size: 16px; }
 
-  /* Las partículas del fondo consumen batería y no aportan en móvil */
+  .cart-buttons { flex-direction: column; }
+
+  /* ---------- MARCAS ---------- */
+  .brands-section { padding: 30px 16px; }
+  .brands-title { font-size: 17px; margin-bottom: 24px; letter-spacing: 1px; }
+  .brands-grid { gap: 22px; }
+
+  /* ---------- WHATSAPP FLOTANTE ---------- */
+  .wa-float { bottom: 74px; right: 14px; }
+
+  /* Fondo animado: consume batería y no aporta en móvil */
   .particles { display: none; }
+  body::after { animation: none; opacity: 0.35; }
 }
 
 /* ============================================================
-   MÓVIL CHICO  (≤ 420px)
+   ≤ 420px  ·  MÓVIL CHICO
    ============================================================ */
 @media (max-width: 420px) {
-  .container { padding-left: 12px; padding-right: 12px; }
+  .container,
+  .header-container,
+  .main-nav .nav-container,
+  .header-top-content { padding-left: 12px; padding-right: 12px; }
 
-  h1 { font-size: 22px; }
-  h2 { font-size: 19px; }
+  .logo-sub,
+  .header-brand-text .brand-subtitle { display: none; }
 
-  .logo img { height: 34px; }
-  .logo-main { font-size: 15px; }
-  .logo-sub { display: none; }
+  .logo img,
+  .header-logo img { height: 32px; }
 
-  .header-actions { gap: 12px; }
+  .logo-main,
+  .header-brand-text .brand-name { font-size: 15px; }
+
+  .header-actions, .header-right { gap: 12px; }
+
+  .carousel { height: 290px; }
+  .carousel-content h1 { font-size: 1.28rem; }
+  .carousel-content h2 { font-size: 0.9rem; }
+
+  .section-title { font-size: 18px; }
+
+  .products-grid-premium { gap: 10px; }
+  .product-image-container { height: 128px; }
+  .product-title-premium { font-size: 12px; min-height: 32px; }
+  .current-price { font-size: 16px; }
+
+  .otp-inputs { gap: 5px; }
+  .otp-input { width: 38px; height: 48px; font-size: 18px; }
+
+  .brands-grid { gap: 18px; }
 }
 
 /* ============================================================
-   Accesibilidad: respeta "reducir movimiento" del sistema
+   Accesibilidad: respeta "reducir movimiento"
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
