@@ -3,16 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Servicio técnico en Cell Space Argentina: reparación de celulares, notebooks, consolas, Mac y microsoldadura. Diagnóstico profesional y garantía escrita.">
   <title>Servicio Técnico | Cell Space Argentina</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="css/styles.css?v=15">
-  <link rel="stylesheet" href="css/cms-public.css?v=1">
+
+  <link rel="stylesheet" href="css/styles.css?v=16">
   <link rel="stylesheet" href="css/servicios-public.css?v=1">
   <link rel="stylesheet" href="css/cs-auth.css?v=1">
   <link rel="stylesheet" href="css/imei-check.css?v=1">
-  <link rel="stylesheet" href="css/responsive.css?v=1">
+  <link rel="stylesheet" href="css/responsive.css?v=2">
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -42,12 +47,12 @@
       <div class="container">
         <div class="header-top-content">
           <a href="index.html" class="logo">
-            <img src="assets/logo.png" alt="Cell Space Argentina">
+            <img src="assets/logo.png" alt="Cell Space Argentina" width="45" height="45">
             <div class="logo-text"><span class="logo-main">CELL SPACE</span><span class="logo-sub">ARGENTINA</span></div>
           </a>
           <div class="header-search">
-            <input type="text" placeholder="Buscar servicios, reparaciones, equipos..." class="search-input">
-            <button class="search-btn"><i class="fas fa-search"></i></button>
+            <input type="text" id="headerSearchInput" class="search-input" placeholder="Buscar servicios, reparaciones, equipos..." enterkeyhint="search">
+            <button class="search-btn" onclick="performHeaderSearch()" aria-label="Buscar"><i class="fas fa-search"></i></button>
           </div>
           <div class="header-actions">
             <div id="guestActions">
@@ -70,8 +75,8 @@
                 </div>
               </div>
             </div>
-            <a href="https://wa.me/5493782437674" target="_blank" class="header-action"><i class="fas fa-headset"></i><span>Soporte</span></a>
-            <a href="#" class="header-action cart-action" onclick="toggleCart(); return false;"><i class="fas fa-shopping-cart"></i><span>Carrito</span><span class="cart-count" id="cartCount">0</span></a>
+            <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="header-action"><i class="fas fa-headset"></i><span>Soporte</span></a>
+            <a href="#" class="header-action cart-action" onclick="toggleCart(); return false;" aria-label="Carrito"><i class="fas fa-shopping-cart"></i><span>Carrito</span><span class="cart-count" id="cartCount">0</span></a>
           </div>
         </div>
       </div>
@@ -90,30 +95,31 @@
   </header>
 
   <main class="shop-main">
-    <div class="container">
 
-      <section class="service-hero">
-        <div class="container">
-          <div class="service-hero-content">
-            <div class="service-badge">SERVICIO TÉCNICO PROFESIONAL</div>
-            <h1 class="service-title">REPARAMOS TODO, COMO TIENE QUE SER</h1>
-            <p class="service-subtitle">Técnicos especializados, herramientas profesionales y repuestos de alta calidad. Garantía en todos nuestros trabajos.</p>
-            <div class="service-features">
-              <div class="service-feature"><i class="fas fa-stethoscope"></i><span>Diagnóstico Profesional</span></div>
-              <div class="service-feature"><i class="fas fa-cogs"></i><span>Repuestos Originales</span></div>
-              <div class="service-feature"><i class="fas fa-certificate"></i><span>Garantía Escrita</span></div>
-              <div class="service-feature"><i class="fas fa-clock"></i><span>Atención Rápida</span></div>
-            </div>
-            <div class="service-buttons">
-              <a href="https://wa.me/5493782437674" target="_blank" class="btn-service-primary"><i class="fas fa-tools"></i> SOLICITAR REPARACIÓN</a>
-              <a href="#precios" class="btn-service-secondary"><i class="fas fa-tag"></i> VER PRECIOS</a>
-            </div>
+    <section class="service-hero">
+      <div class="container">
+        <div class="service-hero-content">
+          <div class="service-badge">SERVICIO TÉCNICO PROFESIONAL</div>
+          <h1 class="service-title">REPARAMOS TODO, COMO TIENE QUE SER</h1>
+          <p class="service-subtitle">Técnicos especializados, herramientas profesionales y repuestos de alta calidad. Garantía en todos nuestros trabajos.</p>
+          <div class="service-features">
+            <div class="service-feature"><i class="fas fa-stethoscope"></i><span>Diagnóstico Profesional</span></div>
+            <div class="service-feature"><i class="fas fa-cogs"></i><span>Repuestos Originales</span></div>
+            <div class="service-feature"><i class="fas fa-certificate"></i><span>Garantía Escrita</span></div>
+            <div class="service-feature"><i class="fas fa-clock"></i><span>Atención Rápida</span></div>
           </div>
-          <div class="service-hero-image">
-            <img src="assets/technician.jpg" alt="Técnico Cell Space" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 600 400%22%3E%3Crect fill=%22%231a1a1a%22 width=%22600%22 height=%22400%22/%3E%3Ctext fill=%22%23FF6A00%22 font-family=%22Montserrat%22 font-size=%2240%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22%3ETécnico%3C/text%3E%3C/svg%3E'">
+          <div class="service-buttons">
+            <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="btn-service-primary"><i class="fas fa-tools"></i> SOLICITAR REPARACIÓN</a>
+            <a href="#precios" class="btn-service-secondary"><i class="fas fa-tag"></i> VER PRECIOS</a>
           </div>
         </div>
-      </section>
+        <div class="service-hero-image">
+          <img src="assets/technician.jpg" alt="Técnico de Cell Space reparando un equipo" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 600 400%22%3E%3Crect fill=%22%231a1a1a%22 width=%22600%22 height=%22400%22/%3E%3Ctext fill=%22%23FF6A00%22 font-family=%22Montserrat%22 font-size=%2240%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22%3ETécnico%3C/text%3E%3C/svg%3E'">
+        </div>
+      </div>
+    </section>
+
+    <div class="container">
 
       <section class="services-section">
         <div class="section-header">
@@ -129,16 +135,16 @@
           <div class="service-card"><div class="service-number">6</div><div class="service-icon"><i class="fas fa-laptop"></i></div><h3>NOTEBOOK</h3><p>Reparación de placa, pantalla, teclado, bisagras, sistema de refrigeración y más.</p><a href="#precios" class="service-link">Ver servicios <i class="fas fa-arrow-right"></i></a></div>
           <div class="service-card"><div class="service-number">7</div><div class="service-icon"><i class="fas fa-laptop-medical"></i></div><h3>NETBOOK</h3><p>Solución a problemas de rendimiento, hardware y software.</p><a href="#precios" class="service-link">Ver servicios <i class="fas fa-arrow-right"></i></a></div>
           <div class="service-card"><div class="service-number">8</div><div class="service-icon"><i class="fab fa-apple"></i></div><h3>MAC / APPLE</h3><p>Reparación de Macs, cambio de pantalla, batería, upgrades y más.</p><a href="#precios" class="service-link">Ver servicios <i class="fas fa-arrow-right"></i></a></div>
-          <div class="service-card"><div class="service-number">9</div><div class="service-icon"><i class="fas fa-watch"></i></div><h3>APPLE WATCH</h3><p>Cambio de pantalla, batería, correa, problemas de carga y más.</p><a href="#precios" class="service-link">Ver servicios <i class="fas fa-arrow-right"></i></a></div>
+          <div class="service-card"><div class="service-number">9</div><div class="service-icon"><i class="fas fa-stopwatch"></i></div><h3>APPLE WATCH</h3><p>Cambio de pantalla, batería, correa, problemas de carga y más.</p><a href="#precios" class="service-link">Ver servicios <i class="fas fa-arrow-right"></i></a></div>
           <div class="service-card"><div class="service-number">10</div><div class="service-icon"><i class="fas fa-compact-disc"></i></div><h3>SOFTWARE</h3><p>Flasheo, desbloqueos, recupero de datos, instalación de sistemas y más.</p><a href="#precios" class="service-link">Ver servicios <i class="fas fa-arrow-right"></i></a></div>
         </div>
       </section>
 
       <!-- ============================================================
-           SECCIÓN CMS: SERVICIOS Y PRECIOS (12.C)
+           SECCIÓN CMS: SERVICIOS Y PRECIOS
            Se llena sola desde el panel. Si no hay servicios, se oculta
-           y el sitio queda idéntico a antes. El ancla #precios hace que
-           el botón "VER PRECIOS" del hero baje hasta acá.
+           y el sitio queda idéntico. El ancla #precios hace que el
+           botón "VER PRECIOS" del hero baje hasta acá.
            ============================================================ -->
       <section class="svc-cms" id="precios">
         <div class="svc-cms-head svc-reveal">
@@ -187,10 +193,10 @@
         <div class="cta-content">
           <h2>¿TENÉS UN EQUIPO PARA REPARAR?</h2>
           <p>Solicitá tu presupuesto ahora mismo sin compromiso.</p>
-          <a href="https://wa.me/5493782437674" target="_blank" class="btn-cta-large"><i class="fab fa-whatsapp"></i> SOLICITAR PRESUPUESTO</a>
-          <p class="cta-small">o escribinos por <a href="https://wa.me/5493782437674" target="_blank">WhatsApp</a></p>
+          <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="btn-cta-large"><i class="fab fa-whatsapp"></i> SOLICITAR PRESUPUESTO</a>
+          <p class="cta-small">o escribinos por <a href="https://wa.me/5493782437674" target="_blank" rel="noopener">WhatsApp</a></p>
         </div>
-        <div class="cta-image"><img src="assets/repair-cta.jpg" alt="Reparación" onerror="this.style.display='none'"></div>
+        <div class="cta-image"><img src="assets/repair-cta.jpg" alt="Reparación de equipos" loading="lazy" onerror="this.style.display='none'"></div>
       </section>
 
       <section class="brands-section">
@@ -216,6 +222,7 @@
         <div class="benefit"><i class="fas fa-credit-card"></i><div><strong>HASTA 12 CUOTAS</strong><span>Con tarjetas seleccionadas</span></div></div>
         <div class="benefit"><i class="fas fa-headset"></i><div><strong>SOPORTE 24/7</strong><span>Estamos para ayudarte</span></div></div>
       </section>
+
     </div>
   </main>
 
@@ -223,9 +230,9 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <img src="assets/logo.png" alt="Cell Space" class="footer-logo">
+          <img src="assets/logo.png" alt="Cell Space" class="footer-logo" loading="lazy">
           <p>Tu espacio de confianza en tecnología.</p>
-          <div class="social-links"><a href="#"><i class="fab fa-instagram"></i></a><a href="#"><i class="fab fa-facebook"></i></a><a href="#"><i class="fab fa-youtube"></i></a></div>
+          <div class="social-links"><a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a><a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a><a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a></div>
         </div>
         <div class="footer-col"><h4>INFORMACIÓN</h4><ul><li><a href="#">Sobre nosotros</a></li><li><a href="#">Términos y condiciones</a></li><li><a href="#">Política de privacidad</a></li></ul></div>
         <div class="footer-col"><h4>CATEGORÍAS</h4><ul><li><a href="#">Celulares</a></li><li><a href="#">Accesorios</a></li><li><a href="#">Herramientas</a></li></ul></div>
@@ -237,54 +244,77 @@
 
   <div class="cart-modal-overlay" id="cartModal">
     <div class="cart-modal">
-      <div class="cart-modal-header"><h2><i class="fas fa-shopping-cart"></i> Tu Carrito</h2><button onclick="toggleCart()" class="close-btn"><i class="fas fa-times"></i></button></div>
+      <div class="cart-modal-header"><h2><i class="fas fa-shopping-cart"></i> Tu Carrito</h2><button onclick="toggleCart()" class="close-btn" aria-label="Cerrar"><i class="fas fa-times"></i></button></div>
       <div class="cart-modal-body" id="cartItems"></div>
       <div class="cart-modal-footer"><div class="cart-total"><span>Total:</span><span class="total-price" id="cartTotal">$0</span></div><button class="btn-checkout" onclick="checkout()">Finalizar Compra</button></div>
     </div>
   </div>
 
+  <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="wa-float" aria-label="WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+  <button id="imeiPanelTrigger" class="imei-float" aria-label="Check IMEI">
+    <i class="fas fa-mobile-alt"></i>
+  </button>
+
+  <div class="imei-panel-overlay" id="imeiPanelOverlay"></div>
+
+  <aside class="imei-side-panel" id="imeiCheckSection">
+    <div class="imei-panel-header">
+      <h3><i class="fas fa-mobile-alt"></i> Check IMEI</h3>
+      <button class="imei-panel-close" id="imeiPanelClose" aria-label="Cerrar">&times;</button>
+    </div>
+
+    <div class="imei-balance-row">
+      <span>Tu saldo: <strong id="imeiUserBalance">--</strong></span>
+      <a href="perfil.html#saldo" class="imei-topup-link">Cargar saldo</a>
+    </div>
+
+    <input type="text" id="imeiInputCheck" class="imei-input" placeholder="Ingresá el IMEI (marcá *#06# en el equipo)" maxlength="20" inputmode="numeric">
+
+    <select id="imeiServiceSelect" class="imei-select"></select>
+
+    <button id="imeiCheckBtn" class="btn-imei-consult">
+      <i class="fas fa-search"></i> Consultar (<span id="imeiSelectedPrice">--</span>)
+    </button>
+
+    <div id="imeiCheckResult" class="imei-check-result" style="display:none;"></div>
+  </aside>
+
+  <!-- ========================================
+       SCRIPTS  (orden: config → auth → utilidades → vistas)
+       ======================================== -->
   <script src="js/config.js?v=2"></script>
   <script src="js/auth-middleware.js"></script>
-  <script src="js/tienda.js?v=5"></script>
-  <script src="js/servicios-public.js?v=1"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', async () => { await controlVisibility(); });
-  </script>
   <script src="js/site-config.js?v=2"></script>
   <script src="js/cs-auth.js?v=1"></script>
+  <script src="js/tienda.js?v=6"></script>
+  <script src="js/servicios-public.js?v=1"></script>
   <script src="js/imei-catalog.js?v=1"></script>
   <script src="js/imei-servicio.js?v=1"></script>
 
-  <a href="https://wa.me/5493782437674" target="_blank" class="wa-float" aria-label="WhatsApp">
-  <i class="fab fa-whatsapp"></i>
-</a>
+  <script>
+    // Buscador del header: manda a la tienda con el término aplicado
+    function performHeaderSearch() {
+      var input = document.getElementById('headerSearchInput');
+      var q = input ? input.value.trim() : '';
+      if (!q) return;
+      window.location.href = 'tienda.html?q=' + encodeURIComponent(q);
+    }
 
-<button id="imeiPanelTrigger" class="imei-float" aria-label="Check IMEI">
-  <i class="fas fa-mobile-alt"></i>
-</button>
+    document.addEventListener('DOMContentLoaded', async function () {
+      var hs = document.getElementById('headerSearchInput');
+      if (hs) {
+        hs.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') { e.preventDefault(); performHeaderSearch(); }
+        });
+      }
 
-<div class="imei-panel-overlay" id="imeiPanelOverlay"></div>
-
-<aside class="imei-side-panel" id="imeiCheckSection">
-  <div class="imei-panel-header">
-    <h3><i class="fas fa-mobile-alt"></i> Check IMEI</h3>
-    <button class="imei-panel-close" id="imeiPanelClose" aria-label="Cerrar">&times;</button>
-  </div>
-
-  <div class="imei-balance-row">
-    <span>Tu saldo: <strong id="imeiUserBalance">--</strong></span>
-    <a href="perfil.html#saldo" class="imei-topup-link">Cargar saldo</a>
-  </div>
-
-  <input type="text" id="imeiInputCheck" class="imei-input" placeholder="Ingresá el IMEI (marcá *#06# en el equipo)" maxlength="20">
-
-  <select id="imeiServiceSelect" class="imei-select"></select>
-
-  <button id="imeiCheckBtn" class="btn-imei-consult">
-    <i class="fas fa-search"></i> Consultar (<span id="imeiSelectedPrice">--</span>)
-  </button>
-
-  <div id="imeiCheckResult" class="imei-check-result" style="display:none;"></div>
-</aside>
+      if (typeof controlVisibility === 'function') {
+        await controlVisibility();
+      }
+    });
+  </script>
 </body>
 </html>
