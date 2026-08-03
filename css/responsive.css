@@ -1,0 +1,208 @@
+/* ============================================================
+   CELL SPACE — Responsive global
+   Cargar SIEMPRE ÚLTIMO, después de todos los demás CSS.
+   No modifica el escritorio: casi todo vive dentro de media queries.
+   ============================================================ */
+
+/* ---------- Base de seguridad (aplica en todos los tamaños) ---------- */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+img, video, iframe, canvas, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Palabras largas (emails, URLs, SKUs) que estiran el layout */
+p, h1, h2, h3, h4, h5, span, a, td, li, label, .cart-item-title, .product-title {
+  overflow-wrap: break-word;
+}
+
+table { max-width: 100%; }
+
+/* Menús desplegables: hover solo donde hay puntero real */
+@media (hover: none) {
+  .has-dropdown:hover .dropdown { opacity: 0; visibility: hidden; }
+}
+.has-dropdown.open .dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* ============================================================
+   TABLET  (≤ 1024px)
+   ============================================================ */
+@media (max-width: 1024px) {
+  .container { padding-left: 18px; padding-right: 18px; }
+
+  .footer-grid { grid-template-columns: repeat(2, 1fr); gap: 30px; }
+}
+
+/* ============================================================
+   MÓVIL  (≤ 768px)
+   ============================================================ */
+@media (max-width: 768px) {
+
+  .container { padding-left: 16px; padding-right: 16px; }
+
+  /* ---------- Barra de anuncios ---------- */
+  .announcement-bar { font-size: 12px; }
+  .announcement-item { padding: 0 14px; }
+  .announcement-item span { font-size: 11px; }
+
+  /* ---------- Header ---------- */
+  .header-top { padding: 12px 0; }
+
+  .header-top-content {
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .logo { gap: 10px; }
+  .logo img { height: 38px; }
+  .logo-main { font-size: 17px; }
+  .logo-sub { font-size: 10px; letter-spacing: 1px; }
+
+  .header-actions {
+    margin-left: auto;
+    gap: 14px;
+    align-items: center;
+  }
+
+  /* Solo iconos: los textos ocupan demasiado */
+  .header-action span,
+  .btn-login-header span { display: none; }
+
+  .header-action i,
+  .btn-login-header i { font-size: 21px; }
+
+  .btn-login-header { padding: 8px 12px; }
+
+  .header-auth-group { display: flex; gap: 10px; align-items: center; }
+
+  /* El buscador pasa a una fila propia, a lo ancho */
+  .header-search {
+    order: 3;
+    flex: 1 0 100%;
+    max-width: none;
+  }
+
+  .user-btn .user-info { display: none; }
+  .user-btn .dropdown-arrow { display: none; }
+
+  .dropdown-menu {
+    right: 0;
+    left: auto;
+    min-width: 200px;
+  }
+
+  /* ---------- Navegación: se desliza en vez de apilarse ---------- */
+  .nav-menu {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .nav-menu::-webkit-scrollbar { display: none; }
+
+  .nav-link {
+    padding: 13px 14px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  /* ---------- Formularios: 16px evita el zoom automático de iOS ---------- */
+  input, select, textarea,
+  .search-input, .filter-search, .filter-select,
+  .sort-select, .cs-select-trigger {
+    font-size: 16px;
+    max-width: 100%;
+  }
+
+  /* ---------- Áreas táctiles mínimas ---------- */
+  button, .btn-filter, .btn-add-cart, .btn-checkout,
+  .btn-service-primary, .btn-primary, .btn-secondary,
+  .page-btn, .view-btn {
+    min-height: 44px;
+  }
+
+  /* ---------- Tipografía general ---------- */
+  h1 { font-size: 26px; line-height: 1.25; }
+  h2 { font-size: 21px; }
+  h3 { font-size: 17px; }
+
+  section { padding-top: 34px; padding-bottom: 34px; }
+
+  /* ---------- Cualquier grilla multi-columna a una sola ---------- */
+  .footer-grid { grid-template-columns: 1fr; gap: 26px; }
+
+  .footer-bottom {
+    flex-direction: column;
+    gap: 14px;
+    text-align: center;
+  }
+
+  .social-links { justify-content: center; }
+
+  .site-footer { padding: 40px 0 24px; margin-top: 50px; }
+
+  /* ---------- Modales como hoja inferior ---------- */
+  .cart-modal-overlay,
+  .modal-overlay { align-items: flex-end; }
+
+  .cart-modal,
+  .modal-box {
+    width: 100%;
+    max-width: none;
+    max-height: 88vh;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .cart-item img { width: 64px; height: 64px; }
+
+  /* ---------- Botón flotante de WhatsApp ---------- */
+  .wa-float {
+    bottom: 76px;
+    right: 14px;
+    width: 52px;
+    height: 52px;
+  }
+
+  /* Las partículas del fondo consumen batería y no aportan en móvil */
+  .particles { display: none; }
+}
+
+/* ============================================================
+   MÓVIL CHICO  (≤ 420px)
+   ============================================================ */
+@media (max-width: 420px) {
+  .container { padding-left: 12px; padding-right: 12px; }
+
+  h1 { font-size: 22px; }
+  h2 { font-size: 19px; }
+
+  .logo img { height: 34px; }
+  .logo-main { font-size: 15px; }
+  .logo-sub { display: none; }
+
+  .header-actions { gap: 12px; }
+}
+
+/* ============================================================
+   Accesibilidad: respeta "reducir movimiento" del sistema
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .announcement-scroll { animation: none !important; }
+}
