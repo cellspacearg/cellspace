@@ -3,14 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Detalle del servicio técnico en Cell Space Argentina: precio orientativo, galería y solicitud por WhatsApp.">
   <title>Servicio | Cell Space Argentina</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <link rel="stylesheet" href="css/styles.css?v=16">
-  <link rel="stylesheet" href="css/servicio.css?v=1">
+  <link rel="stylesheet" href="css/servicio.css?v=2">
   <link rel="stylesheet" href="css/cs-auth.css?v=1">
   <link rel="stylesheet" href="css/responsive.css?v=2">
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -20,10 +26,16 @@
     <div class="header-top">
       <div class="container">
         <div class="header-top-content">
-          <a href="index.html" class="logo"><img src="assets/logo.png" alt="Cell Space Argentina"><div class="logo-text"><span class="logo-main">CELL SPACE</span><span class="logo-sub">ARGENTINA</span></div></a>
+          <a href="index.html" class="logo">
+            <img src="assets/logo.png" alt="Cell Space Argentina" width="45" height="45">
+            <div class="logo-text">
+              <span class="logo-main">CELL SPACE</span>
+              <span class="logo-sub">ARGENTINA</span>
+            </div>
+          </a>
           <div class="header-actions">
             <a href="servicios.html" class="header-action"><i class="fas fa-arrow-left"></i><span>Volver a servicios</span></a>
-            <a href="https://wa.me/5493782437674" target="_blank" class="header-action"><i class="fas fa-headset"></i><span>Soporte</span></a>
+            <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="header-action"><i class="fas fa-headset"></i><span>Soporte</span></a>
           </div>
         </div>
       </div>
@@ -32,15 +44,33 @@
 
   <main class="sv-main">
     <div class="container">
-      <nav class="sv-crumbs" id="svCrumbs"><a href="index.html">Inicio</a><span>/</span><a href="servicios.html">Servicio Técnico</a><span>/</span><span id="svCrumb">Servicio</span></nav>
-      <div id="svRoot"><div class="sv-loading"><i class="fas fa-spinner fa-spin"></i><p>Cargando servicio…</p></div></div>
+      <nav class="sv-crumbs" id="svCrumbs" aria-label="Migas de pan">
+        <a href="index.html">Inicio</a><span>/</span>
+        <a href="servicios.html">Servicio Técnico</a><span>/</span>
+        <span id="svCrumb">Servicio</span>
+      </nav>
+
+      <div id="svRoot">
+        <div class="sv-loading"><i class="fas fa-spinner fa-spin"></i><p>Cargando servicio…</p></div>
+      </div>
     </div>
   </main>
 
-  <div class="sv-lightbox" id="svLightbox"><button class="sv-lb-close" id="svLbClose"><i class="fas fa-times"></i></button><img id="svLbImg" src="" alt=""></div>
+  <div class="sv-lightbox" id="svLightbox">
+    <button class="sv-lb-close" id="svLbClose" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+    <img id="svLbImg" src="" alt="">
+  </div>
 
+  <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="wa-float" aria-label="WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+  <!-- ========================================
+       SCRIPTS  (orden: config → utilidades → vista)
+       ======================================== -->
   <script src="js/config.js?v=2"></script>
-  <script src="js/servicio.js?v=1"></script>
   <script src="js/site-config.js?v=2"></script>
+  <script src="js/cs-auth.js?v=1"></script>
+  <script src="js/servicio.js?v=1"></script>
 </body>
 </html>
