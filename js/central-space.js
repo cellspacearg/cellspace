@@ -1,32 +1,50 @@
 // ============================================================
 // CENTRAL SPACE · Panel técnico
-// Control de acceso + layout + dashboard
+// Control de acceso + menú + dashboard
 // ============================================================
 
-const CS = {
-  user: null,
-  profile: null,
-  tech: null,
-  categories: [],
-};
-
+const CS = { user:null, profile:null, tech:null, categories:[] };
 const $ = (id) => document.getElementById(id);
 
 function esc(s){
   return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-
 function initials(name, email){
   const base = (name || email || '?').trim();
-  const parts = base.split(/[\s@._-]+/).filter(Boolean);
-  return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase() || '?';
+  const p = base.split(/[\s@._-]+/).filter(Boolean);
+  return ((p[0]?.[0] || '') + (p[1]?.[0] || '')).toUpperCase() || '?';
+}
+
+/* ---------- El sidebar y la topbar se pegan bajo el header del sitio ---------- */
+function syncHeaderOffset(){
+  const h = document.getElementById('siteHeader');
+  const px = h ? Math.round(h.getBoundingClientRect().height) : 0;
+  const wrap = document.querySelector('.cs-wrap');
+  if (wrap) wrap.style.setProperty('--cs-head-h', px + 'px');
+}
+
+/* ---------- Buscador del header del sitio ---------- */
+function performHeaderSearch(){
+  const i = $('headerSearchInput');
+  const q = i ? i.value.trim() : '';
+  if (q) window.location.href = 'tienda.html?q=' + encodeURIComponent(q);
+}
+window.performHeaderSearch = performHeaderSearch;
+
+/* ---------- Contador del carrito ---------- */
+function paintCartCount(){
+  try{
+    const cart = JSON.parse(localStorage.getItem('cellspace_cart') || '[]');
+    const n = cart.reduce((s,i) => s + (Number(i.quantity) || 0), 0);
+    const el = $('cartCount');
+    if (el){ el.textContent = n; el.style.display = n > 0 ? 'flex' : 'none'; }
+  }catch(e){ /* ignorado */ }
 }
 
 /* ---------- Gate de acceso ---------- */
 function gateMessage(icon, title, text, actions){
   $('csGateBox').innerHTML = `
-    <div class="cs-gate-logo"><img src="assets/logo.png" alt="Cell Space"></div>
     <i class="fas ${icon} cs-gate-ic"></i>
     <h2>${esc(title)}</h2>
     <p>${text}</p>
@@ -34,43 +52,44 @@ function gateMessage(icon, title, text, actions){
 }
 
 async function checkAccess(){
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data:{ session } } = await supabase.auth.getSession();
 
-  if (!session) {
-    window.location.href = 'login.html?redirect=central-space.html';
+  if (!session){
+    gateMessage('fa-user-lock', 'Iniciá sesión para entrar',
+      'Central Space es el área privada para técnicos de Cell Space.',
+      '<a href="login.html?redirect=central-space.html" class="p"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</a>' +
+      '<a href="register-client.html" class="s">Crear cuenta</a>');
     return false;
   }
   CS.user = session.user;
 
-  const { data: profile, error } = await supabase
+  const { data:profile, error } = await supabase
     .from('profiles')
     .select('id, role, full_name, email, status')
     .eq('id', session.user.id)
     .single();
 
-  if (error) {
+  if (error){
     console.error('No se pudo leer el perfil:', error);
     gateMessage('fa-triangle-exclamation', 'No pudimos verificar tu cuenta',
       'Volvé a intentarlo en un momento.',
-      '<a href="central-space.html" class="p"><i class="fas fa-rotate"></i> Reintentar</a>' +
-      '<a href="index.html" class="s">Ir al inicio</a>');
+      '<a href="central-space.html" class="p"><i class="fas fa-rotate"></i> Reintentar</a>');
     return false;
   }
-
   CS.profile = profile;
 
-  if (profile.status === 'suspended') {
+  if (profile.status === 'suspended'){
     gateMessage('fa-ban', 'Cuenta suspendida',
       'Tu acceso a Central Space está suspendido. Escribinos si creés que es un error.',
       '<a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="p"><i class="fab fa-whatsapp"></i> Contactar</a>');
     return false;
   }
 
-  if (!['technician','admin'].includes(profile.role)) {
+  if (!['technician','admin'].includes(profile.role)){
     gateMessage('fa-user-lock', 'Central Space es solo para técnicos',
       'Es un espacio para técnicos verificados. Si trabajás en reparación, podés solicitar tu acceso: revisamos cada pedido a mano.',
       '<a href="registro-tecnico.html" class="p"><i class="fas fa-user-plus"></i> Solicitar acceso</a>' +
-      '<a href="index.html" class="s">Volver al sitio</a>');
+      '<a href="index.html" class="s">Volver al inicio</a>');
     return false;
   }
 
@@ -79,28 +98,20 @@ async function checkAccess(){
 }
 
 async function ensureTechProfile(){
-  const { data } = await supabase
-    .from('cs_tech_profiles')
-    .select('*')
-    .eq('user_id', CS.user.id)
-    .maybeSingle();
+  const { data } = await supabase.from('cs_tech_profiles')
+    .select('*').eq('user_id', CS.user.id).maybeSingle();
+  if (data){ CS.tech = data; return; }
 
-  if (data) { CS.tech = data; return; }
-
-  const { data: created } = await supabase
-    .from('cs_tech_profiles')
+  const { data:created } = await supabase.from('cs_tech_profiles')
     .insert({
       user_id: CS.user.id,
       display_name: CS.profile.full_name || CS.profile.email,
       rank: CS.profile.role === 'admin' ? 'Administrador' : 'Técnico',
-    })
-    .select()
-    .single();
-
+    }).select().single();
   CS.tech = created || null;
 }
 
-/* ---------- Menú lateral ---------- */
+/* ---------- Menú ---------- */
 const GROUPS = [
   ['herramientas','Herramientas'],
   ['productos','Productos'],
@@ -109,30 +120,24 @@ const GROUPS = [
 ];
 
 async function loadMenu(){
-  const { data, error } = await supabase
-    .from('cs_categories')
-    .select('*')
-    .order('menu_group')
-    .order('sort_order');
-
+  const { data, error } = await supabase.from('cs_categories')
+    .select('*').order('menu_group').order('sort_order');
   CS.categories = error ? [] : (data || []);
 
   let html = `
     <div class="cs-nav-group">
       <div class="cs-nav-group-t">Principal</div>
       <a href="#/dashboard" class="cs-nav-item" data-route="dashboard">
-        <i class="fas fa-house"></i><span>Dashboard</span>
-      </a>
+        <i class="fas fa-house"></i><span>Dashboard</span></a>
     </div>`;
 
-  for (const [key, label] of GROUPS) {
+  for (const [key, label] of GROUPS){
     const items = CS.categories.filter(c => c.menu_group === key);
     if (!items.length) continue;
     html += `<div class="cs-nav-group"><div class="cs-nav-group-t">${esc(label)}</div>` +
       items.map(c => `
         <a href="#/c/${esc(c.slug)}" class="cs-nav-item" data-route="c/${esc(c.slug)}">
-          <i class="${esc(c.icon || 'fas fa-circle')}"></i><span>${esc(c.name)}</span>
-        </a>`).join('') +
+          <i class="${esc(c.icon || 'fas fa-circle')}"></i><span>${esc(c.name)}</span></a>`).join('') +
       `</div>`;
   }
 
@@ -141,23 +146,21 @@ async function loadMenu(){
       <div class="cs-nav-group-t">Comunidad</div>
       <a href="#/chat" class="cs-nav-item" data-route="chat">
         <i class="fas fa-comments"></i><span>Chat Técnico</span>
-        <span class="cs-nav-tag">Pronto</span>
-      </a>
+        <span class="cs-nav-tag">Pronto</span></a>
     </div>`;
 
   $('csNav').innerHTML = html;
 }
 
 function markActive(route){
-  document.querySelectorAll('.cs-nav-item').forEach(el => {
-    el.classList.toggle('on', el.dataset.route === route);
-  });
+  document.querySelectorAll('.cs-nav-item').forEach(el =>
+    el.classList.toggle('on', el.dataset.route === route));
 }
 
 /* ---------- Dashboard ---------- */
 async function countOf(table, filters){
-  let q = supabase.from(table).select('*', { count: 'exact', head: true });
-  if (filters) for (const [k, v] of Object.entries(filters)) q = q.eq(k, v);
+  let q = supabase.from(table).select('*', { count:'exact', head:true });
+  if (filters) for (const [k,v] of Object.entries(filters)) q = q.eq(k,v);
   const { count, error } = await q;
   return error ? 0 : (count || 0);
 }
@@ -167,7 +170,7 @@ async function viewDashboard(){
 
   $('csView').innerHTML = `
     <section class="cs-hero">
-      <h1>SOLUCIONES PROFESIONALES <span>PARA TÉCNICOS</span></h1>
+      <h1>Soluciones profesionales <span>para técnicos</span></h1>
       <p>Herramientas actualizadas · Soporte real · Resultados garantizados</p>
       <div class="cs-hero-stats">
         <div class="cs-stat"><span class="cs-stat-l">Herramientas</span><div class="cs-stat-v" id="stTools">–</div><span class="cs-stat-s">Activas</span></div>
@@ -183,7 +186,6 @@ async function viewDashboard(){
           <div class="cs-sec-head"><h2>Herramientas destacadas</h2><a href="#/c/herramientas">Ver todas</a></div>
           <div class="cs-grid-4" id="dashTools"><div class="cs-loading"><i class="fas fa-spinner fa-spin"></i></div></div>
         </section>
-
         <section class="cs-sec">
           <div class="cs-sec-head"><h2>Guías recientes</h2><a href="#/c/guias">Ver todas</a></div>
           <div class="cs-grid-4" id="dashGuides"><div class="cs-loading"><i class="fas fa-spinner fa-spin"></i></div></div>
@@ -196,14 +198,9 @@ async function viewDashboard(){
           <div class="cs-profile-n">${esc(name)}</div>
           <span class="cs-profile-r">${esc(CS.tech?.rank || 'Técnico')}</span>
           <div class="cs-profile-meta">
-            <div>
-              <div class="cs-meta-l">Rango</div>
-              <div class="cs-meta-v">${esc(CS.tech?.rank || 'Técnico')}</div>
-            </div>
-            <div>
-              <div class="cs-meta-l">Nivel ${CS.tech?.level ?? 1}</div>
-              <div class="cs-bar"><span style="width:${Math.min(100, (CS.tech?.points ?? 0) % 100)}%"></span></div>
-            </div>
+            <div><div class="cs-meta-l">Rango</div><div class="cs-meta-v">${esc(CS.tech?.rank || 'Técnico')}</div></div>
+            <div><div class="cs-meta-l">Nivel ${CS.tech?.level ?? 1}</div>
+                 <div class="cs-bar"><span style="width:${Math.min(100,(CS.tech?.points ?? 0) % 100)}%"></span></div></div>
           </div>
           <div class="cs-profile-nums">
             <div><div class="cs-pn-v">${CS.tech?.points ?? 0}</div><div class="cs-pn-l">Puntos</div></div>
@@ -215,10 +212,9 @@ async function viewDashboard(){
       </aside>
     </div>`;
 
-  // Contadores
-  const [t, g, d, f] = await Promise.all([
-    countOf('cs_tools',   { is_active: true }),
-    countOf('cs_guides',  { status: 'published' }),
+  const [t,g,d,f] = await Promise.all([
+    countOf('cs_tools',  { is_active:true }),
+    countOf('cs_guides', { status:'published' }),
     countOf('cs_devices', null),
     countOf('cs_files',   null),
   ]);
@@ -227,10 +223,8 @@ async function viewDashboard(){
   $('stDevices').textContent = d;
   $('stFiles').textContent   = f;
 
-  // Herramientas destacadas
-  const { data: tools } = await supabase
-    .from('cs_tools').select('*')
-    .eq('is_active', true).order('sort_order').limit(4);
+  const { data:tools } = await supabase.from('cs_tools')
+    .select('*').eq('is_active', true).order('sort_order').limit(4);
 
   $('dashTools').innerHTML = (tools && tools.length)
     ? tools.map(x => `
@@ -243,10 +237,8 @@ async function viewDashboard(){
       </div>`).join('')
     : `<div class="cs-empty" style="grid-column:1/-1"><i class="fas fa-wrench"></i><h3>Todavía no hay herramientas</h3><p>Cargalas desde el CMS y aparecen acá.</p></div>`;
 
-  // Guías recientes
-  const { data: guides } = await supabase
-    .from('cs_guides').select('*')
-    .eq('status', 'published').order('published_at', { ascending: false }).limit(4);
+  const { data:guides } = await supabase.from('cs_guides')
+    .select('*').eq('status','published').order('published_at',{ascending:false}).limit(4);
 
   $('dashGuides').innerHTML = (guides && guides.length)
     ? guides.map(x => `
@@ -257,49 +249,41 @@ async function viewDashboard(){
         </div>
         <div class="cs-guide-b">
           <div class="cs-guide-t">${esc(x.title)}</div>
-          <div class="cs-guide-m">
-            <span>${x.views || 0} vistas</span>
-            <span class="st">${x.is_vip ? '<i class="fas fa-crown"></i> VIP' : ''}</span>
-          </div>
+          <div class="cs-guide-m"><span>${x.views || 0} vistas</span>
+            <span class="st">${x.is_vip ? '<i class="fas fa-crown"></i> VIP' : ''}</span></div>
         </div>
       </a>`).join('')
     : `<div class="cs-empty" style="grid-column:1/-1"><i class="fas fa-book"></i><h3>Todavía no hay guías</h3><p>Cuando publiques la primera, aparece acá.</p></div>`;
 }
 
-/* ---------- Vistas en construcción ---------- */
 function viewSoon(title, text){
   $('csView').innerHTML = `
-    <div class="cs-empty">
-      <i class="fas fa-helmet-safety"></i>
-      <h3>${esc(title)}</h3>
-      <p>${esc(text)}</p>
-    </div>`;
+    <div class="cs-empty"><i class="fas fa-helmet-safety"></i>
+      <h3>${esc(title)}</h3><p>${esc(text)}</p></div>`;
 }
 
 /* ---------- Router ---------- */
 function router(){
-  const hash = (window.location.hash || '#/dashboard').replace(/^#\//, '');
+  const hash = (window.location.hash || '#/dashboard').replace(/^#\//,'');
   const [seg, param] = hash.split('/');
-
   closeSidebar();
-  window.scrollTo({ top: 0 });
 
-  if (seg === 'dashboard' || seg === '') {
-    markActive('dashboard');
-    viewDashboard();
-  } else if (seg === 'c') {
+  const app = $('csApp');
+  if (app && !app.hidden){
+    const top = app.getBoundingClientRect().top + window.scrollY - 100;
+    if (window.scrollY > top) window.scrollTo({ top, behavior:'smooth' });
+  }
+
+  if (seg === 'dashboard' || seg === ''){ markActive('dashboard'); viewDashboard(); }
+  else if (seg === 'c'){
     markActive('c/' + param);
     const cat = CS.categories.find(c => c.slug === param);
     viewSoon(cat ? cat.name : 'Sección', 'Esta sección está en construcción.');
-  } else if (seg === 'g') {
-    viewSoon('Ficha de guía', 'La ficha de guía llega en la próxima etapa.');
-  } else if (seg === 'vip') {
-    viewSoon('Cell Space VIP Tech', 'Los planes VIP se habilitan más adelante.');
-  } else if (seg === 'chat') {
-    viewSoon('Chat Técnico', 'El chat en vivo llega más adelante.');
-  } else {
-    viewSoon('No encontramos esa sección', 'Volvé al dashboard desde el menú.');
   }
+  else if (seg === 'g')   viewSoon('Ficha de guía', 'La ficha de guía llega en la próxima etapa.');
+  else if (seg === 'vip') viewSoon('Cell Space VIP Tech', 'Los planes VIP se habilitan más adelante.');
+  else if (seg === 'chat')viewSoon('Chat Técnico', 'El chat en vivo llega más adelante.');
+  else viewSoon('No encontramos esa sección', 'Volvé al dashboard desde el menú.');
 }
 
 /* ---------- Sidebar móvil ---------- */
@@ -316,20 +300,27 @@ function closeSidebar(){
 
 /* ---------- Init ---------- */
 document.addEventListener('DOMContentLoaded', async () => {
-  if (typeof supabase === 'undefined') {
-    gateMessage('fa-plug-circle-xmark', 'Error de conexión',
-      'No se pudo iniciar la conexión con el servidor.', '');
+  syncHeaderOffset();
+  paintCartCount();
+  window.addEventListener('resize', syncHeaderOffset);
+
+  const hs = $('headerSearchInput');
+  if (hs) hs.addEventListener('keydown', e => {
+    if (e.key === 'Enter'){ e.preventDefault(); performHeaderSearch(); }
+  });
+
+  if (typeof supabase === 'undefined'){
+    gateMessage('fa-plug-circle-xmark','Error de conexión',
+      'No se pudo iniciar la conexión con el servidor.','');
     return;
   }
 
   const ok = await checkAccess();
-  if (!ok) return;
+  if (!ok){ syncHeaderOffset(); return; }
 
   $('csGate').hidden = true;
   $('csApp').hidden = false;
-
-  $('csAvatarInitials').textContent =
-    initials(CS.tech?.display_name || CS.profile.full_name, CS.profile.email);
+  syncHeaderOffset();
 
   await loadMenu();
   router();
@@ -341,11 +332,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
 
   $('csSearch').addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter'){
       const q = e.target.value.trim();
       if (q) viewSoon('Búsqueda', `El buscador se activa cuando haya contenido cargado. Buscaste: "${q}"`);
     }
   });
-
-  $('csAvatarBtn').addEventListener('click', () => { window.location.hash = '#/perfil'; });
 });
