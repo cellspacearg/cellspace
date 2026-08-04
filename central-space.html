@@ -12,96 +12,191 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <link rel="stylesheet" href="css/central-space.css?v=1">
+  <link rel="stylesheet" href="css/styles.css?v=16">
+  <link rel="stylesheet" href="css/cs-auth.css?v=1">
+  <link rel="stylesheet" href="css/central-space.css?v=2">
+  <link rel="stylesheet" href="css/responsive.css?v=2">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="cs-body">
+<body>
 
-  <!-- ===== Pantalla de carga / acceso ===== -->
-  <div class="cs-gate" id="csGate">
-    <div class="cs-gate-box" id="csGateBox">
-      <div class="cs-gate-logo"><img src="assets/logo.png" alt="Cell Space"></div>
-      <i class="fas fa-spinner fa-spin cs-gate-spin"></i>
-      <p>Verificando acceso…</p>
+  <!-- ===== Barra de anuncios ===== -->
+  <div class="announcement-bar">
+    <div class="announcement-wrapper">
+      <div class="announcement-scroll">
+        <div class="announcement-item"><i class="fas fa-truck"></i><span>Envíos a todo el país por OCA y Andreani</span></div>
+        <div class="announcement-item"><i class="fas fa-shield-alt"></i><span>Garantía en todos los productos</span></div>
+        <div class="announcement-item"><i class="fas fa-dollar-sign"></i><span>Compra mínima $150.000 pesos</span></div>
+        <div class="announcement-item"><i class="fas fa-bolt"></i><span>Pedidos despachados en 24hs hábiles</span></div>
+        <div class="announcement-item"><i class="fas fa-boxes"></i><span>Stock y precios actualizados</span></div>
+        <div class="announcement-item"><i class="fas fa-lock"></i><span>Pago 100% seguro</span></div>
+        <div class="announcement-item"><i class="fas fa-truck"></i><span>Envíos a todo el país por OCA y Andreani</span></div>
+        <div class="announcement-item"><i class="fas fa-shield-alt"></i><span>Garantía en todos los productos</span></div>
+        <div class="announcement-item"><i class="fas fa-dollar-sign"></i><span>Compra mínima $150.000 pesos</span></div>
+        <div class="announcement-item"><i class="fas fa-bolt"></i><span>Pedidos despachados en 24hs hábiles</span></div>
+        <div class="announcement-item"><i class="fas fa-boxes"></i><span>Stock y precios actualizados</span></div>
+        <div class="announcement-item"><i class="fas fa-lock"></i><span>Pago 100% seguro</span></div>
+      </div>
     </div>
   </div>
 
-  <!-- ===== Panel ===== -->
-  <div class="cs-app" id="csApp" hidden>
+  <!-- ===== Header del sitio ===== -->
+  <header class="site-header" id="siteHeader">
+    <div class="header-top">
+      <div class="container">
+        <div class="header-top-content">
+          <a href="index.html" class="logo">
+            <img src="assets/logo.png" alt="Cell Space Argentina" width="45" height="45">
+            <div class="logo-text"><span class="logo-main">CELL SPACE</span><span class="logo-sub">ARGENTINA</span></div>
+          </a>
 
-    <!-- Sidebar -->
-    <aside class="cs-sidebar" id="csSidebar">
-      <div class="cs-side-head">
-        <a href="index.html" class="cs-side-brand">
-          <img src="assets/logo.png" alt="Cell Space" width="34" height="34">
-          <span><strong>CELL</strong> SPACE</span>
-        </a>
-        <button class="cs-side-close" id="csSideClose" aria-label="Cerrar menú">
-          <i class="fas fa-times"></i>
-        </button>
+          <div class="header-search">
+            <input type="text" id="headerSearchInput" class="search-input" placeholder="Buscar productos, herramientas, servicios..." enterkeyhint="search">
+            <button class="search-btn" onclick="performHeaderSearch()" aria-label="Buscar"><i class="fas fa-search"></i></button>
+          </div>
+
+          <div class="header-actions">
+            <div id="guestActions">
+              <a href="register-client.html" class="header-action" style="color: var(--orange); font-weight: 700;"><i class="fas fa-user-plus"></i><span>Regístrate</span></a>
+              <a href="login.html" class="btn-login-header"><i class="fas fa-sign-in-alt"></i><span>Iniciar Sesión</span></a>
+            </div>
+
+            <div id="userActions" style="display: none;">
+              <div class="user-dropdown" id="userDropdown">
+                <button class="user-btn" onclick="toggleUserDropdown()">
+                  <div class="user-avatar-small"><span id="userInitial">?</span></div>
+                  <div class="user-info"><span class="user-name" id="userNameDisplay">Usuario</span><span class="user-badge" id="userRoleBadge">Cliente</span></div>
+                  <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="dropdown-menu" id="userDropdownMenu">
+                  <a href="perfil.html" class="dropdown-item"><i class="fas fa-user-cog"></i> Mi Perfil</a>
+                  <a href="mis-pedidos.html" class="dropdown-item"><i class="fas fa-box"></i> Mis Pedidos</a>
+                  <div id="adminMenu" style="display: none;">
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-header">Administración</div>
+                    <a href="admin/index.html" class="dropdown-item"><i class="fas fa-cog"></i> Panel Admin</a>
+                  </div>
+                  <div class="dropdown-divider"></div>
+                  <a href="#" class="dropdown-item logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                </div>
+              </div>
+            </div>
+
+            <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="header-action"><i class="fas fa-headset"></i><span>Soporte</span></a>
+            <a href="tienda.html" class="header-action cart-action" aria-label="Carrito">
+              <i class="fas fa-shopping-cart"></i><span>Carrito</span><span class="cart-count" id="cartCount">0</span>
+            </a>
+          </div>
+        </div>
       </div>
+    </div>
 
-      <nav class="cs-nav" id="csNav">
-        <div class="cs-nav-skeleton"></div>
-      </nav>
-
-      <div class="cs-vip-card">
-        <span class="cs-vip-crown"><i class="fas fa-crown"></i></span>
-        <div class="cs-vip-title">ÚNETE A<br><strong>CELL <span>SPACE</span></strong><br>VIP TECH</div>
-        <ul class="cs-vip-list">
-          <li><i class="fas fa-star"></i> Acceso a contenido premium</li>
-          <li><i class="fas fa-star"></i> Herramientas exclusivas</li>
-          <li><i class="fas fa-star"></i> Soporte prioritario</li>
-          <li><i class="fas fa-star"></i> Actualizaciones diarias</li>
+    <nav class="main-navigation">
+      <div class="container">
+        <ul class="nav-menu">
+          <li><a href="index.html" class="nav-link">INICIO</a></li>
+          <li><a href="tienda.html" class="nav-link">TIENDA</a></li>
+          <li><a href="servicios.html" class="nav-link">SERVICIO TÉCNICO</a></li>
+          <li><a href="central-space.html" class="nav-link active">CENTRAL SPACE</a></li>
+          <li><a href="index.html#contacto" class="nav-link">CONTACTO</a></li>
         </ul>
-        <a href="#/vip" class="cs-vip-btn">VER PLANES</a>
       </div>
+    </nav>
+  </header>
 
-      <div class="cs-side-foot">
-        <p>&copy; 2026 Cell Space Argentina</p>
-        <a href="index.html"><i class="fas fa-arrow-left"></i> Volver al sitio</a>
+  <!-- ===== PANEL CENTRAL SPACE ===== -->
+  <div class="cs-wrap">
+
+    <!-- Verificación de acceso -->
+    <div class="cs-gate" id="csGate">
+      <div class="cs-gate-box" id="csGateBox">
+        <i class="fas fa-spinner fa-spin cs-gate-spin"></i>
+        <p>Verificando acceso…</p>
       </div>
-    </aside>
+    </div>
 
-    <div class="cs-backdrop" id="csBackdrop"></div>
+    <!-- Panel -->
+    <div class="cs-app" id="csApp" hidden>
 
-    <!-- Contenido -->
-    <div class="cs-main">
-
-      <header class="cs-topbar">
-        <button class="cs-burger" id="csBurger" aria-label="Abrir menú">
-          <i class="fas fa-bars"></i>
-        </button>
-
-        <div class="cs-search">
-          <i class="fas fa-search"></i>
-          <input type="text" id="csSearch" placeholder="Buscar herramientas, guías, modelos…" enterkeyhint="search">
+      <aside class="cs-sidebar" id="csSidebar">
+        <div class="cs-side-head">
+          <span class="cs-side-brand"><i class="fas fa-satellite-dish"></i> MENÚ TÉCNICO</span>
+          <button class="cs-side-close" id="csSideClose" aria-label="Cerrar menú"><i class="fas fa-times"></i></button>
         </div>
 
-        <div class="cs-top-actions">
-          <button class="cs-icon-btn" id="csNotifBtn" aria-label="Notificaciones">
-            <i class="fas fa-bell"></i>
-            <span class="cs-dot" id="csNotifDot" hidden></span>
-          </button>
-          <button class="cs-avatar-btn" id="csAvatarBtn" aria-label="Mi perfil">
-            <span id="csAvatarInitials">--</span>
-          </button>
+        <nav class="cs-nav" id="csNav"><div class="cs-nav-skeleton"></div></nav>
+
+        <div class="cs-vip-card">
+          <span class="cs-vip-crown"><i class="fas fa-crown"></i></span>
+          <div class="cs-vip-title">ÚNETE A<br><strong>CELL <span>SPACE</span></strong><br>VIP TECH</div>
+          <ul class="cs-vip-list">
+            <li><i class="fas fa-star"></i> Acceso a contenido premium</li>
+            <li><i class="fas fa-star"></i> Herramientas exclusivas</li>
+            <li><i class="fas fa-star"></i> Soporte prioritario</li>
+            <li><i class="fas fa-star"></i> Actualizaciones diarias</li>
+          </ul>
+          <a href="#/vip" class="cs-vip-btn">VER PLANES</a>
         </div>
-      </header>
+      </aside>
 
-      <main class="cs-view" id="csView">
-        <div class="cs-loading"><i class="fas fa-spinner fa-spin"></i><p>Cargando…</p></div>
-      </main>
+      <div class="cs-backdrop" id="csBackdrop"></div>
 
-      <footer class="cs-foot">
-        <span>&copy; 2026 Cell Space Argentina</span>
-        <span class="cs-foot-status"><i class="fas fa-circle"></i> Sistema online</span>
-      </footer>
+      <div class="cs-main">
+        <div class="cs-topbar">
+          <button class="cs-burger" id="csBurger" aria-label="Abrir menú técnico">
+            <i class="fas fa-bars"></i><span>Menú técnico</span>
+          </button>
+
+          <div class="cs-search">
+            <i class="fas fa-search"></i>
+            <input type="text" id="csSearch" placeholder="Buscar herramientas, guías, modelos…" enterkeyhint="search">
+          </div>
+
+          <div class="cs-top-actions">
+            <button class="cs-icon-btn" id="csNotifBtn" aria-label="Notificaciones">
+              <i class="fas fa-bell"></i><span class="cs-dot" id="csNotifDot" hidden></span>
+            </button>
+            <span class="cs-status"><i class="fas fa-circle"></i> Online</span>
+          </div>
+        </div>
+
+        <main class="cs-view" id="csView">
+          <div class="cs-loading"><i class="fas fa-spinner fa-spin"></i><p>Cargando…</p></div>
+        </main>
+      </div>
     </div>
   </div>
+
+  <!-- ===== Footer del sitio ===== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <img src="assets/logo.png" alt="Cell Space" class="footer-logo" loading="lazy">
+          <p>Tu espacio de confianza en tecnología.</p>
+          <div class="social-links">
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+            <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+        <div class="footer-col"><h4>INFORMACIÓN</h4><ul><li><a href="#">Sobre nosotros</a></li><li><a href="#">Términos y condiciones</a></li><li><a href="#">Política de privacidad</a></li></ul></div>
+        <div class="footer-col"><h4>CATEGORÍAS</h4><ul><li><a href="#">Celulares</a></li><li><a href="#">Accesorios</a></li><li><a href="#">Herramientas</a></li></ul></div>
+        <div class="footer-col"><h4>CONTACTO</h4><ul class="contact-info"><li><i class="fab fa-whatsapp"></i> +54 9 3782 437674</li><li><i class="fas fa-envelope"></i> cellspacearg@gmail.com</li><li><i class="fas fa-map-marker-alt"></i> Saladas, Corrientes</li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>&copy; 2026 Cell Space Argentina. Todos los derechos reservados.</p></div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="wa-float" aria-label="WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+  </a>
 
   <script src="js/config.js?v=2"></script>
-  <script src="js/central-space.js?v=1"></script>
+  <script src="js/auth-middleware.js"></script>
+  <script src="js/site-config.js?v=2"></script>
+  <script src="js/cs-auth.js?v=1"></script>
+  <script src="js/central-space.js?v=2"></script>
 </body>
 </html>
