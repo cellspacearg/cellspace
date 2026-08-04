@@ -13,7 +13,7 @@ class Router {
     const hash = window.location.hash || '#/login';
     const raw = hash.replace('#', '') || '/login';
     const path = raw.split('?')[0];                 // ✅ /builder  (separa el ?id=...)
-    const route = this.routes[path] || this.routes['/login'];
+    const route = this.routes[path] || this.routes['/404'] || this.routes['/login'];
 
     if (route.beforeEnter) {
       const canAccess = await route.beforeEnter();
