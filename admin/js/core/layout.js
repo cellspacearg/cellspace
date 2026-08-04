@@ -182,3 +182,9 @@ export function emptyState({ icon, title, text, action }){
       </button></div>` : ''}
   </div>`;
 }
+window.handleLogout = async () => {
+  if (confirm('¿Cerrar sesión?')) {
+    const { logout } = await import('../hooks/useAuth.js');
+    await logout();
+  }
+};
