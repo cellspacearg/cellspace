@@ -1,0 +1,95 @@
+/* ============================================================
+   PÁGINAS LEGALES · Términos, Privacidad, Arrepentimiento
+   Carga después de styles.css y antes de responsive.css
+   ============================================================ */
+.legal-main{ padding:40px 0 70px; }
+
+.legal-hero{
+  background:linear-gradient(135deg, rgba(255,106,0,.1) 0%, rgba(10,10,10,.9) 100%);
+  border:1px solid rgba(255,106,0,.2); border-radius:16px;
+  padding:38px 34px; margin-bottom:34px;
+}
+.legal-hero h1{
+  font-size:clamp(24px,3.4vw,38px); font-weight:900; color:var(--orange);
+  text-transform:uppercase; margin:0 0 10px; line-height:1.15;
+}
+.legal-hero p{ color:#aaa; font-size:15px; margin:0; }
+.legal-updated{
+  display:inline-flex; align-items:center; gap:8px; margin-top:16px;
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1);
+  border-radius:20px; padding:6px 14px; font-size:12.5px; color:#888;
+}
+.legal-updated i{ color:var(--orange); }
+
+.legal-layout{ display:grid; grid-template-columns:250px 1fr; gap:30px; align-items:start; }
+
+.legal-toc{
+  background:rgba(21,21,21,.9); border:1px solid rgba(255,106,0,.2);
+  border-radius:12px; padding:18px 16px; position:sticky; top:130px;
+}
+.legal-toc h2{
+  font-size:11px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase;
+  color:var(--orange); margin:0 0 12px;
+}
+.legal-toc ol{ list-style:none; padding:0; margin:0; counter-reset:toc; }
+.legal-toc li{ counter-increment:toc; margin-bottom:2px; }
+.legal-toc a{
+  display:flex; gap:9px; padding:8px 10px; border-radius:8px;
+  color:#bbb; font-size:13px; text-decoration:none; transition:.18s;
+}
+.legal-toc a::before{ content:counter(toc) "."; color:#666; flex-shrink:0; }
+.legal-toc a:hover{ background:rgba(255,106,0,.08); color:#fff; }
+
+.legal-body{
+  background:rgba(21,21,21,.9); border:1px solid rgba(255,106,0,.2);
+  border-radius:14px; padding:32px 34px; min-width:0;
+}
+.legal-body section{ margin-bottom:34px; scroll-margin-top:130px; }
+.legal-body section:last-child{ margin-bottom:0; }
+.legal-body h2{
+  display:flex; align-items:baseline; gap:11px;
+  font-size:18px; font-weight:800; color:#fff; margin:0 0 14px;
+  padding-bottom:11px; border-bottom:1px solid rgba(255,255,255,.09);
+}
+.legal-body h2 span{ color:var(--orange); font-size:15px; flex-shrink:0; }
+.legal-body h3{ font-size:15px; font-weight:700; color:var(--orange); margin:20px 0 9px; }
+.legal-body p{ color:#c4c4c4; font-size:14.5px; line-height:1.8; margin:0 0 13px; }
+.legal-body ul{ margin:0 0 15px; padding-left:20px; }
+.legal-body li{ color:#c4c4c4; font-size:14.5px; line-height:1.75; margin-bottom:8px; }
+.legal-body strong{ color:#fff; }
+.legal-body a{ color:var(--orange); }
+.legal-body table{ width:100%; border-collapse:collapse; margin:0 0 15px; font-size:13.5px; }
+.legal-body th,.legal-body td{
+  text-align:left; padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.08); color:#c4c4c4;
+}
+.legal-body th{ color:#fff; font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:.5px; }
+
+.legal-note{
+  background:rgba(255,106,0,.07); border-left:3px solid var(--orange);
+  border-radius:0 10px 10px 0; padding:14px 18px; margin:0 0 15px;
+}
+.legal-note p{ margin:0; font-size:14px; }
+
+.legal-contact{
+  background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.1);
+  border-radius:12px; padding:20px 22px; margin-top:8px;
+}
+.legal-contact-row{ display:flex; align-items:center; gap:11px; margin-bottom:10px; color:#c4c4c4; font-size:14px; }
+.legal-contact-row:last-child{ margin-bottom:0; }
+.legal-contact-row i{ color:var(--orange); width:18px; text-align:center; flex-shrink:0; }
+
+@media (max-width:900px){
+  .legal-layout{ grid-template-columns:1fr; gap:20px; }
+  .legal-toc{ position:static; }
+  .legal-toc ol{ display:grid; grid-template-columns:1fr 1fr; gap:2px 10px; }
+}
+
+@media (max-width:640px){
+  .legal-main{ padding:22px 0 44px; }
+  .legal-hero{ padding:24px 20px; border-radius:14px; margin-bottom:22px; }
+  .legal-body{ padding:22px 18px; }
+  .legal-body h2{ font-size:16px; }
+  .legal-body p,.legal-body li{ font-size:14px; }
+  .legal-toc ol{ grid-template-columns:1fr; }
+  .legal-body table{ display:block; overflow-x:auto; }
+}
