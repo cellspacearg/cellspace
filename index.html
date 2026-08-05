@@ -303,6 +303,19 @@
   <script src="js/cart.js"></script>
   <script src="js/index.js?v=2"></script>
   <script src="js/cs-auth.js?v=1"></script>
+  
+  <script>
+    // Los emails de recuperación de Supabase llegan a la raíz del sitio.
+    // Si detectamos un token de recuperación, lo pasamos a reset-password.html.
+    (function () {
+      var h = window.location.hash || '';
+      if (h.indexOf('type=recovery') !== -1) {
+        window.location.replace('reset-password.html' + h);
+      }
+    })();
+  </script>
+</body>
+</html>
 <a href="https://wa.me/5493782437674" target="_blank" class="wa-float" aria-label="WhatsApp">
   <i class="fab fa-whatsapp"></i>
 </a>
