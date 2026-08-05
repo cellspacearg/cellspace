@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Botón de arrepentimiento de Cell Space Argentina. Revocá tu compra dentro de los 10 días conforme a la Ley 24.240.">
+  <title>Botón de Arrepentimiento | Cell Space Argentina</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <link rel="stylesheet" href="css/styles.css?v=16">
+  <link rel="stylesheet" href="css/legal.css?v=1">
+  <link rel="stylesheet" href="css/responsive.css?v=2">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    .rev-form{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .rev-form .full{ grid-column:1/-1; }
+    .rev-group label{ display:block; color:#fff; font-weight:600; font-size:13.5px; margin-bottom:7px; }
+    .rev-group label span{ color:var(--orange); }
+    .rev-group input, .rev-group textarea, .rev-group select{
+      width:100%; padding:13px 15px; background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.15); border-radius:10px;
+      color:#fff; font-family:'Montserrat',sans-serif; font-size:15px; outline:none;
+    }
+    .rev-group input:focus, .rev-group textarea:focus{ border-color:var(--orange); }
+    .rev-hint{ font-size:12px; color:#777; margin-top:5px; }
+    .rev-submit{ width:100%; padding:16px; font-size:16px; margin-top:6px; }
+    @media (max-width:640px){
+      .rev-form{ grid-template-columns:1fr; gap:13px; }
+      .rev-group input, .rev-group textarea{ font-size:16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-top">
+      <div class="container">
+        <div class="header-top-content">
+          <a href="index.html" class="logo">
+            <img src="assets/logo.png" alt="Cell Space Argentina" width="45" height="45">
+            <div class="logo-text"><span class="logo-main">CELL SPACE</span><span class="logo-sub">ARGENTINA</span></div>
+          </a>
+          <div class="header-actions">
+            <a href="index.html" class="header-action"><i class="fas fa-arrow-left"></i><span>Volver al inicio</span></a>
+            <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="header-action"><i class="fas fa-headset"></i><span>Soporte</span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <nav class="main-navigation">
+      <div class="container">
+        <ul class="nav-menu">
+          <li><a href="index.html" class="nav-link">INICIO</a></li>
+          <li><a href="tienda.html" class="nav-link">TIENDA</a></li>
+          <li><a href="servicios.html" class="nav-link">SERVICIO TÉCNICO</a></li>
+          <li><a href="central-space.html" class="nav-link">CENTRAL SPACE</a></li>
+          <li><a href="index.html#contacto" class="nav-link">CONTACTO</a></li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+
+  <main class="legal-main">
+    <div class="container" style="max-width:900px;">
+
+      <section class="legal-hero">
+        <h1>Botón de Arrepentimiento</h1>
+        <p>Podés revocar tu compra dentro de los 10 días corridos de recibido el producto, sin dar explicaciones y sin costo alguno.</p>
+        <span class="legal-updated"><i class="fas fa-scale-balanced"></i> Ley 24.240, art. 34 · Resolución 424/2020</span>
+      </section>
+
+      <div class="legal-body">
+
+        <div class="legal-note">
+          <p>Este es un <strong>derecho que te reconoce la ley</strong>. No necesitás justificar el motivo y no tenés que pagar nada por devolver el producto: los gastos de devolución corren por nuestra cuenta.</p>
+        </div>
+
+        <h3 style="color:var(--orange);margin-top:22px;">Cómo funciona</h3>
+        <ul>
+          <li>Completá el formulario o escribinos por WhatsApp al <strong>+54 9 3782 437674</strong>.</li>
+          <li>Te respondemos dentro de las <strong>48 horas hábiles</strong> con las instrucciones para la devolución.</li>
+          <li>El producto debe estar sin uso, con todos sus accesorios y su embalaje original.</li>
+          <li>Una vez recibido y verificado, reintegramos el importe por el mismo medio de pago que usaste.</li>
+        </ul>
+
+        <p style="color:#888;font-size:13.5px;">Los servicios ya prestados (reparaciones realizadas y consultas de IMEI ejecutadas) no están alcanzados por este derecho, conforme al artículo 34 de la Ley 24.240.</p>
+
+        <hr style="border:none;border-top:1px solid rgba(255,255,255,.1);margin:28px 0;">
+
+        <div id="revAlert"></div>
+
+        <div id="revFormWrap">
+          <h2 style="border:none;padding:0;margin-bottom:18px;"><span>›</span> Solicitud de revocación</h2>
+
+          <div class="rev-form">
+            <div class="rev-group">
+              <label for="revName">Nombre y apellido <span>*</span></label>
+              <input type="text" id="revName" required>
+            </div>
+
+            <div class="rev-group">
+              <label for="revDoc">DNI o CUIT <span>*</span></label>
+              <input type="text" id="revDoc" required inputmode="numeric">
+            </div>
+
+            <div class="rev-group">
+              <label for="revEmail">Email <span>*</span></label>
+              <input type="email" id="revEmail" required>
+              <div class="rev-hint">El mismo con el que hiciste la compra</div>
+            </div>
+
+            <div class="rev-group">
+              <label for="revPhone">Teléfono <span>*</span></label>
+              <input type="tel" id="revPhone" required placeholder="3782-XXXXXX">
+            </div>
+
+            <div class="rev-group">
+              <label for="revOrder">Número de pedido</label>
+              <input type="text" id="revOrder" placeholder="Lo encontrás en tu email de confirmación">
+            </div>
+
+            <div class="rev-group">
+              <label for="revDate">Fecha de recepción</label>
+              <input type="date" id="revDate">
+            </div>
+
+            <div class="rev-group full">
+              <label for="revProduct">Producto que querés devolver</label>
+              <input type="text" id="revProduct" placeholder="Ej: Moto e22 128GB">
+            </div>
+
+            <div class="rev-group full">
+              <label for="revReason">Comentario (opcional)</label>
+              <textarea id="revReason" rows="3" placeholder="No es obligatorio explicar el motivo."></textarea>
+            </div>
+
+            <div class="full">
+              <button type="button" class="btn-primary rev-submit" id="revBtn">
+                <i class="fas fa-paper-plane"></i> Enviar solicitud
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="legal-contact" style="margin-top:26px;">
+          <div class="legal-contact-row"><i class="fab fa-whatsapp"></i> +54 9 3782 437674</div>
+          <div class="legal-contact-row"><i class="fas fa-envelope"></i> cellspacearg@gmail.com</div>
+          <div class="legal-contact-row"><i class="fas fa-file-contract"></i> Ver <a href="terminos.html" style="margin-left:4px;">Términos y Condiciones</a></div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2026 Cell Space Argentina. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="wa-float" aria-label="WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+  <script src="js/config.js?v=2"></script>
+  <script>
+  (function () {
+    const $ = (id) => document.getElementById(id);
+
+    function alertBox(type, html) {
+      $('revAlert').innerHTML = `<div class="alert-${type}" style="padding:16px;font-size:14.5px;line-height:1.6;">${html}</div>`;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    $('revBtn').addEventListener('click', async () => {
+      const v = (id) => ($(id).value || '').trim();
+
+      if (!v('revName') || !v('revDoc') || !v('revEmail') || !v('revPhone')) {
+        alertBox('error', 'Completá los campos marcados con <strong>*</strong>.');
+        return;
+      }
+      if (!v('revEmail').includes('@')) {
+        alertBox('error', 'Revisá el email: no parece válido.');
+        return;
+      }
+
+      const btn = $('revBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+      try {
+        const { error } = await supabase.from('revocation_requests').insert({
+          order_number:  v('revOrder') || null,
+          full_name:     v('revName'),
+          document:      v('revDoc'),
+          email:         v('revEmail'),
+          phone:         v('revPhone'),
+          product:       v('revProduct') || null,
+          purchase_date: v('revDate') || null,
+          reason:        v('revReason') || null,
+        });
+        if (error) throw error;
+
+        $('revFormWrap').style.display = 'none';
+        alertBox('success',
+          '<strong>✅ Recibimos tu solicitud.</strong><br>' +
+          'Te vamos a contactar dentro de las 48 horas hábiles con las instrucciones para la devolución. ' +
+          'Guardá este mensaje como constancia de que la enviaste el ' +
+          new Date().toLocaleDateString('es-AR') + '.');
+      } catch (e) {
+        console.error(e);
+        const msg =
+          'No pudimos registrar la solicitud automáticamente. ' +
+          'Escribinos por <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" style="color:#FF6A00;font-weight:700;">WhatsApp</a> ' +
+          'o a <strong>cellspacearg@gmail.com</strong> y la procesamos igual. Tu derecho no se ve afectado.';
+        alertBox('error', msg);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar solicitud';
+      }
+    });
+  })();
+  </script>
+</body>
+</html>
