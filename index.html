@@ -3,16 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cell Space Argentina - Inicio</title>
+  <meta name="description" content="Cell Space Argentina: reparación de celulares, PC y notebooks, microsoldadura, desbloqueo y venta de herramientas y licencias profesionales. Envíos a todo el país.">
+  <title>Cell Space Argentina - Reparación, herramientas y licencias</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Redirección temprana: los emails de recuperación de Supabase
+       llegan a la raíz del sitio con el token en el hash. -->
+  <script>
+    (function () {
+      var h = window.location.hash || '';
+      if (h.indexOf('type=recovery') !== -1) {
+        window.location.replace('reset-password.html' + h);
+      }
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome sin bloquear el renderizado -->
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+
   <link rel="stylesheet" href="css/styles.css?v=16">
   <link rel="stylesheet" href="css/cs-auth.css?v=1">
   <link rel="stylesheet" href="css/responsive.css?v=2">
-  
-  <!-- Supabase SDK (Reemplaza a Firebase) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="particles" id="particles"></div>
@@ -48,18 +68,18 @@
       <div class="container">
         <div class="header-top-content">
           <a href="index.html" class="logo">
-            <img src="assets/logo.png" alt="Cell Space Argentina">
+            <img src="assets/logo.png" alt="Cell Space Argentina" width="45" height="45">
             <div class="logo-text">
               <span class="logo-main">CELL SPACE</span>
               <span class="logo-sub">ARGENTINA</span>
             </div>
           </a>
-          
+
           <div class="header-search">
-            <input type="text" placeholder="Buscar productos, herramientas, servicios..." class="search-input" id="headerSearchInput">
-            <button class="search-btn" onclick="performSearch()"><i class="fas fa-search"></i></button>
+            <input type="text" placeholder="Buscar productos, herramientas, servicios..." class="search-input" id="headerSearchInput" enterkeyhint="search">
+            <button class="search-btn" onclick="performSearch()" aria-label="Buscar"><i class="fas fa-search"></i></button>
           </div>
-          
+
           <div class="header-actions">
             <!-- PARA VISITANTES (Sin Login) -->
             <div id="guestActions">
@@ -70,7 +90,7 @@
                 <i class="fas fa-sign-in-alt"></i><span>Iniciar Sesión</span>
               </a>
             </div>
-            
+
             <!-- PARA USUARIOS LOGUEADOS -->
             <div id="userActions" style="display: none;">
               <div class="user-dropdown" id="userDropdown">
@@ -82,27 +102,27 @@
                   </div>
                   <span class="dropdown-arrow">▼</span>
                 </button>
-                
+
                 <div class="dropdown-menu" id="userDropdownMenu">
                   <a href="perfil.html" class="dropdown-item"><i class="fas fa-user-cog"></i> Mi Perfil</a>
                   <a href="mis-pedidos.html" class="dropdown-item"><i class="fas fa-box"></i> Mis Pedidos</a>
-                  
+
                   <div id="adminMenu" style="display: none;">
                     <div class="dropdown-divider"></div>
                     <div class="dropdown-header">Administración</div>
                     <a href="admin/index.html" class="dropdown-item"><i class="fas fa-cog"></i> Panel Admin</a>
                   </div>
-                  
+
                   <div class="dropdown-divider"></div>
                   <a href="#" class="dropdown-item logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
                 </div>
               </div>
             </div>
-            
-            <a href="https://wa.me/5493782437674" target="_blank" class="header-action">
+
+            <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="header-action">
               <i class="fas fa-headset"></i><span>Soporte</span>
             </a>
-            <a href="#" class="header-action cart-action" onclick="toggleCart(); return false;">
+            <a href="#" class="header-action cart-action" onclick="toggleCart(); return false;" aria-label="Carrito">
               <i class="fas fa-shopping-cart"></i><span>Carrito</span>
               <span class="cart-count" id="cartCount">0</span>
             </a>
@@ -110,7 +130,7 @@
         </div>
       </div>
     </div>
-    
+
     <nav class="main-navigation">
       <div class="container">
         <ul class="nav-menu">
@@ -129,7 +149,8 @@
        ======================================== -->
   <main class="shop-main">
     <div class="container">
-      <!-- Hero Section -->
+
+      <!-- Hero -->
       <section class="shop-hero">
         <div class="shop-hero-content">
           <h1 class="shop-title">BIENVENIDOS A CELL SPACE</h1>
@@ -146,7 +167,7 @@
         </div>
       </section>
 
-      <!-- Sección de Servicios Destacados -->
+      <!-- Servicios -->
       <section class="home-section">
         <h2 class="section-title"><i class="fas fa-tools"></i> NUESTROS SERVICIOS</h2>
         <div class="services-grid">
@@ -177,7 +198,7 @@
         </div>
       </section>
 
-      <!-- Productos Destacados -->
+      <!-- Productos destacados -->
       <section class="home-section" id="featuredSection">
         <h2 class="section-title"><i class="fas fa-fire"></i> PRODUCTOS DESTACADOS</h2>
         <div class="products-grid" id="featuredProducts">
@@ -215,16 +236,17 @@
         </div>
       </section>
 
-      <!-- Contacto Rápido -->
+      <!-- Contacto -->
       <section class="home-section contact-section" id="contacto">
         <div class="contact-box">
           <h2>¿Necesitás ayuda?</h2>
           <p>Escribinos por WhatsApp y te asesoramos sin cargo</p>
-          <a href="https://wa.me/5493782437674" target="_blank" class="btn-whatsapp-large">
+          <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="btn-whatsapp-large">
             <i class="fab fa-whatsapp"></i> Contactar por WhatsApp
           </a>
         </div>
       </section>
+
     </div>
   </main>
 
@@ -235,33 +257,36 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <img src="assets/logo.png" alt="Cell Space Argentina" class="footer-logo">
+          <img src="assets/logo.png" alt="Cell Space Argentina" class="footer-logo" loading="lazy">
           <p>Tu espacio de confianza en tecnología. Reparación, venta y soluciones profesionales.</p>
           <div class="social-links">
-            <a href="#"><i class="fab fa-instagram"></i></a>
-            <a href="#"><i class="fab fa-facebook"></i></a>
-            <a href="#"><i class="fab fa-youtube"></i></a>
-            <a href="#"><i class="fab fa-tiktok"></i></a>
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+            <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
           </div>
         </div>
+
         <div class="footer-col">
-  <h4>INFORMACIÓN</h4>
-  <ul>
-    <li><a href="#">Sobre nosotros</a></li>
-    <li><a href="terminos.html">Términos y condiciones</a></li>
-    <li><a href="privacidad.html">Política de privacidad</a></li>
-    <li><a href="arrepentimiento.html">Botón de arrepentimiento</a></li>
-  </ul>
-</div>
+          <h4>INFORMACIÓN</h4>
+          <ul>
+            <li><a href="#">Sobre nosotros</a></li>
+            <li><a href="terminos.html">Términos y condiciones</a></li>
+            <li><a href="privacidad.html">Política de privacidad</a></li>
+            <li><a href="arrepentimiento.html">Botón de arrepentimiento</a></li>
+          </ul>
+        </div>
+
         <div class="footer-col">
           <h4>CATEGORÍAS</h4>
           <ul>
-            <li><a href="#">Celulares</a></li>
-            <li><a href="#">Accesorios</a></li>
-            <li><a href="#">Herramientas</a></li>
-            <li><a href="#">Software</a></li>
+            <li><a href="tienda.html">Celulares</a></li>
+            <li><a href="tienda.html">Accesorios</a></li>
+            <li><a href="tienda.html">Herramientas</a></li>
+            <li><a href="tienda.html">Software</a></li>
           </ul>
         </div>
+
         <div class="footer-col">
           <h4>CONTACTO</h4>
           <ul class="contact-info">
@@ -271,28 +296,22 @@
           </ul>
         </div>
       </div>
+
       <div class="footer-bottom">
         <p>&copy; 2026 Cell Space Argentina. Todos los derechos reservados.</p>
+        <a href="arrepentimiento.html" class="btn-arrepentimiento">
+          <i class="fas fa-rotate-left"></i> BOTÓN DE ARREPENTIMIENTO
+        </a>
       </div>
     </div>
   </footer>
 
-  <div style="text-align:center;padding:22px 16px;">
-  <a href="arrepentimiento.html"
-     style="display:inline-flex;align-items:center;gap:10px;padding:14px 26px;
-            background:rgba(255,106,0,.1);border:2px solid var(--orange);
-            border-radius:12px;color:var(--orange);font-weight:800;font-size:14px;
-            text-decoration:none;min-height:44px;">
-    <i class="fas fa-rotate-left"></i> BOTÓN DE ARREPENTIMIENTO
-  </a>
-</div>
-  
   <!-- CARRITO MODAL -->
   <div class="cart-modal-overlay" id="cartModal">
     <div class="cart-modal">
       <div class="cart-modal-header">
         <h2><i class="fas fa-shopping-cart"></i> Tu Carrito</h2>
-        <button onclick="toggleCart()" class="close-btn"><i class="fas fa-times"></i></button>
+        <button onclick="toggleCart()" class="close-btn" aria-label="Cerrar"><i class="fas fa-times"></i></button>
       </div>
       <div class="cart-modal-body" id="cartItems"></div>
       <div class="cart-modal-footer">
@@ -305,29 +324,17 @@
     </div>
   </div>
 
+  <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="wa-float" aria-label="WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
   <!-- ========================================
        SCRIPTS
        ======================================== -->
   <script src="js/config.js?v=2"></script>
   <script src="js/auth-middleware.js"></script>
+  <script src="js/cs-auth.js?v=1"></script>
   <script src="js/cart.js"></script>
   <script src="js/index.js?v=2"></script>
-  <script src="js/cs-auth.js?v=1"></script>
-  
-  <script>
-    // Los emails de recuperación de Supabase llegan a la raíz del sitio.
-    // Si detectamos un token de recuperación, lo pasamos a reset-password.html.
-    (function () {
-      var h = window.location.hash || '';
-      if (h.indexOf('type=recovery') !== -1) {
-        window.location.replace('reset-password.html' + h);
-      }
-    })();
-  </script>
-</body>
-</html>
-<a href="https://wa.me/5493782437674" target="_blank" class="wa-float" aria-label="WhatsApp">
-  <i class="fab fa-whatsapp"></i>
-</a>
 </body>
 </html>
