@@ -93,3 +93,17 @@
   .legal-toc ol{ grid-template-columns:1fr; }
   .legal-body table{ display:block; overflow-x:auto; }
 }
+/* Botón de arrepentimiento en el footer (Resolución 424/2020) */
+.btn-arrepentimiento{
+  display:inline-flex; align-items:center; gap:9px;
+  padding:11px 20px; min-height:44px;
+  background:rgba(255,106,0,.1); border:2px solid var(--orange);
+  border-radius:10px; color:var(--orange);
+  font-weight:800; font-size:12.5px; letter-spacing:.4px;
+  text-decoration:none; transition:all .25s;
+}
+.btn-arrepentimiento:hover{ background:var(--orange); color:#fff; }
+
+@media (max-width:640px){
+  .btn-arrepentimiento{ width:100%; justify-content:center; font-size:12px; }
+}
