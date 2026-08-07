@@ -54,32 +54,22 @@ function wireTabs() {
     tc.classList.add('on'); tp.classList.remove('on');
     pc.classList.add('on'); pp.classList.remove('on');
     msg('', 'ok');
-    const from = $('loginIdentifier')?.value.trim();
-    if (from && !$('otpEmail').value) $('otpEmail').value = from;
+    const from = $('loginIdentifier') ? $('loginIdentifier').value.trim() : '';
+    if (from && $('otpEmail') && !$('otpEmail').value) $('otpEmail').value = from;
   });
 }
 
-/* ---------- Redirección según rol ---------- */
-async function redirectAfterLogin() {
+/* ---------- Redirección después de entrar ----------
+   Todos van al inicio. El admin llega al panel desde el
+   menú de usuario, y el técnico a Central Space desde el nav. */
+function redirectAfterLogin() {
   const params = new URLSearchParams(window.location.search);
   const back = params.get('redirect');
   if (back && /^[a-zA-Z0-9._-]+\.html/.test(back)) {
     window.location.href = back;
     return;
   }
-  // Todos entran al sitio. El admin llega al panel desde el menú de usuario.
   window.location.href = 'index.html';
-}
-
-    const { data: profile } = await supabase
-      .from('profiles').select('role').eq('id', session.user.id).single();
-
-    if (profile?.role === 'admin')            window.location.href = 'admin/index.html';
-    else if (profile?.role === 'technician')  window.location.href = 'central-space.html';
-    else                                      window.location.href = 'index.html';
-  } catch {
-    window.location.href = 'index.html';
-  }
 }
 
 /* ---------- Login con contraseña ---------- */
@@ -103,7 +93,7 @@ function wirePasswordLogin() {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      await redirectAfterLogin();
+      redirectAfterLogin();
     } catch (err) {
       const m = String(err.message || '');
       if (m.includes('Invalid login credentials')) {
@@ -126,17 +116,16 @@ function wireOtpLogin() {
   const back = $('backBtn');
   if (!send) return;
 
-  send.addEventListener('click', () => requestCode(send));
-  resend?.addEventListener('click', () => requestCode(resend, true));
-  verify?.addEventListener('click', () => verifyCode(verify));
+  send.addEventListener('click', () => requestCode(send, false));
+  if (resend) resend.addEventListener('click', () => requestCode(resend, true));
+  if (verify) verify.addEventListener('click', () => verifyCode(verify));
 
-  back?.addEventListener('click', () => {
+  if (back) back.addEventListener('click', () => {
     $('codeStep2').style.display = 'none';
     $('codeStep1').style.display = 'block';
     msg('', 'ok');
   });
 
-  // Navegación entre las 6 casillas
   const boxes = document.querySelectorAll('.otp-box');
   boxes.forEach((b, i) => {
     b.addEventListener('input', (e) => {
@@ -178,7 +167,8 @@ async function requestCode(btn, isResend) {
     $('otpEmailShown').textContent = email;
     $('codeStep1').style.display = 'none';
     $('codeStep2').style.display = 'block';
-    document.querySelector('.otp-box')?.focus();
+    const first = document.querySelector('.otp-box');
+    if (first) first.focus();
 
     if (isResend) msg('Te enviamos un código nuevo.', 'ok');
   } catch (err) {
@@ -205,22 +195,26 @@ async function verifyCode(btn) {
   try {
     const { error } = await supabase.auth.verifyOtp({
       email: otpEmailSent,
-      token,
+      token: token,
       type: 'email',
     });
     if (error) throw error;
-    await redirectAfterLogin();
+    redirectAfterLogin();
   } catch (err) {
     msg('El código no es correcto o ya venció. Pedí uno nuevo.', 'err');
-    document.querySelectorAll('.otp-box').forEach(b => b.value = '');
-    document.querySelector('.otp-box')?.focus();
+    document.querySelectorAll('.otp-box').forEach(b => { b.value = ''; });
+    const first = document.querySelector('.otp-box');
+    if (first) first.focus();
     busy(btn, false);
   }
 }
 
 /* ---------- Recuperar contraseña ---------- */
 function wireForgot() {
-  $('forgotBtn')?.addEventListener('click', async () => {
+  const btn = $('forgotBtn');
+  if (!btn) return;
+
+  btn.addEventListener('click', async () => {
     const email = ($('loginIdentifier').value || '').trim();
     if (!email.includes('@')) {
       msg('Escribí tu email arriba y volvé a tocar "¿Olvidaste tu contraseña?".', 'err');
@@ -247,10 +241,10 @@ function signInWithGoogle() {
   });
 }
 
-/* ---------- Sesión ---------- */
+/* ---------- Sesión ----------
+   Solo redirigimos cuando el usuario ACABA de entrar.
+   Escuchar cualquier sesión provocaba un bucle al abrir el login. */
 function watchSession() {
-  // Solo redirigimos cuando el usuario ACABA de entrar.
-  // Antes escuchábamos cualquier sesión y eso provocaba el bucle al login.
   supabase.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' && session) redirectAfterLogin();
   });
