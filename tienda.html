@@ -9,23 +9,23 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
 
   <link rel="stylesheet" href="css/styles.css?v=16">
   <link rel="stylesheet" href="css/tienda.css?v=3">
   <link rel="stylesheet" href="css/cs-auth.css?v=1">
-  <link rel="stylesheet" href="css/responsive.css?v=2">
+  <link rel="stylesheet" href="css/responsive.css?v=3">
 
-  <!-- Supabase SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="particles" id="particles"></div>
 
-  <!-- ========================================
-       CARRUSEL INFINITO DE ANUNCIOS
-       ======================================== -->
   <div class="announcement-bar">
     <div class="announcement-wrapper">
       <div class="announcement-scroll">
@@ -35,7 +35,6 @@
         <div class="announcement-item"><i class="fas fa-bolt"></i><span>Pedidos despachados en 24hs hábiles</span></div>
         <div class="announcement-item"><i class="fas fa-boxes"></i><span>Stock y precios actualizados</span></div>
         <div class="announcement-item"><i class="fas fa-lock"></i><span>Pago 100% seguro</span></div>
-        <!-- DUPLICAR PARA SCROLL INFINITO -->
         <div class="announcement-item"><i class="fas fa-truck"></i><span>Envíos a todo el país por OCA y Andreani</span></div>
         <div class="announcement-item"><i class="fas fa-shield-alt"></i><span>Garantía en todos los productos</span></div>
         <div class="announcement-item"><i class="fas fa-dollar-sign"></i><span>Compra mínima $150.000 pesos</span></div>
@@ -46,87 +45,50 @@
     </div>
   </div>
 
-  <!-- ========================================
-       HEADER PRINCIPAL
-       ======================================== -->
   <header class="site-header">
     <div class="header-top">
       <div class="container">
         <div class="header-top-content">
           <a href="index.html" class="logo">
-            <img src="assets/logo.png" alt="Cell Space Argentina" width="50" height="50">
-            <div class="logo-text">
-              <span class="logo-main">CELL SPACE</span>
-              <span class="logo-sub">ARGENTINA</span>
-            </div>
+            <img src="assets/logo.png" alt="Cell Space Argentina" width="45" height="45">
+            <div class="logo-text"><span class="logo-main">CELL SPACE</span><span class="logo-sub">ARGENTINA</span></div>
           </a>
 
           <div class="header-search">
-            <input type="text" placeholder="Buscar productos, herramientas..." class="search-input" id="headerSearchInput" enterkeyhint="search">
-            <button class="search-btn" onclick="performSearch()" aria-label="Buscar">
-              <i class="fas fa-search"></i>
-            </button>
+            <input type="text" id="headerSearchInput" class="search-input" placeholder="Buscar productos, herramientas..." enterkeyhint="search">
+            <button class="search-btn" onclick="performSearch()" aria-label="Buscar"><i class="fas fa-search"></i></button>
           </div>
 
           <div class="header-actions">
-            <!-- PARA VISITANTES (Sin Login) -->
             <div id="guestActions" class="header-auth-group">
-              <a href="register-client.html" class="header-action" style="color: var(--orange); font-weight: 700;">
-                <i class="fas fa-user-plus"></i>
-                <span>Regístrate</span>
-              </a>
-              <a href="login.html" class="btn-login-header">
-                <i class="fas fa-sign-in-alt"></i>
-                <span>Iniciar Sesión</span>
-              </a>
+              <a href="register-client.html" class="header-action" style="color: var(--orange); font-weight: 700;"><i class="fas fa-user-plus"></i><span>Regístrate</span></a>
+              <a href="login.html" class="btn-login-header"><i class="fas fa-sign-in-alt"></i><span>Iniciar Sesión</span></a>
             </div>
 
-            <!-- PARA USUARIOS LOGUEADOS -->
             <div id="userActions" class="header-auth-group" style="display: none;">
               <div class="user-dropdown" id="userDropdown">
                 <button class="user-btn" onclick="toggleUserDropdown()">
-                  <div class="user-avatar-small">
-                    <span id="userInitial">?</span>
-                  </div>
-                  <div class="user-info">
-                    <span class="user-name" id="userNameDisplay">Usuario</span>
-                    <span class="user-badge" id="userRoleBadge">Cliente</span>
-                  </div>
+                  <div class="user-avatar-small"><span id="userInitial">?</span></div>
+                  <div class="user-info"><span class="user-name" id="userNameDisplay">Usuario</span><span class="user-badge" id="userRoleBadge">Cliente</span></div>
                   <span class="dropdown-arrow">▼</span>
                 </button>
-
                 <div class="dropdown-menu" id="userDropdownMenu">
-                  <a href="perfil.html" class="dropdown-item">
-                    <i class="fas fa-user-cog"></i> Mi Perfil
-                  </a>
-                  <a href="mis-pedidos.html" class="dropdown-item">
-                    <i class="fas fa-box"></i> Mis Pedidos
-                  </a>
-
+                  <a href="perfil.html" class="dropdown-item"><i class="fas fa-user-cog"></i> Mi Perfil</a>
+                  <a href="mis-pedidos.html" class="dropdown-item"><i class="fas fa-box"></i> Mis Pedidos</a>
                   <div id="adminMenu" style="display: none;">
                     <div class="dropdown-divider"></div>
                     <div class="dropdown-header">Administración</div>
-                    <a href="admin/index.html" class="dropdown-item">
-                      <i class="fas fa-cog"></i> Panel Admin
-                    </a>
+                    <a href="admin/index.html" class="dropdown-item"><i class="fas fa-cog"></i> Panel Admin</a>
                   </div>
-
                   <div class="dropdown-divider"></div>
-                  <a href="#" class="dropdown-item logout" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-                  </a>
+                  <a href="#" class="dropdown-item logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
                 </div>
               </div>
             </div>
 
-            <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="header-action">
-              <i class="fas fa-headset"></i>
-              <span>Soporte</span>
-            </a>
+            <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="header-action"><i class="fas fa-headset"></i><span>Soporte</span></a>
             <a href="#" class="header-action cart-action" onclick="toggleCart(); return false;" aria-label="Carrito">
-              <i class="fas fa-shopping-cart"></i>
-              <span>Carrito</span>
-              <span class="cart-count" id="cartCount">0</span>
+              <i class="fas fa-shopping-cart"></i><span>Carrito</span><span class="cart-count" id="cartCount">0</span>
             </a>
           </div>
         </div>
@@ -146,78 +108,44 @@
     </nav>
   </header>
 
-  <!-- ========================================
-       CONTENIDO PRINCIPAL
-       ======================================== -->
   <main class="shop-main">
     <div class="container">
-      <!-- Hero de Tienda -->
+
       <section class="shop-hero">
         <div class="shop-hero-content">
           <h1 class="shop-title">TIENDA</h1>
           <p class="shop-subtitle">Los mejores productos y herramientas para potenciar tu tecnología</p>
         </div>
         <div class="shop-features">
-          <div class="shop-feature">
-            <i class="fas fa-truck"></i>
-            <div>
-              <strong>ENVÍOS A TODO EL PAÍS</strong>
-              <span>Rápidos y seguros</span>
-            </div>
-          </div>
-          <div class="shop-feature">
-            <i class="fas fa-shield-alt"></i>
-            <div>
-              <strong>PAGOS 100% SEGUROS</strong>
-              <span>MercadoPago / Transferencia</span>
-            </div>
-          </div>
-          <div class="shop-feature">
-            <i class="fas fa-credit-card"></i>
-            <div>
-              <strong>HASTA 12 CUOTAS</strong>
-              <span>Con tarjetas seleccionadas</span>
-            </div>
-          </div>
+          <div class="shop-feature"><i class="fas fa-truck"></i><div><strong>ENVÍOS A TODO EL PAÍS</strong><span>Rápidos y seguros</span></div></div>
+          <div class="shop-feature"><i class="fas fa-shield-alt"></i><div><strong>PAGOS 100% SEGUROS</strong><span>MercadoPago / Transferencia</span></div></div>
+          <div class="shop-feature"><i class="fas fa-credit-card"></i><div><strong>HASTA 12 CUOTAS</strong><span>Con tarjetas seleccionadas</span></div></div>
         </div>
       </section>
 
-      <!-- Botón de filtros: solo visible en móvil -->
       <button class="filters-toggle" id="filtersToggle">
         <i class="fas fa-sliders"></i> Filtros y categorías
       </button>
 
-      <!-- Layout de Tienda -->
       <div class="shop-layout">
-        <!-- Sidebar -->
+
         <aside class="shop-sidebar" id="shopSidebar">
-          <button class="sidebar-close" id="sidebarClose">
-            <i class="fas fa-times"></i> Cerrar filtros
-          </button>
+          <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i> Cerrar filtros</button>
 
           <div class="sidebar-section">
-            <h3 class="sidebar-title">
-              <i class="fas fa-th-large"></i>
-              CATEGORÍAS
-            </h3>
+            <h3 class="sidebar-title"><i class="fas fa-th-large"></i> CATEGORÍAS</h3>
             <ul class="category-list" id="categoryList">
               <li class="active"><a href="#" onclick="filterByCategory('all'); return false;"><i class="fas fa-th"></i> Todos los productos</a></li>
             </ul>
           </div>
 
           <div class="sidebar-section">
-            <h3 class="sidebar-title">
-              <i class="fas fa-filter"></i>
-              FILTRAR POR
-            </h3>
+            <h3 class="sidebar-title"><i class="fas fa-filter"></i> FILTRAR POR</h3>
 
             <div class="filter-group">
               <label>Precio máximo</label>
               <input type="range" min="0" max="500" value="500" class="price-slider" id="priceSlider">
-              <div class="price-values">
-                <span>$0</span>
-                <span id="maxPriceLabel">$500</span>
-              </div>
+              <div class="price-values"><span>$0</span><span id="maxPriceLabel">$500</span></div>
             </div>
 
             <div class="filter-group">
@@ -261,9 +189,7 @@
               <label class="filter-check"><input type="checkbox" id="filterDiscount"> Con descuento</label>
             </div>
 
-            <button class="btn-filter" onclick="applyFilters()">
-              <i class="fas fa-filter"></i> FILTRAR
-            </button>
+            <button class="btn-filter" onclick="applyFilters()"><i class="fas fa-filter"></i> FILTRAR</button>
           </div>
 
           <div class="sidebar-promo">
@@ -274,7 +200,6 @@
           </div>
         </aside>
 
-        <!-- Contenido -->
         <div class="shop-content">
           <div class="shop-toolbar">
             <div class="showing-products" id="productsCount">Mostrando productos...</div>
@@ -291,36 +216,13 @@
           <div class="products-grid" id="productsGrid"></div>
 
           <div class="shop-benefits">
-            <div class="benefit">
-              <i class="fas fa-truck"></i>
-              <div>
-                <strong>ENVÍOS A TODO EL PAÍS</strong>
-                <span>Rápidos y seguros</span>
-              </div>
-            </div>
-            <div class="benefit">
-              <i class="fas fa-shield-alt"></i>
-              <div>
-                <strong>PAGOS 100% SEGUROS</strong>
-                <span>MercadoPago / Transferencia</span>
-              </div>
-            </div>
-            <div class="benefit">
-              <i class="fas fa-credit-card"></i>
-              <div>
-                <strong>HASTA 12 CUOTAS</strong>
-                <span>Con tarjetas seleccionadas</span>
-              </div>
-            </div>
-            <div class="benefit">
-              <i class="fas fa-headset"></i>
-              <div>
-                <strong>SOPORTE 24/7</strong>
-                <span>Estamos para ayudarte</span>
-              </div>
-            </div>
+            <div class="benefit"><i class="fas fa-truck"></i><div><strong>ENVÍOS A TODO EL PAÍS</strong><span>Rápidos y seguros</span></div></div>
+            <div class="benefit"><i class="fas fa-shield-alt"></i><div><strong>PAGOS 100% SEGUROS</strong><span>MercadoPago / Transferencia</span></div></div>
+            <div class="benefit"><i class="fas fa-credit-card"></i><div><strong>HASTA 12 CUOTAS</strong><span>Con tarjetas seleccionadas</span></div></div>
+            <div class="benefit"><i class="fas fa-headset"></i><div><strong>SOPORTE 24/7</strong><span>Estamos para ayudarte</span></div></div>
           </div>
         </div>
+
       </div>
     </div>
   </main>
@@ -331,32 +233,35 @@
   <footer class="site-footer">
     <div class="container">
       <div class="footer-grid">
+
         <div class="footer-brand">
-          <img src="assets/logo.png" alt="Cell Space" class="footer-logo" loading="lazy">
-          <p>Tu espacio de confianza en tecnología.</p>
+          <img src="assets/logo.png" alt="Cell Space Argentina" class="footer-logo" loading="lazy">
+          <p>Tu espacio de confianza en tecnología. Reparación, venta y soluciones profesionales.</p>
           <div class="social-links">
-            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-            <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
-            <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            <a href="https://www.instagram.com/cellspacearg/" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="https://www.facebook.com/cellspacearg" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+            <a href="https://www.youtube.com/@CELLSPACEARG" target="_blank" rel="noopener" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            <a href="https://www.tiktok.com/@cell.space.arg" target="_blank" rel="noopener" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
           </div>
         </div>
 
         <div class="footer-col">
-  <h4>INFORMACIÓN</h4>
-  <ul>
-    <li><a href="#">Sobre nosotros</a></li>
-    <li><a href="terminos.html">Términos y condiciones</a></li>
-    <li><a href="privacidad.html">Política de privacidad</a></li>
-    <li><a href="arrepentimiento.html">Botón de arrepentimiento</a></li>
-  </ul>
-</div>
+          <h4>INFORMACIÓN</h4>
+          <ul>
+            <li><a href="#">Sobre nosotros</a></li>
+            <li><a href="terminos.html">Términos y condiciones</a></li>
+            <li><a href="privacidad.html">Política de privacidad</a></li>
+            <li><a href="arrepentimiento.html">Botón de arrepentimiento</a></li>
+          </ul>
+        </div>
 
         <div class="footer-col">
           <h4>CATEGORÍAS</h4>
           <ul>
-            <li><a href="#">Celulares</a></li>
-            <li><a href="#">Accesorios</a></li>
-            <li><a href="#">Herramientas</a></li>
+            <li><a href="tienda.html">Celulares</a></li>
+            <li><a href="tienda.html">Accesorios</a></li>
+            <li><a href="tienda.html">Herramientas</a></li>
+            <li><a href="tienda.html">Software</a></li>
           </ul>
         </div>
 
@@ -368,14 +273,18 @@
             <li><i class="fas fa-map-marker-alt"></i> Saladas, Corrientes</li>
           </ul>
         </div>
+
       </div>
+
       <div class="footer-bottom">
         <p>&copy; 2026 Cell Space Argentina. Todos los derechos reservados.</p>
+        <a href="arrepentimiento.html" class="btn-arrepentimiento">
+          <i class="fas fa-rotate-left"></i> BOTÓN DE ARREPENTIMIENTO
+        </a>
       </div>
     </div>
   </footer>
 
-  <!-- CARRITO MODAL -->
   <div class="cart-modal-overlay" id="cartModal">
     <div class="cart-modal">
       <div class="cart-modal-header">
@@ -384,29 +293,22 @@
       </div>
       <div class="cart-modal-body" id="cartItems"></div>
       <div class="cart-modal-footer">
-        <div class="cart-total">
-          <span>Total:</span>
-          <span class="total-price" id="cartTotal">$0</span>
-        </div>
+        <div class="cart-total"><span>Total:</span><span class="total-price" id="cartTotal">$0</span></div>
         <button class="btn-checkout" onclick="checkout()">Finalizar Compra</button>
       </div>
     </div>
   </div>
 
-  <!-- Fondo oscuro del panel de filtros en móvil -->
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
-  <!-- ========================================
-       SCRIPTS
-       ======================================== -->
+  <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="wa-float" aria-label="WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
   <script src="js/config.js?v=2"></script>
   <script src="js/auth-middleware.js"></script>
   <script src="js/site-config.js?v=2"></script>
   <script src="js/cs-auth.js?v=1"></script>
   <script src="js/tienda.js?v=6"></script>
-
-  <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="wa-float" aria-label="WhatsApp">
-    <i class="fab fa-whatsapp"></i>
-  </a>
 </body>
 </html>
