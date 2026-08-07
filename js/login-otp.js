@@ -1,215 +1,259 @@
 // ========================================
-// LOGIN CON SUPABASE
+// LOGIN · Cell Space Argentina
+// Contraseña + OTP nativo de Supabase + Google
+// Sin tabla otp_codes y sin EmailJS.
 // ========================================
 
+let otpEmailSent = '';
+
 document.addEventListener('DOMContentLoaded', () => {
-  checkAuthState();
-  setupLoginForm();
-  setupOTPInputs();
+  wireTabs();
+  wirePasswordLogin();
+  wireOtpLogin();
+  wireForgot();
+  watchSession();
+  console.log('✅ login-otp.js cargado correctamente');
 });
 
-function setupLoginForm() {
-  const form = document.getElementById('loginForm');
+const $ = (id) => document.getElementById(id);
+
+function msg(html, type) {
+  const box = $('loginAlert');
+  if (!box) return;
+  box.innerHTML = html
+    ? `<div class="alert-${type === 'ok' ? 'success' : 'error'}">${html}</div>`
+    : '';
+  if (html) box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function busy(btn, on, text) {
+  if (!btn) return;
+  if (on) {
+    btn.dataset.html = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${text || 'Un momento...'}`;
+  } else {
+    btn.disabled = false;
+    if (btn.dataset.html) btn.innerHTML = btn.dataset.html;
+  }
+}
+
+/* ---------- Pestañas ---------- */
+function wireTabs() {
+  const tp = $('tabPass'), tc = $('tabCode');
+  const pp = $('panePass'), pc = $('paneCode');
+  if (!tp || !tc) return;
+
+  tp.addEventListener('click', () => {
+    tp.classList.add('on'); tc.classList.remove('on');
+    pp.classList.add('on'); pc.classList.remove('on');
+    msg('', 'ok');
+  });
+
+  tc.addEventListener('click', () => {
+    tc.classList.add('on'); tp.classList.remove('on');
+    pc.classList.add('on'); pp.classList.remove('on');
+    msg('', 'ok');
+    const from = $('loginIdentifier')?.value.trim();
+    if (from && !$('otpEmail').value) $('otpEmail').value = from;
+  });
+}
+
+/* ---------- Redirección según rol ---------- */
+async function redirectAfterLogin() {
+  const params = new URLSearchParams(window.location.search);
+  const back = params.get('redirect');
+  if (back && /^[a-zA-Z0-9._-]+\.html/.test(back)) {
+    window.location.href = back;
+    return;
+  }
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { window.location.href = 'index.html'; return; }
+
+    const { data: profile } = await supabase
+      .from('profiles').select('role').eq('id', session.user.id).single();
+
+    if (profile?.role === 'admin')            window.location.href = 'admin/index.html';
+    else if (profile?.role === 'technician')  window.location.href = 'central-space.html';
+    else                                      window.location.href = 'index.html';
+  } catch {
+    window.location.href = 'index.html';
+  }
+}
+
+/* ---------- Login con contraseña ---------- */
+function wirePasswordLogin() {
+  const form = $('loginForm');
   if (!form) return;
-  
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
-    const identifier = document.getElementById('loginIdentifier').value.trim();
-    const password = document.getElementById('loginPassword').value;
-    
-    // El login es por email. Si no parece un email, avisamos claro en vez
-    // de intentar buscar un "username" que no existe en la base.
-    if (!identifier.includes('@')) {
-      alert('⚠️ Ingresá tu email para iniciar sesión');
-      return;
-    }
-    const email = identifier;
-    
+    msg('', 'ok');
+
+    const email = ($('loginIdentifier').value || '').trim();
+    const password = $('loginPassword').value || '';
+
+    if (!email.includes('@')) { msg('Ingresá un email válido.', 'err'); return; }
+    if (!password) { msg('Ingresá tu contraseña.', 'err'); return; }
+
+    const btn = $('loginBtn');
+    busy(btn, true, 'Ingresando...');
+
     try {
-      const otp = generateOTP();
-      
-      // Guardar OTP
-      await supabase.from('otp_codes').upsert({
-        email: email,
-        code: otp,
-        expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-        attempts: 0
-      });
-      
-      // Enviar email
-      await sendOTPEmail(email, otp);
-      
-      sessionStorage.setItem('tempEmail', email);
-      sessionStorage.setItem('tempPassword', password);
-      showOTPModal(email);
-      
-    } catch (error) {
-      console.error('Error:', error);
-      alert('❌ ' + (error.message || 'Error desconocido'));
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      await redirectAfterLogin();
+    } catch (err) {
+      const m = String(err.message || '');
+      if (m.includes('Invalid login credentials')) {
+        msg('El email o la contraseña no son correctos. Podés entrar con un código al email o recuperar tu contraseña.', 'err');
+      } else if (m.includes('Email not confirmed')) {
+        msg('Todavía no confirmaste tu email. Revisá tu bandeja de entrada y la carpeta de spam.', 'err');
+      } else {
+        msg(m || 'No pudimos iniciar sesión.', 'err');
+      }
+      busy(btn, false);
     }
   });
 }
 
-async function verifyOTP() {
-  const email = sessionStorage.getItem('tempEmail');
-  const password = sessionStorage.getItem('tempPassword');
-  
-  if (!email || !password) {
-    alert('❌ Sesión expirada.');
-    hideOTPModal();
-    return;
-  }
-  
-  const otpInputs = document.querySelectorAll('.otp-input');
-  let otp = '';
-  otpInputs.forEach(input => otp += input.value);
-  
-  if (otp.length !== 6) {
-    document.getElementById('otpError').textContent = 'Ingresá los 6 dígitos';
-    return;
-  }
-  
-  try {
-    const { data, error } = await supabase
-      .from('otp_codes')
-      .select('*')
-      .eq('email', email)
-      .single();
-    
-    if (error || !data) throw new Error('Código inválido');
-    
-    if (new Date(data.expires_at) < new Date()) throw new Error('Código expirado');
-    
-    if (data.code !== otp) {
-      const newAttempts = (data.attempts || 0) + 1;
-      await supabase.from('otp_codes').update({ attempts: newAttempts }).eq('email', email);
-      document.getElementById('otpError').textContent = `Incorrecto. Intentos: ${newAttempts}/3`;
-      
-      if (newAttempts >= 3) {
-        alert('⚠️ Demasiados intentos. Solicitá un nuevo código.');
-        sessionStorage.clear();
-        hideOTPModal();
-      }
-      return;
-    }
-    
-    // Login con Supabase
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password
+/* ---------- Login con código de 6 dígitos (OTP nativo) ---------- */
+function wireOtpLogin() {
+  const send = $('sendCodeBtn');
+  const verify = $('verifyCodeBtn');
+  const resend = $('resendBtn');
+  const back = $('backBtn');
+  if (!send) return;
+
+  send.addEventListener('click', () => requestCode(send));
+  resend?.addEventListener('click', () => requestCode(resend, true));
+  verify?.addEventListener('click', () => verifyCode(verify));
+
+  back?.addEventListener('click', () => {
+    $('codeStep2').style.display = 'none';
+    $('codeStep1').style.display = 'block';
+    msg('', 'ok');
+  });
+
+  // Navegación entre las 6 casillas
+  const boxes = document.querySelectorAll('.otp-box');
+  boxes.forEach((b, i) => {
+    b.addEventListener('input', (e) => {
+      e.target.value = e.target.value.replace(/[^0-9]/g, '');
+      if (e.target.value && i < boxes.length - 1) boxes[i + 1].focus();
+      if (i === boxes.length - 1 && readCode().length === 6) verifyCode($('verifyCodeBtn'));
     });
-    
-    if (signInError) throw signInError;
-    
-    // Limpiar OTP
-    await supabase.from('otp_codes').delete().eq('email', email);
-    sessionStorage.clear();
-    
-    // Redirección según rol (fuente real: my_role() en la base, no una tabla 'users' que no existe)
-    const { data: role } = await supabase.rpc('my_role');
-    
-    if (role === 'technician') {
-      window.location.href = 'central-space.html';
+    b.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !e.target.value && i > 0) boxes[i - 1].focus();
+    });
+    b.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const txt = (e.clipboardData.getData('text') || '').replace(/[^0-9]/g, '').slice(0, 6);
+      txt.split('').forEach((ch, k) => { if (boxes[k]) boxes[k].value = ch; });
+      if (txt.length === 6) verifyCode($('verifyCodeBtn'));
+    });
+  });
+}
+
+function readCode() {
+  return Array.from(document.querySelectorAll('.otp-box')).map(b => b.value).join('');
+}
+
+async function requestCode(btn, isResend) {
+  const email = ($('otpEmail').value || '').trim();
+  if (!email.includes('@')) { msg('Ingresá un email válido.', 'err'); return; }
+
+  busy(btn, true, 'Enviando...');
+  msg('', 'ok');
+
+  try {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: false },
+    });
+    if (error) throw error;
+
+    otpEmailSent = email;
+    $('otpEmailShown').textContent = email;
+    $('codeStep1').style.display = 'none';
+    $('codeStep2').style.display = 'block';
+    document.querySelector('.otp-box')?.focus();
+
+    if (isResend) msg('Te enviamos un código nuevo.', 'ok');
+  } catch (err) {
+    const m = String(err.message || '').toLowerCase();
+    if (m.includes('rate') || m.includes('seconds')) {
+      msg('Esperá un minuto antes de pedir otro código.', 'err');
+    } else if (m.includes('signups not allowed') || m.includes('not found')) {
+      msg('No encontramos una cuenta con ese email. ¿Querés <a href="register-client.html" style="color:#FF6A00;font-weight:700;">crear una</a>?', 'err');
     } else {
-      window.location.href = 'index.html';
+      msg(err.message || 'No pudimos enviar el código.', 'err');
     }
-    
-  } catch (error) {
-    document.getElementById('otpError').textContent = error.message;
+  } finally {
+    busy(btn, false);
   }
 }
 
+async function verifyCode(btn) {
+  const token = readCode();
+  if (token.length !== 6) { msg('Ingresá los 6 dígitos.', 'err'); return; }
+
+  busy(btn, true, 'Verificando...');
+  msg('', 'ok');
+
+  try {
+    const { error } = await supabase.auth.verifyOtp({
+      email: otpEmailSent,
+      token,
+      type: 'email',
+    });
+    if (error) throw error;
+    await redirectAfterLogin();
+  } catch (err) {
+    msg('El código no es correcto o ya venció. Pedí uno nuevo.', 'err');
+    document.querySelectorAll('.otp-box').forEach(b => b.value = '');
+    document.querySelector('.otp-box')?.focus();
+    busy(btn, false);
+  }
+}
+
+/* ---------- Recuperar contraseña ---------- */
+function wireForgot() {
+  $('forgotBtn')?.addEventListener('click', async () => {
+    const email = ($('loginIdentifier').value || '').trim();
+    if (!email.includes('@')) {
+      msg('Escribí tu email arriba y volvé a tocar "¿Olvidaste tu contraseña?".', 'err');
+      $('loginIdentifier').focus();
+      return;
+    }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/reset-password.html',
+      });
+      if (error) throw error;
+      msg(`Te enviamos un enlace a <strong>${email}</strong> para crear una contraseña nueva. Revisá también el spam.`, 'ok');
+    } catch (err) {
+      msg(err.message || 'No pudimos enviar el enlace.', 'err');
+    }
+  });
+}
+
+/* ---------- Google ---------- */
 function signInWithGoogle() {
   supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: {
-      redirectTo: window.location.origin + '/index.html'
-    }
+    options: { redirectTo: window.location.origin + '/index.html' },
   });
 }
 
-async function resendOTP() {
-  const email = sessionStorage.getItem('tempEmail');
-  if (!email) return;
-  
-  try {
-    const otp = generateOTP();
-    await supabase.from('otp_codes').upsert({
-      email: email,
-      code: otp,
-      expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-      attempts: 0
-    });
-    await sendOTPEmail(email, otp);
-    alert('✅ Código reenviado');
-    document.querySelectorAll('.otp-input').forEach(i => i.value = '');
-    document.getElementById('otpError').textContent = '';
-  } catch (e) {
-    alert('❌ Error al reenviar');
-  }
-}
-
-async function sendOTPEmail(email, otp) {
-  const userName = email.split('@')[0];
-  
-  const templateParams = {
-    to_email: email,
-    user_name: userName,
-    otp_code: otp
-  };
-  
-  try {
-    await emailjs.send('service_822cqyn', 'template_2ue0da9', templateParams);
-    return true;
-  } catch (error) {
-    throw new Error('No se pudo enviar el código');
-  }
-}
-
-function generateOTP() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
-function showOTPModal(email) {
-  document.getElementById('otpEmail').textContent = email;
-  document.getElementById('otpModal').style.display = 'flex';
-  document.querySelector('.otp-input').focus();
-}
-
-function hideOTPModal() {
-  document.getElementById('otpModal').style.display = 'none';
-}
-
-function setupOTPInputs() {
-  const inputs = document.querySelectorAll('.otp-input');
-  if (!inputs.length) return;
-  
-  inputs.forEach((input, index) => {
-    input.addEventListener('input', (e) => {
-      e.target.value = e.target.value.replace(/[^0-9]/g, '');
-      if (e.target.value && index < 5) inputs[index + 1].focus();
-    });
-    
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Backspace' && !e.target.value && index > 0) {
-        inputs[index - 1].focus();
-      }
-    });
-  });
-}
-
-function checkAuthState() {
+/* ---------- Sesión ---------- */
+function watchSession() {
+  // Solo redirigimos cuando el usuario ACABA de entrar.
+  // Antes escuchábamos cualquier sesión y eso provocaba el bucle al login.
   supabase.auth.onAuthStateChange((event, session) => {
-    if (session?.user) {
-      window.location.href = 'index.html';
-    }
+    if (event === 'SIGNED_IN' && session) redirectAfterLogin();
   });
 }
 
-// Hacer funciones globales
 window.signInWithGoogle = signInWithGoogle;
-window.verifyOTP = verifyOTP;
-window.resendOTP = resendOTP;
-
-console.log('✅ login.js cargado correctamente');
