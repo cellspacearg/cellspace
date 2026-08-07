@@ -67,9 +67,9 @@ async function redirectAfterLogin() {
     window.location.href = back;
     return;
   }
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { window.location.href = 'index.html'; return; }
+  // Todos entran al sitio. El admin llega al panel desde el menú de usuario.
+  window.location.href = 'index.html';
+}
 
     const { data: profile } = await supabase
       .from('profiles').select('role').eq('id', session.user.id).single();
