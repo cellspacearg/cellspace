@@ -24,15 +24,39 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-  <!-- Font Awesome sin bloquear el renderizado -->
   <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
 
   <link rel="stylesheet" href="css/styles.css?v=16">
   <link rel="stylesheet" href="css/cs-auth.css?v=1">
-  <link rel="stylesheet" href="css/responsive.css?v=2">
+  <link rel="stylesheet" href="css/responsive.css?v=3">
 
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Cell Space Argentina",
+    "description": "Reparación de celulares, PC y notebooks, microsoldadura, desbloqueo y venta de herramientas y licencias profesionales.",
+    "url": "https://cellspacearg.com.ar",
+    "telephone": "+5493782437674",
+    "email": "cellspacearg@gmail.com",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Sargento Cabral 1745",
+      "addressLocality": "Saladas",
+      "addressRegion": "Corrientes",
+      "addressCountry": "AR"
+    },
+    "sameAs": [
+      "https://www.instagram.com/cellspacearg/",
+      "https://www.facebook.com/cellspacearg",
+      "https://www.youtube.com/@CELLSPACEARG",
+      "https://www.tiktok.com/@cell.space.arg"
+    ]
+  }
+  </script>
 </head>
 <body>
   <div class="particles" id="particles"></div>
@@ -49,7 +73,7 @@
         <div class="announcement-item"><i class="fas fa-bolt"></i><span>Pedidos despachados en 24hs hábiles</span></div>
         <div class="announcement-item"><i class="fas fa-boxes"></i><span>Stock y precios actualizados</span></div>
         <div class="announcement-item"><i class="fas fa-lock"></i><span>Pago 100% seguro</span></div>
-        <!-- DUPLICAR PARA SCROLL INFINITO -->
+        <!-- DUPLICADO PARA SCROLL INFINITO -->
         <div class="announcement-item"><i class="fas fa-truck"></i><span>Envíos a todo el país por OCA y Andreani</span></div>
         <div class="announcement-item"><i class="fas fa-shield-alt"></i><span>Garantía en todos los productos</span></div>
         <div class="announcement-item"><i class="fas fa-dollar-sign"></i><span>Compra mínima $150.000 pesos</span></div>
@@ -61,7 +85,7 @@
   </div>
 
   <!-- ========================================
-       HEADER PRINCIPAL (Dinámico)
+       HEADER
        ======================================== -->
   <header class="site-header">
     <div class="header-top">
@@ -81,7 +105,6 @@
           </div>
 
           <div class="header-actions">
-            <!-- PARA VISITANTES (Sin Login) -->
             <div id="guestActions">
               <a href="register-client.html" class="header-action" style="color: var(--orange); font-weight: 700;">
                 <i class="fas fa-user-plus"></i><span>Regístrate</span>
@@ -91,7 +114,6 @@
               </a>
             </div>
 
-            <!-- PARA USUARIOS LOGUEADOS -->
             <div id="userActions" style="display: none;">
               <div class="user-dropdown" id="userDropdown">
                 <button class="user-btn" onclick="toggleUserDropdown()">
@@ -145,12 +167,11 @@
   </header>
 
   <!-- ========================================
-       CONTENIDO PRINCIPAL
+       CONTENIDO
        ======================================== -->
   <main class="shop-main">
     <div class="container">
 
-      <!-- Hero -->
       <section class="shop-hero">
         <div class="shop-hero-content">
           <h1 class="shop-title">BIENVENIDOS A CELL SPACE</h1>
@@ -167,7 +188,6 @@
         </div>
       </section>
 
-      <!-- Servicios -->
       <section class="home-section">
         <h2 class="section-title"><i class="fas fa-tools"></i> NUESTROS SERVICIOS</h2>
         <div class="services-grid">
@@ -198,18 +218,14 @@
         </div>
       </section>
 
-      <!-- Productos destacados -->
       <section class="home-section" id="featuredSection">
         <h2 class="section-title"><i class="fas fa-fire"></i> PRODUCTOS DESTACADOS</h2>
-        <div class="products-grid" id="featuredProducts">
-          <!-- Se cargan con JavaScript -->
-        </div>
+        <div class="products-grid" id="featuredProducts"></div>
         <div class="text-center" style="margin-top: 40px;">
           <a href="tienda.html" class="btn-view-all">Ver Todos los Productos <i class="fas fa-arrow-right"></i></a>
         </div>
       </section>
 
-      <!-- Por qué elegirnos -->
       <section class="home-section benefits-section">
         <h2 class="section-title"><i class="fas fa-award"></i> ¿POR QUÉ ELEGIRNOS?</h2>
         <div class="benefits-grid">
@@ -236,7 +252,6 @@
         </div>
       </section>
 
-      <!-- Contacto -->
       <section class="home-section contact-section" id="contacto">
         <div class="contact-box">
           <h2>¿Necesitás ayuda?</h2>
@@ -256,11 +271,11 @@
   <footer class="site-footer">
     <div class="container">
       <div class="footer-grid">
+
         <div class="footer-brand">
           <img src="assets/logo.png" alt="Cell Space Argentina" class="footer-logo" loading="lazy">
           <p>Tu espacio de confianza en tecnología. Reparación, venta y soluciones profesionales.</p>
           <div class="social-links">
-            <div class="social-links">
             <a href="https://www.instagram.com/cellspacearg/" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
             <a href="https://www.facebook.com/cellspacearg" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
             <a href="https://www.youtube.com/@CELLSPACEARG" target="_blank" rel="noopener" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
@@ -296,6 +311,7 @@
             <li><i class="fas fa-map-marker-alt"></i> Saladas, Corrientes</li>
           </ul>
         </div>
+
       </div>
 
       <div class="footer-bottom">
@@ -329,9 +345,6 @@
     <i class="fab fa-whatsapp"></i>
   </a>
 
-  <!-- ========================================
-       SCRIPTS
-       ======================================== -->
   <script src="js/config.js?v=2"></script>
   <script src="js/auth-middleware.js"></script>
   <script src="js/cs-auth.js?v=1"></script>
