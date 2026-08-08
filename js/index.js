@@ -53,7 +53,8 @@ function attachCardFx(grid) {
 async function loadFeatured() {
   try {
     if (typeof supabase === 'undefined' || !supabase) return [];
-    var r = await supabase.from('products').select('*').order('created_at', { ascending: false });
+    var src = (typeof window.productsSource === 'function') ? await window.productsSource() : 'products';
+    var r = await supabase.from(src).select('*').order('created_at', { ascending: false });
     if (r.error) throw r.error;
     var vis = (r.data || []).filter(function (p) { return p.is_featured === true && p.is_hidden !== true && p.status !== 'draft'; });
     return vis.slice(0, 8);
@@ -84,6 +85,7 @@ function paintFeatured(list) {
       badgeHtml = '<span class="' + bc + '">' + esc(product.badge) + '</span>';
     }
     var oldPriceHtml = product.old_price ? '<span class="price-old">$' + money(product.old_price) + '</span>' : '';
+    var hasPrice = product.price !== undefined && product.price !== null; // visitante (products_public) no trae precio
     var rating = Number(product.rating) || 0; var stars = '';
     for (var i = 0; i < rating; i++) stars += '★'; for (var j = rating; j < 5; j++) stars += '☆';
     var cat = esc(product.category || '');
@@ -99,10 +101,14 @@ function paintFeatured(list) {
         badgeHtml + imageHtml +
         '<div class="product-info">' +
           '<h3 class="product-title">' + esc(product.name) + '</h3>' +
-          '<div class="product-price"><span class="price-current">$' + money(product.price) + '</span>' + oldPriceHtml + '</div>' +
+          (hasPrice
+            ? '<div class="product-price"><span class="price-current">$' + money(product.price) + '</span>' + oldPriceHtml + '</div>'
+            : '<div class="product-price"><a href="login.html" class="price-current" style="color:var(--orange);font-weight:600;text-decoration:none;font-size:14px;">🔒 Iniciá sesión para ver el precio</a></div>') +
           '<div class="product-rating"><span class="stars">' + stars + '</span></div>' +
           '<div class="product-actions">' +
-            '<button class="btn-add-cart" onclick="addToCart(\'' + esc(product.id) + '\')"><i class="fas fa-shopping-cart"></i> Agregar</button>' +
+            (hasPrice
+              ? '<button class="btn-add-cart" onclick="addToCart(\'' + esc(product.id) + '\')"><i class="fas fa-shopping-cart"></i> Agregar</button>'
+              : '<button class="btn-add-cart" onclick="window.location.href=\'login.html\'"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</button>') +
             '<button class="btn-wishlist" onclick="addToWishlist(\'' + esc(product.id) + '\')"><i class="far fa-heart"></i></button>' +
           '</div>' +
         '</div>' +

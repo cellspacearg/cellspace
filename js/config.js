@@ -24,6 +24,21 @@
 })();
 
 // ========================================
+// FUENTE DE PRODUCTOS SEGÚN SESIÓN
+// Visitantes (sin sesión) → vista products_public (SIN precio).
+// Usuarios logueados → tabla products (con precio).
+// El precio real queda protegido a nivel RLS/grants en el backend.
+// ========================================
+window.productsSource = async function () {
+  try {
+    var s = await window.supabase.auth.getSession();
+    return (s && s.data && s.data.session) ? 'products' : 'products_public';
+  } catch (e) {
+    return 'products_public';
+  }
+};
+
+// ========================================
 // BUSCADOR DEL HEADER (usado en todas las páginas)
 // ========================================
 window.performSearch = function () {

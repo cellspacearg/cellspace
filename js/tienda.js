@@ -125,7 +125,8 @@ async function loadProducts(force) {
 
   productsPromise = (async function () {
     try {
-      var r = await supabase.from('products').select('*').order('created_at', { ascending: false });
+      var src = (typeof window.productsSource === 'function') ? await window.productsSource() : 'products';
+      var r = await supabase.from(src).select('*').order('created_at', { ascending: false });
       if (r.error) { console.error('Error cargando productos:', r.error); return []; }
       productsCache = (r.data || []).filter(isVisible);
       return productsCache;
@@ -251,6 +252,7 @@ async function renderProducts(productsToRender) {
   grid.innerHTML = productsToRender.map(function (product) {
     var stock = stockOf(product);
     var sinStock = stock <= 0;
+    var hasPrice = product.price !== undefined && product.price !== null; // visitante (products_public) no trae precio
 
     var badgeHtml = product.badge ? '<span class="product-badge">' + esc(product.badge) + '</span>' : '';
     var oldPriceHtml = product.old_price ? '<span class="price-old">$' + money(product.old_price) + '</span>' : '';
@@ -281,7 +283,9 @@ async function renderProducts(productsToRender) {
 
     var addBtn = sinStock
       ? '<button class="btn-add-cart" disabled><i class="fas fa-ban"></i> Sin stock</button>'
-      : '<button class="btn-add-cart" onclick="addToCart(\'' + esc(product.id) + '\')"><i class="fas fa-shopping-cart"></i> Agregar</button>';
+      : (!hasPrice
+          ? '<button class="btn-add-cart" onclick="window.location.href=\'login.html\'"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</button>'
+          : '<button class="btn-add-cart" onclick="addToCart(\'' + esc(product.id) + '\')"><i class="fas fa-shopping-cart"></i> Agregar</button>');
 
     return '' +
       '<div class="product-card' + (sinStock ? ' cs-stock-out' : '') + '" data-pid="' + esc(product.id) + '" style="cursor:pointer;">' +
@@ -289,7 +293,9 @@ async function renderProducts(productsToRender) {
         '<div class="product-info">' +
           '<h3 class="product-title">' + esc(product.name) + '</h3>' +
           ratingHtml +
-          '<div class="product-price"><span class="price-current">$' + money(product.price) + '</span>' + oldPriceHtml + '</div>' +
+          (hasPrice
+            ? '<div class="product-price"><span class="price-current">$' + money(product.price) + '</span>' + oldPriceHtml + '</div>'
+            : '<div class="product-price"><a href="login.html" class="price-current" style="color:var(--orange);font-weight:600;text-decoration:none;font-size:14px;">🔒 Iniciá sesión para ver el precio</a></div>') +
           descHtml + stockHtml +
           '<div class="product-actions">' +
             addBtn +

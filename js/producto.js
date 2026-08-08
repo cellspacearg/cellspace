@@ -19,7 +19,10 @@
     var id = getParam('id');
     if(!id){ notFound('No se indicó un producto.'); return; }
     if(typeof supabase==='undefined'||!supabase){ notFound('No se pudo conectar con el catálogo.'); return; }
-    supabase.from('products').select('*').eq('id', id).maybeSingle().then(function(res){
+    var srcP = (typeof window.productsSource === 'function') ? window.productsSource() : Promise.resolve('products');
+    srcP.then(function(src){
+      return supabase.from(src).select('*').eq('id', id).maybeSingle();
+    }).then(function(res){
       if(res.error){ console.error(res.error); notFound('Error al cargar el producto.'); return; }
       if(!res.data){ notFound('Este producto no existe o no está disponible.'); return; }
       P = res.data;
@@ -78,6 +81,7 @@
 
     /* precio + ahorro */
     var price = effectivePrice(), old = effectiveOld();
+    var hasPrice = P.price !== undefined && P.price !== null; // visitante (products_public) no trae precio
     var saveHtml='';
     if(old && old>price){ var save=old-price; var pct=Math.round(save/old*100); saveHtml='<div class="pd-save"><i class="fas fa-tag"></i> Ahorrás $'+money(save)+' ('+pct+'%)</div>'; }
 
@@ -205,14 +209,16 @@
           condBadge+ condNote+
         '</div>'+
 
-        '<div class="pd-pricebox">'+
-          '<div class="pd-priceline">'+ (old? '<span class="pd-old">$'+money(old)+'</span>' : '') +'</div>'+
-          '<div class="pd-price" id="pdPrice">$'+money(price)+'</div>'+
-          saveHtml+
-          transferHtml+
-          (P.installments? '<div class="pd-install"><i class="fas fa-credit-card"></i> '+esc(P.installments)+'</div>' : '')+
-          (P.price_no_tax? '<div class="pd-notax">Precio sin impuestos: $'+money(P.price_no_tax)+'</div>' : '')+
-        '</div>'+
+        (hasPrice
+          ? '<div class="pd-pricebox">'+
+              '<div class="pd-priceline">'+ (old? '<span class="pd-old">$'+money(old)+'</span>' : '') +'</div>'+
+              '<div class="pd-price" id="pdPrice">$'+money(price)+'</div>'+
+              saveHtml+
+              transferHtml+
+              (P.installments? '<div class="pd-install"><i class="fas fa-credit-card"></i> '+esc(P.installments)+'</div>' : '')+
+              (P.price_no_tax? '<div class="pd-notax">Precio sin impuestos: $'+money(P.price_no_tax)+'</div>' : '')+
+            '</div>'
+          : '<div class="pd-pricebox"><a href="login.html" class="pd-price" style="color:var(--orange);text-decoration:none;font-size:20px;display:inline-block;">🔒 Iniciá sesión para ver el precio</a></div>')+
 
         statesHtml+ storHtml+ colHtml+
 
@@ -220,7 +226,9 @@
         qtyHtml+
 
         '<div class="pd-cta">'+
-          '<button class="pd-btn-primary" id="pdAddCart"'+(stockN<=0?' disabled':'')+'><i class="fas fa-cart-plus"></i> Agregar al carrito</button>'+
+          (hasPrice
+            ? '<button class="pd-btn-primary" id="pdAddCart"'+(stockN<=0?' disabled':'')+'><i class="fas fa-cart-plus"></i> Agregar al carrito</button>'
+            : '<button class="pd-btn-primary" onclick="window.location.href=\'login.html\'"><i class="fas fa-sign-in-alt"></i> Iniciá sesión para comprar</button>')+
         '</div>'+
 
         trustHtml+
