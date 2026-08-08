@@ -12,12 +12,8 @@
   <link rel="stylesheet" href="css/responsive.css?v=3">
 
   <!-- Supabase SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- EmailJS -->
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-  <script type="text/javascript">
-    (function () { emailjs.init("EYej4cfwI1OIadkG5"); })();
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.2" integrity="sha384-B2duOBIryCXbX4eDE4BdJwtNkQMRQde3o6IsjfPW28E6aH1CYE96hHeZRG3zY56O" crossorigin="anonymous"></script>
+  <script src="js/ui-toast.js"></script>
 </head>
 <body>
   <div class="particles" id="particles"></div>
@@ -102,7 +98,7 @@
 
   <!-- SCRIPTS -->
   <script src="js/config.js"></script>
-  <script src="js/register-otp.js"></script>
+  <script src="js/register-native.js"></script>
   <script>
     let pendingClient = null;
 
@@ -124,11 +120,12 @@
 
       try {
         pendingClient = { name, email, phone, password };
-        await sendRegisterOTP(email);
+        // Crea la cuenta (sin confirmar) y dispara el código nativo de Supabase.
+        await sendRegisterOTP(email, password, { name: name, phone: phone, role: 'client' });
         openRegisterOTPModal(email);
       } catch (error) {
         console.error('Error:', error);
-        alert('❌ No se pudo enviar el código de verificación: ' + (error.message || 'Error desconocido'));
+        csToast('No se pudo enviar el código de verificación: ' + (error.message || 'Error desconocido'), 'error');
       } finally {
         submitBtn.disabled = false;
         btnText.style.display = 'inline-block';
@@ -136,24 +133,15 @@
       }
     });
 
+    // Se ejecuta DESPUÉS de que verifyRegisterOTP confirmó el código (ya hay sesión).
     async function createClientAccount() {
-      const { name, email, phone, password } = pendingClient;
+      const { name, email, phone } = pendingClient;
 
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: email,
-        password: password,
-        options: { data: { name: name, role: 'client' } }
-      });
-
-      if (authError) {
-        if (authError.message.includes('already registered') || authError.message.includes('User already registered')) {
-          throw new Error('Ese email ya está registrado. Iniciá sesión o usá otro email.');
-        }
-        throw new Error('Error al crear la cuenta: ' + authError.message);
-      }
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No se pudo confirmar la sesión. Iniciá sesión e intentá de nuevo.');
 
       const { error: dbError } = await supabase.from('profiles').upsert({
-        id: authData.user.id,
+        id: user.id,
         full_name: name,
         email: email,
         phone: phone,
@@ -166,8 +154,8 @@
       }
 
       closeRegisterOTPModal();
-      alert('✅ ¡Cuenta creada y verificada exitosamente!\n\nAhora podés iniciar sesión con tu email y contraseña.');
-      window.location.href = 'login.html';
+      alert('✅ ¡Cuenta creada y verificada exitosamente!');
+      window.location.href = 'index.html';
     }
 
     document.getElementById('otpVerifyBtn').addEventListener('click', () => {

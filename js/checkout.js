@@ -282,7 +282,7 @@ async function submitCheckout(e) {
     }
   } catch (err) {
     console.error(err);
-    alert('❌ No se pudo procesar el pedido: ' + (err.message || 'Error desconocido'));
+    csToast('No se pudo procesar el pedido: ' + (err.message || 'Error desconocido'), 'error');
     btn.disabled = false; btnText.style.display = 'inline-block'; btnLoader.style.display = 'none';
   }
 }

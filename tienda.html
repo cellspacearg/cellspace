@@ -13,100 +13,23 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous"></noscript>
 
   <link rel="stylesheet" href="css/styles.css?v=16">
   <link rel="stylesheet" href="css/tienda.css?v=3">
   <link rel="stylesheet" href="css/cs-auth.css?v=1">
   <link rel="stylesheet" href="css/responsive.css?v=3">
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.2" integrity="sha384-B2duOBIryCXbX4eDE4BdJwtNkQMRQde3o6IsjfPW28E6aH1CYE96hHeZRG3zY56O" crossorigin="anonymous"></script>
+  <script src="js/ui-toast.js"></script>
 </head>
 <body>
   <div class="particles" id="particles"></div>
 
-  <div class="announcement-bar">
-    <div class="announcement-wrapper">
-      <div class="announcement-scroll">
-        <div class="announcement-item"><i class="fas fa-truck"></i><span>Envíos a todo el país por OCA y Andreani</span></div>
-        <div class="announcement-item"><i class="fas fa-shield-alt"></i><span>Garantía en todos los productos</span></div>
-        <div class="announcement-item"><i class="fas fa-dollar-sign"></i><span>Compra mínima $150.000 pesos</span></div>
-        <div class="announcement-item"><i class="fas fa-bolt"></i><span>Pedidos despachados en 24hs hábiles</span></div>
-        <div class="announcement-item"><i class="fas fa-boxes"></i><span>Stock y precios actualizados</span></div>
-        <div class="announcement-item"><i class="fas fa-lock"></i><span>Pago 100% seguro</span></div>
-        <div class="announcement-item"><i class="fas fa-truck"></i><span>Envíos a todo el país por OCA y Andreani</span></div>
-        <div class="announcement-item"><i class="fas fa-shield-alt"></i><span>Garantía en todos los productos</span></div>
-        <div class="announcement-item"><i class="fas fa-dollar-sign"></i><span>Compra mínima $150.000 pesos</span></div>
-        <div class="announcement-item"><i class="fas fa-bolt"></i><span>Pedidos despachados en 24hs hábiles</span></div>
-        <div class="announcement-item"><i class="fas fa-boxes"></i><span>Stock y precios actualizados</span></div>
-        <div class="announcement-item"><i class="fas fa-lock"></i><span>Pago 100% seguro</span></div>
-      </div>
-    </div>
-  </div>
-
-  <header class="site-header">
-    <div class="header-top">
-      <div class="container">
-        <div class="header-top-content">
-          <a href="index.html" class="logo">
-            <img src="assets/logo.png" alt="Cell Space Argentina" width="45" height="45">
-            <div class="logo-text"><span class="logo-main">CELL SPACE</span><span class="logo-sub">ARGENTINA</span></div>
-          </a>
-
-          <div class="header-search">
-            <input type="text" id="headerSearchInput" class="search-input" placeholder="Buscar productos, herramientas..." enterkeyhint="search">
-            <button class="search-btn" onclick="performSearch()" aria-label="Buscar"><i class="fas fa-search"></i></button>
-          </div>
-
-          <div class="header-actions">
-            <div id="guestActions" class="header-auth-group">
-              <a href="register-client.html" class="header-action" style="color: var(--orange); font-weight: 700;"><i class="fas fa-user-plus"></i><span>Regístrate</span></a>
-              <a href="login.html" class="btn-login-header"><i class="fas fa-sign-in-alt"></i><span>Iniciar Sesión</span></a>
-            </div>
-
-            <div id="userActions" class="header-auth-group" style="display: none;">
-              <div class="user-dropdown" id="userDropdown">
-                <button class="user-btn" onclick="toggleUserDropdown()">
-                  <div class="user-avatar-small"><span id="userInitial">?</span></div>
-                  <div class="user-info"><span class="user-name" id="userNameDisplay">Usuario</span><span class="user-badge" id="userRoleBadge">Cliente</span></div>
-                  <span class="dropdown-arrow">▼</span>
-                </button>
-                <div class="dropdown-menu" id="userDropdownMenu">
-                  <a href="perfil.html" class="dropdown-item"><i class="fas fa-user-cog"></i> Mi Perfil</a>
-                  <a href="mis-pedidos.html" class="dropdown-item"><i class="fas fa-box"></i> Mis Pedidos</a>
-                  <div id="adminMenu" style="display: none;">
-                    <div class="dropdown-divider"></div>
-                    <div class="dropdown-header">Administración</div>
-                    <a href="admin/index.html" class="dropdown-item"><i class="fas fa-cog"></i> Panel Admin</a>
-                  </div>
-                  <div class="dropdown-divider"></div>
-                  <a href="#" class="dropdown-item logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
-                </div>
-              </div>
-            </div>
-
-            <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="header-action"><i class="fas fa-headset"></i><span>Soporte</span></a>
-            <a href="#" class="header-action cart-action" onclick="toggleCart(); return false;" aria-label="Carrito">
-              <i class="fas fa-shopping-cart"></i><span>Carrito</span><span class="cart-count" id="cartCount">0</span>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <nav class="main-navigation">
-      <div class="container">
-        <ul class="nav-menu">
-          <li><a href="index.html" class="nav-link">INICIO</a></li>
-          <li><a href="tienda.html" class="nav-link active">TIENDA</a></li>
-          <li><a href="servicios.html" class="nav-link">SERVICIO TÉCNICO</a></li>
-          <li><a href="central-space.html" class="nav-link">CENTRAL SPACE</a></li>
-          <li><a href="index.html#contacto" class="nav-link">CONTACTO</a></li>
-        </ul>
-      </div>
-    </nav>
-  </header>
+  <!-- Header unificado -> js/site-header.js -->
+  <div id="site-header" data-active="tienda" data-search-placeholder="Buscar productos, herramientas..." data-search-action="performSearch"></div>
+  <script src="js/site-header.js"></script>
 
   <main class="shop-main">
     <div class="container">

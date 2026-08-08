@@ -149,7 +149,7 @@ function renderCart() {
 function removeFromCart(id) { var c = getCart(); c = c.filter(function (i) { return i.id != id; }); setCart(c); updateCartCount(); renderCart(); }
 function updateQuantity(id, d) { var c = getCart(); var it = c.find(function (i) { return i.id == id; }); if (!it) return; it.quantity += d; if (it.quantity <= 0) { removeFromCart(id); return; } setCart(c); updateCartCount(); renderCart(); }
 function checkout() {
-  var cart = getCart(); if (!cart.length) { alert('Tu carrito está vacío'); return; }
+  var cart = getCart(); if (!cart.length) { csToast('Tu carrito está vacío', 'warn'); return; }
   window.location.href = 'checkout.html';
 }
 function addToWishlist() { showNotification('❤️ Producto agregado a favoritos'); }

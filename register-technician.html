@@ -12,12 +12,8 @@
   <link rel="stylesheet" href="css/responsive.css?v=3">
 
   <!-- Supabase SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- EmailJS -->
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-  <script type="text/javascript">
-    (function () { emailjs.init("EYej4cfwI1OIadkG5"); })();
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.2" integrity="sha384-B2duOBIryCXbX4eDE4BdJwtNkQMRQde3o6IsjfPW28E6aH1CYE96hHeZRG3zY56O" crossorigin="anonymous"></script>
+  <script src="js/ui-toast.js"></script>
 </head>
 <body>
   <div class="particles" id="particles"></div>
@@ -177,7 +173,7 @@
 
   <!-- SCRIPTS -->
   <script src="js/config.js"></script>
-  <script src="js/register-otp.js"></script>
+  <script src="js/register-native.js"></script>
   <script>
     let pendingTech = null;
 
@@ -210,11 +206,12 @@
       btnLoader.style.display = 'inline-block';
 
       try {
-        await sendRegisterOTP(pendingTech.email);
+        // Crea la cuenta como CLIENTE (sin confirmar) y dispara el código nativo.
+        await sendRegisterOTP(pendingTech.email, pendingTech.password, { name: pendingTech.name, role: 'client' });
         openRegisterOTPModal(pendingTech.email);
       } catch (error) {
         console.error('Error:', error);
-        alert('❌ No se pudo enviar el código de verificación: ' + (error.message || 'Error desconocido'));
+        csToast('No se pudo enviar el código de verificación: ' + (error.message || 'Error desconocido'), 'error');
       } finally {
         submitBtn.disabled = false;
         btnText.style.display = 'inline-block';
@@ -222,26 +219,17 @@
       }
     });
 
+    // Se ejecuta DESPUÉS de que verifyRegisterOTP confirmó el código (ya hay sesión).
+    // La cuenta se crea siempre como CLIENTE; el rol técnico se aprueba manualmente.
     async function createTechApplication() {
       const t = pendingTech;
 
-      // 1. Crear la cuenta como CLIENTE — nunca como técnico automáticamente
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: t.email,
-        password: t.password,
-        options: { data: { name: t.name, role: 'client' } }
-      });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No se pudo confirmar la sesión. Iniciá sesión e intentá de nuevo.');
 
-      if (authError) {
-        if (authError.message.includes('already registered') || authError.message.includes('User already registered')) {
-          throw new Error('Ese email ya está registrado. Iniciá sesión primero y solicitá el acceso técnico desde tu perfil.');
-        }
-        throw new Error('Error al crear la cuenta: ' + authError.message);
-      }
-
-      // 2. Perfil como cliente
+      // 1. Perfil como cliente
       const { error: profileError } = await supabase.from('profiles').upsert({
-        id: authData.user.id,
+        id: user.id,
         full_name: t.name,
         email: t.email,
         phone: t.phone,
@@ -249,9 +237,9 @@
       });
       if (profileError) console.error('Error guardando perfil:', profileError);
 
-      // 3. Solicitud de técnico, pendiente de revisión manual
+      // 2. Solicitud de técnico, pendiente de revisión manual
       const { error: appError } = await supabase.from('technician_applications').insert({
-        user_id: authData.user.id,
+        user_id: user.id,
         full_name: t.name,
         email: t.email,
         phone: t.phone,
@@ -274,8 +262,8 @@
       }
 
       closeRegisterOTPModal();
-      alert('✅ ¡Cuenta verificada y solicitud enviada!\n\nUn administrador va a revisar tu perfil. Te avisamos por email cuando se apruebe. Mientras tanto ya podés iniciar sesión como cliente.');
-      window.location.href = 'login.html';
+      alert('✅ ¡Cuenta verificada y solicitud enviada!\n\nUn administrador va a revisar tu perfil. Te avisamos por email cuando se apruebe. Mientras tanto ya estás dentro como cliente.');
+      window.location.href = 'index.html';
     }
 
     document.getElementById('otpVerifyBtn').addEventListener('click', () => {

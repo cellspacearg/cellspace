@@ -447,7 +447,7 @@ function updateQuantity(id, d) {
   saveCart(); updateCartCount(); renderCart();
 }
 function checkout() {
-  if (!cart.length) { alert('Tu carrito está vacío'); return; }
+  if (!cart.length) { csToast('Tu carrito está vacío', 'warn'); return; }
   window.location.href = 'checkout.html';
 }
 function addToWishlist() { showNotification('❤️ Producto agregado a favoritos'); }

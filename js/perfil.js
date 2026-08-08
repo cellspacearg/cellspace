@@ -34,7 +34,7 @@ async function loadProfileData(user) {
       
     if (userError || !userData) {
       console.error('Error cargando usuario:', userError);
-      alert('⚠️ No se pudieron cargar los datos del perfil.');
+      csToast('No se pudieron cargar los datos del perfil.', 'error');
       return;
     }
     
@@ -109,7 +109,7 @@ function setupProfileForm() {
     const newPassword = document.getElementById('newPassword').value;
     
     if (newUsername.length < 3) {
-      alert('⚠️ El nombre de usuario debe tener al menos 3 caracteres');
+      csToast('El nombre de usuario debe tener al menos 3 caracteres', 'warn');
       return;
     }
     
@@ -129,7 +129,7 @@ function setupProfileForm() {
           .maybeSingle();
           
         if (existingUser) {
-          alert('⚠️ Ese nombre de usuario ya está en uso. Probá con otro.');
+          csToast('Ese nombre de usuario ya está en uso. Probá con otro.', 'warn');
           resetButton();
           return;
         }
@@ -184,7 +184,7 @@ function setupProfileForm() {
         });
         
         if (passError) {
-          alert('⚠️ No se pudo actualizar la contraseña: ' + passError.message);
+          csToast('No se pudo actualizar la contraseña: ' + passError.message, 'error');
           resetButton();
           return;
         }
@@ -195,7 +195,7 @@ function setupProfileForm() {
       
     } catch (error) {
       console.error('Error al guardar:', error);
-      alert('❌ Error al guardar los cambios: ' + error.message);
+      csToast('Error al guardar los cambios: ' + error.message, 'error');
       resetButton();
     }
     

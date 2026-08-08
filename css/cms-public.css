@@ -1,0 +1,9 @@
+/* ========================================
+   cms-public.css
+   Hoja compartida por las páginas públicas del CMS
+   (blog, post, perfil, checkout, reparaciones, registros).
+
+   Estaba referenciada en 7 páginas pero el archivo no existía,
+   provocando un 404 en cada carga. Se crea vacío para eliminar
+   ese error; agregá acá los estilos comunes de esas vistas.
+   ======================================== */

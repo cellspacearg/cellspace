@@ -1,0 +1,26 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores / IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Node (por si se agrega tooling/build)
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.env
+.env.*
+
+# Temporales / build
+dist/
+.cache/
+*.log
+
+# Supabase CLI (estado local del proyecto linkeado)
+supabase/.temp/
+supabase/.branches/

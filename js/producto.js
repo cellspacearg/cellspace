@@ -484,7 +484,7 @@
     var t=cart.reduce(function(s,it){return s+(Number(it.price)||0)*it.quantity;},0); document.getElementById('cartTotal').textContent='$'+money(t);
   }
   window.updQty=function(id,d){ var cart=getCart(); var it=cart.find(function(x){return x.id==id;}); if(!it)return; it.quantity+=d; if(it.quantity<=0)cart=cart.filter(function(x){return x.id!=id;}); setCart(cart); updateCartCount(); renderCart(); };
-  window.checkout=function(){ var cart=getCart(); if(!cart.length){alert('Tu carrito está vacío');return;} window.location.href='checkout.html'; };
+  window.checkout=function(){ var cart=getCart(); if(!cart.length){csToast('Tu carrito está vacío', 'warn');return;} window.location.href='checkout.html'; };
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

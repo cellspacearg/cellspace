@@ -4,6 +4,12 @@
 
 const EDGE_FUNCTION_URL = 'https://cfoajkbzsqyimbfjhfsa.supabase.co/functions/v1/imei-check';
 
+function escImei(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
 function populateImeiSelect() {
   const select = document.getElementById('imeiServiceSelect');
   if (!select || !window.IMEI_CATALOG) return;
@@ -16,9 +22,9 @@ function populateImeiSelect() {
 
   select.innerHTML = Object.keys(categories).map(cat => {
     const options = categories[cat].map(s =>
-      `<option value="${s.slug}" data-price="${s.price}">${s.name} — $${s.price.toFixed(2)}</option>`
+      `<option value="${escImei(s.slug)}" data-price="${Number(s.price) || 0}">${escImei(s.name)} — $${(Number(s.price) || 0).toFixed(2)}</option>`
     ).join('');
-    return `<optgroup label="${cat}">${options}</optgroup>`;
+    return `<optgroup label="${escImei(cat)}">${options}</optgroup>`;
   }).join('');
 
   updateSelectedPrice();
@@ -49,13 +55,13 @@ async function runImeiCheck() {
   const service = document.getElementById('imeiServiceSelect').value;
 
   if (!imei || imei.replace(/[^0-9A-Za-z]/g, '').length < 10) {
-    alert('⚠️ Ingresá un IMEI válido');
+    csToast('Ingresá un IMEI válido', 'warn');
     return;
   }
 
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) {
-    alert('⚠️ Necesitás iniciar sesión para consultar un IMEI');
+    csToast('Necesitás iniciar sesión para consultar un IMEI', 'warn');
     window.location.href = 'login.html';
     return;
   }
