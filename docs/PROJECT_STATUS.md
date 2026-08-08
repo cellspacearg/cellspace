@@ -160,7 +160,18 @@ Cada fase sigue el loop: analizar → implementar → conectar → probar (CRUD/
 ### CMS
 - `[✓]` CRUD real confirmado (conectado a Supabase): Productos · Categorías · Servicios · Páginas/Builder · Media · Blog · Settings · Clientes *(verificado a nivel código/consultas; falta smoke test logueado del dueño)*
 - `[~]` **Dashboard** — reescrito para usar el layout compartido + **métricas reales** (ingresos, pedidos, productos, sin stock, clientes, técnicos, servicios, publicaciones + últimos pedidos). Data-layer verificada. Falta test logueado.
-- `[ ]` Inicio (hero/banners/destacados) · `[ ]` Central Space CMS · `[ ]` Contacto/Config web · `[ ]` Menú/Footer/SEO
+- `[ ]` Inicio (hero/banners/destacados) · `[~]` **Central Space CMS** (ver abajo) · `[ ]` Contacto/Config web · `[ ]` Menú/Footer/SEO
+
+### Central Space — estado y problemas bien definidos
+- `[✓]` Datos existentes: 7 marcas, 17 categorías (con `min_role`). Faltan guías (0), dispositivos (0), tools (0).
+- `[~]` **Admin: publicación de guías** — nueva vista `admin/js/views/central.js` (`#/central`): crear/editar/publicar/eliminar guías con **estructura consistente** (título, resumen, marca, categoría, dificultad, método, advertencia, requisitos [lista], **pasos ordenados**, portada [subida a `cms-media`], badge, VIP, estado). Insert de datos verificado; modal + pasos/requisitos dinámicos verificados. Falta test logueado.
+- `[!]` **Problema 1 — Ficha de guía pública es un placeholder**: `js/central-space.js` muestra "La ficha de guía llega en la próxima etapa" en `#/g/{slug}`. Hay que renderizar la guía (pasos/requisitos/meta) para poder VER lo publicado. → siguiente paso.
+- `[!]` **Problema 2 — Secciones/categorías públicas "en construcción"**: `#/c/{slug}` también es placeholder.
+- `[⚠]` **Problema 3 — Visibilidad**: RLS `cs_guides_read` exige `is_technician()`. Con 0 técnicos, las guías publicadas solo las ve el admin. Definir membresía FREE/VIP y `is_technician()` para los nuevos roles.
+- `[ ]` Admin de marcas/categorías/dispositivos/tools de Central Space (por ahora se editan por SQL; los dropdowns de guía ya usan marcas/categorías reales).
+
+### Blog
+- `[✓]` Diagnóstico: el módulo Blog está **funcional a nivel código/datos/RLS** (payload correcto, `val()`/`set()` null-safe, ids presentes, insert de post verificado, RLS deja publicar al owner). Si al publicar logueado seguís viendo un error, **pasame el mensaje exacto** para reproducirlo.
 
 ### ERP
 - `[~]` **Pedidos** — vista nueva `admin/js/views/orders.js` (listado + filtros + detalle + cambio de estado + confirmar pago vía RPC `confirm_manual_payment`). Ruta `#/orders` registrada. CRUD de datos verificado (SELECT + UPDATE reales). Falta test logueado.

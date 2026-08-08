@@ -205,14 +205,15 @@ window.closeGuideModal = function(e){
   document.getElementById('guideModalRoot').innerHTML = '';
 };
 
-/* requisitos */
+/* requisitos (los setters van por window: los oninput inline corren en scope global) */
 window.addReq = function(){ requirements.push(''); renderReqs(); };
 window.removeReq = function(i){ requirements.splice(i, 1); renderReqs(); };
+window.csSetReq = function(i, val){ if (requirements[i] !== undefined) requirements[i] = val; };
 function renderReqs(){
   const c = document.getElementById('g_reqs'); if (!c) return;
   c.innerHTML = requirements.map((r, i) => `
     <div style="display:flex;gap:8px;margin-bottom:6px;">
-      <input type="text" value="${escapeAttr(r)}" placeholder="Ej: Cable USB, drivers instalados..." style="flex:1;" oninput="requirements[${i}]=this.value">
+      <input type="text" value="${escapeAttr(r)}" placeholder="Ej: Cable USB, drivers instalados..." style="flex:1;" oninput="csSetReq(${i}, this.value)">
       <button type="button" class="btn-secondary" style="padding:8px 10px;color:#ff6b6b;" onclick="removeReq(${i})"><i class="fas fa-times"></i></button>
     </div>`).join('') || '<p style="color:#888;font-size:13px;">Sin requisitos.</p>';
 }
@@ -220,16 +221,17 @@ function renderReqs(){
 /* pasos */
 window.addStep = function(){ steps.push({ title: '', content: '' }); renderSteps(); };
 window.removeStep = function(i){ steps.splice(i, 1); renderSteps(); };
+window.csSetStep = function(i, field, val){ if (steps[i]) steps[i][field] = val; };
 function renderSteps(){
   const c = document.getElementById('g_steps'); if (!c) return;
   c.innerHTML = steps.map((s, i) => `
     <div style="border:1px solid #2a2a2a;border-radius:10px;padding:12px;margin-bottom:10px;">
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
         <span style="color:var(--orange,#FF6A00);font-weight:800;">Paso ${i + 1}</span>
-        <input type="text" value="${escapeAttr(s.title)}" placeholder="Título del paso" style="flex:1;" oninput="steps[${i}].title=this.value">
+        <input type="text" value="${escapeAttr(s.title)}" placeholder="Título del paso" style="flex:1;" oninput="csSetStep(${i},'title',this.value)">
         <button type="button" class="btn-secondary" style="padding:8px 10px;color:#ff6b6b;" onclick="removeStep(${i})"><i class="fas fa-trash"></i></button>
       </div>
-      <textarea rows="3" placeholder="Descripción del paso..." style="width:100%;" oninput="steps[${i}].content=this.value">${escapeHtml(s.content)}</textarea>
+      <textarea rows="3" placeholder="Descripción del paso..." style="width:100%;" oninput="csSetStep(${i},'content',this.value)">${escapeHtml(s.content)}</textarea>
     </div>`).join('') || '<p style="color:#888;font-size:13px;">Sin pasos. Agregá al menos uno.</p>';
 }
 
