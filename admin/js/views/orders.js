@@ -1,5 +1,5 @@
-import { supabase } from '../config.js';
-import { layout, mountLayout, toolbar, emptyState } from '../core/layout.js';
+import { supabase } from '../config.js?v=cb2';
+import { layout, mountLayout, toolbar, emptyState } from '../core/layout.js?v=cb2';
 
 let allOrders = [];
 

@@ -2,7 +2,7 @@
 // LAYOUT COMPARTIDO DEL PANEL
 // Todas las vistas lo usan: dejan de repetir sidebar/topbar/footer
 // ============================================================
-import { store } from './state.js';
+import { store } from './state.js?v=cb2';
 
 /* Menú en un solo lugar. Agregás un ítem acá y aparece en todo el panel. */
 export const MENU = [

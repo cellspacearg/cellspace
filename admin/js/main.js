@@ -1,19 +1,19 @@
-import Router from './core/router.js?v=4';
-import { checkSession } from './hooks/useAuth.js';
-import { loginView, loginViewOnMount } from './views/login.js';
-import { dashboardView, dashboardViewOnMount } from './views/dashboard.js';
-import { productsView, productsViewOnMount } from './views/products.js';
-import { categoriesView, categoriesViewOnMount } from './views/categories.js';
-import { servicesView, servicesViewOnMount } from './views/services.js';
-import { pagesView, pagesViewOnMount } from './views/pages.js';
-import { builderView, builderViewOnMount } from './views/builder.js';
-import { mediaView, mediaViewOnMount } from './views/media.js';
-import { blogView, blogViewOnMount } from './views/blog.js';
-import { settingsView, settingsViewOnMount } from './views/settings.js';
-import { customersView, customersViewOnMount } from './views/customers.js';
-import { ordersView, ordersViewOnMount } from './views/orders.js';
-import { centralView, centralViewOnMount } from './views/central.js';
-import { notFoundView, notFoundViewOnMount } from './views/not-found.js';
+import Router from './core/router.js?v=cb2';
+import { checkSession } from './hooks/useAuth.js?v=cb2';
+import { loginView, loginViewOnMount } from './views/login.js?v=cb2';
+import { dashboardView, dashboardViewOnMount } from './views/dashboard.js?v=cb2';
+import { productsView, productsViewOnMount } from './views/products.js?v=cb2';
+import { categoriesView, categoriesViewOnMount } from './views/categories.js?v=cb2';
+import { servicesView, servicesViewOnMount } from './views/services.js?v=cb2';
+import { pagesView, pagesViewOnMount } from './views/pages.js?v=cb2';
+import { builderView, builderViewOnMount } from './views/builder.js?v=cb2';
+import { mediaView, mediaViewOnMount } from './views/media.js?v=cb2';
+import { blogView, blogViewOnMount } from './views/blog.js?v=cb2';
+import { settingsView, settingsViewOnMount } from './views/settings.js?v=cb2';
+import { customersView, customersViewOnMount } from './views/customers.js?v=cb2';
+import { ordersView, ordersViewOnMount } from './views/orders.js?v=cb2';
+import { centralView, centralViewOnMount } from './views/central.js?v=cb2';
+import { notFoundView, notFoundViewOnMount } from './views/not-found.js?v=cb2';
 
 function showError(msg){
   const app = document.getElementById('app');

@@ -1,4 +1,4 @@
-import { supabase } from '../config.js';
+import { supabase } from '../config.js?v=cb2';
 
 let currentPage = null; // { id, title, ... }
 
