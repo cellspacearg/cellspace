@@ -11,6 +11,7 @@ import { mediaView, mediaViewOnMount } from './views/media.js';
 import { blogView, blogViewOnMount } from './views/blog.js';
 import { settingsView, settingsViewOnMount } from './views/settings.js';
 import { customersView, customersViewOnMount } from './views/customers.js';
+import { ordersView, ordersViewOnMount } from './views/orders.js';
 import { notFoundView, notFoundViewOnMount } from './views/not-found.js';
 
 function showError(msg){
@@ -47,6 +48,7 @@ try {
     '/blog':       { component: blogView,       onMount: blogViewOnMount,       beforeEnter: auth },
     '/settings':   { component: settingsView,   onMount: settingsViewOnMount,   beforeEnter: auth },
     '/customers':  { component: customersView,  onMount: customersViewOnMount,  beforeEnter: auth },
+    '/orders':     { component: ordersView,     onMount: ordersViewOnMount,     beforeEnter: auth },
     '/404':        { component: notFoundView,   onMount: notFoundViewOnMount,   beforeEnter: auth },
   };
 
