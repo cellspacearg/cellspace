@@ -1,6 +1,6 @@
-import { supabase } from '../config.js?v=cb2';
-import { layout, mountLayout } from '../core/layout.js?v=cb2';
-import { store } from '../core/state.js?v=cb2';
+import { supabase } from '../config.js?v=cb3';
+import { layout, mountLayout } from '../core/layout.js?v=cb3';
+import { store } from '../core/state.js?v=cb3';
 
 function money(n){
   n = Number(n) || 0;
@@ -44,7 +44,7 @@ export async function dashboardView(){
       ${statCard({ icon:'fas fa-users', color:'#9C27B0', label:'Clientes', valueId:'dashClients', subId:'dashClientsSub', sub:'Cargando...', link:'#/customers' })}
       ${statCard({ icon:'fas fa-screwdriver-wrench', color:'#00BCD4', label:'Técnicos', valueId:'dashTechs', subId:'dashTechsSub', sub:'Cargando...', link:'#/customers' })}
       ${statCard({ icon:'fas fa-tools', color:'#8BC34A', label:'Servicios', valueId:'dashServices', subId:'dashServicesSub', sub:'Cargando...', link:'#/services' })}
-      ${statCard({ icon:'fas fa-newspaper', color:'#3F51B5', label:'Publicaciones', valueId:'dashPubs', subId:'dashPubsSub', sub:'Cargando...', link:'#/blog' })}
+      ${statCard({ icon:'fas fa-book', color:'#3F51B5', label:'Guías (Central Space)', valueId:'dashPubs', subId:'dashPubsSub', sub:'Cargando...', link:'#/central' })}
     </div>
 
     <div class="quick-actions">
@@ -76,13 +76,12 @@ function setText(id, txt){ const el = document.getElementById(id); if (el) el.te
 
 async function loadStats(){
   try {
-    const [products, orders, profiles, services, posts, pages] = await Promise.all([
+    const [products, orders, profiles, services, guides] = await Promise.all([
       supabase.from('products').select('is_featured,stock,is_hidden,status'),
       supabase.from('orders').select('total,order_status,payment_status,order_number,buyer_name,created_at').order('created_at', { ascending: false }),
       supabase.from('profiles').select('role,created_at'),
       supabase.from('services').select('status,is_visible'),
-      supabase.from('posts').select('id', { count: 'exact', head: true }),
-      supabase.from('pages').select('id', { count: 'exact', head: true }),
+      supabase.from('cs_guides').select('status'),
     ]);
 
     // Productos
@@ -117,9 +116,10 @@ async function loadStats(){
     setText('dashServices', String(serv.length));
     setText('dashServicesSub', `${serv.filter(s => s.is_visible !== false).length} visible(s)`);
 
-    // Publicaciones
-    setText('dashPubs', String((posts.count || 0) + (pages.count || 0)));
-    setText('dashPubsSub', `${posts.count || 0} blog · ${pages.count || 0} páginas`);
+    // Guías (Central Space)
+    const gs = guides.data || [];
+    setText('dashPubs', String(gs.length));
+    setText('dashPubsSub', `${gs.filter(g => g.status === 'published').length} publicada(s)`);
 
     renderRecentOrders(ord.slice(0, 5));
   } catch (e) {

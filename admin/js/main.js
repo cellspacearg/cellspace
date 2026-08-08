@@ -1,19 +1,18 @@
-import Router from './core/router.js?v=cb2';
-import { checkSession } from './hooks/useAuth.js?v=cb2';
-import { loginView, loginViewOnMount } from './views/login.js?v=cb2';
-import { dashboardView, dashboardViewOnMount } from './views/dashboard.js?v=cb2';
-import { productsView, productsViewOnMount } from './views/products.js?v=cb2';
-import { categoriesView, categoriesViewOnMount } from './views/categories.js?v=cb2';
-import { servicesView, servicesViewOnMount } from './views/services.js?v=cb2';
-import { pagesView, pagesViewOnMount } from './views/pages.js?v=cb2';
-import { builderView, builderViewOnMount } from './views/builder.js?v=cb2';
-import { mediaView, mediaViewOnMount } from './views/media.js?v=cb2';
-import { blogView, blogViewOnMount } from './views/blog.js?v=cb2';
-import { settingsView, settingsViewOnMount } from './views/settings.js?v=cb2';
-import { customersView, customersViewOnMount } from './views/customers.js?v=cb2';
-import { ordersView, ordersViewOnMount } from './views/orders.js?v=cb2';
-import { centralView, centralViewOnMount } from './views/central.js?v=cb2';
-import { notFoundView, notFoundViewOnMount } from './views/not-found.js?v=cb2';
+import Router from './core/router.js?v=cb3';
+import { checkSession } from './hooks/useAuth.js?v=cb3';
+import { loginView, loginViewOnMount } from './views/login.js?v=cb3';
+import { dashboardView, dashboardViewOnMount } from './views/dashboard.js?v=cb3';
+import { productsView, productsViewOnMount } from './views/products.js?v=cb3';
+import { categoriesView, categoriesViewOnMount } from './views/categories.js?v=cb3';
+import { servicesView, servicesViewOnMount } from './views/services.js?v=cb3';
+import { pagesView, pagesViewOnMount } from './views/pages.js?v=cb3';
+import { builderView, builderViewOnMount } from './views/builder.js?v=cb3';
+import { mediaView, mediaViewOnMount } from './views/media.js?v=cb3';
+import { settingsView, settingsViewOnMount } from './views/settings.js?v=cb3';
+import { customersView, customersViewOnMount } from './views/customers.js?v=cb3';
+import { ordersView, ordersViewOnMount } from './views/orders.js?v=cb3';
+import { centralView, centralViewOnMount } from './views/central.js?v=cb3';
+import { notFoundView, notFoundViewOnMount } from './views/not-found.js?v=cb3';
 
 function showError(msg){
   const app = document.getElementById('app');
@@ -46,7 +45,6 @@ try {
     '/pages':      { component: pagesView,      onMount: pagesViewOnMount,      beforeEnter: auth },
     '/builder':    { component: builderView,    onMount: builderViewOnMount,    beforeEnter: auth },
     '/media':      { component: mediaView,      onMount: mediaViewOnMount,      beforeEnter: auth },
-    '/blog':       { component: blogView,       onMount: blogViewOnMount,       beforeEnter: auth },
     '/settings':   { component: settingsView,   onMount: settingsViewOnMount,   beforeEnter: auth },
     '/customers':  { component: customersView,  onMount: customersViewOnMount,  beforeEnter: auth },
     '/orders':     { component: ordersView,     onMount: ordersViewOnMount,     beforeEnter: auth },
