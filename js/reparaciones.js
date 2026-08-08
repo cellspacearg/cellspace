@@ -24,13 +24,10 @@ async function trackOrder() {
   `;
 
   try {
-    // Consulta a Supabase
-    // Asumimos que tu tabla se llama 'reparaciones' y el campo es 'order_id' o 'order_number'
-    const { data, error } = await supabase
-      .from('reparaciones')
-      .select('*')
-      .eq('order_id', orderId) // Cambiá 'order_id' por el nombre real de tu columna en Supabase
-      .single();
+    // Seguimiento público seguro: el RPC devuelve SOLO campos no privados
+    // (nada de nombre/teléfono/DNI/diagnóstico). Busca por código o N° de orden.
+    const { data: rows, error } = await supabase.rpc('track_repair', { p_code: orderId });
+    const data = Array.isArray(rows) ? rows[0] : rows;
 
     if (error || !data) {
       resultContainer.innerHTML = `
@@ -58,17 +55,23 @@ async function trackOrder() {
 function renderRepairStatus(repair) {
   const resultContainer = document.getElementById('trackResult');
   
-  // Mapeo de estados a iconos y colores (ajustá según tus estados reales en la BD)
+  // Estados (los 11 del sistema). step = etapa para la línea de progreso (1..4).
   const statusConfig = {
-    'recibido': { icon: 'fa-box-open', color: '#3498db', text: 'Equipo Recibido' },
-    'diagnostico': { icon: 'fa-stethoscope', color: '#f39c12', text: 'En Diagnóstico' },
-    'espera_repuesto': { icon: 'fa-clock', color: '#9b59b6', text: 'Esperando Repuesto' },
-    'en_reparacion': { icon: 'fa-tools', color: '#e67e22', text: 'En Reparación' },
-    'listo': { icon: 'fa-check-circle', color: '#2ecc71', text: 'Reparación Finalizada' },
-    'entregado': { icon: 'fa-hand-holding', color: '#27ae60', text: 'Equipo Entregado' }
+    'recibido':             { icon: 'fa-box-open', color: '#3498db', text: 'Equipo Recibido', step: 1 },
+    'diagnostico':          { icon: 'fa-stethoscope', color: '#f39c12', text: 'En Diagnóstico', step: 2 },
+    'presupuesto':          { icon: 'fa-file-invoice-dollar', color: '#f39c12', text: 'Presupuesto Enviado', step: 2 },
+    'esperando_aprobacion': { icon: 'fa-hourglass-half', color: '#e67e22', text: 'Esperando tu Aprobación', step: 2 },
+    'en_reparacion':        { icon: 'fa-tools', color: '#e67e22', text: 'En Reparación', step: 3 },
+    'esperando_repuesto':   { icon: 'fa-truck-ramp-box', color: '#9b59b6', text: 'Esperando Repuesto', step: 3 },
+    'pausado':              { icon: 'fa-circle-pause', color: '#95a5a6', text: 'En Pausa', step: 3 },
+    'reparado':             { icon: 'fa-wrench', color: '#2ecc71', text: 'Reparado', step: 4 },
+    'listo':                { icon: 'fa-check-circle', color: '#2ecc71', text: 'Listo para Retirar', step: 4 },
+    'entregado':            { icon: 'fa-hand-holding', color: '#27ae60', text: 'Equipo Entregado', step: 4 },
+    'cancelado':            { icon: 'fa-ban', color: '#e74c3c', text: 'Reparación Cancelada', step: 0 }
   };
 
-  const status = statusConfig[repair.status?.toLowerCase()] || { icon: 'fa-question-circle', color: '#95a5a6', text: 'Estado Desconocido' };
+  const status = statusConfig[repair.status?.toLowerCase()] || { icon: 'fa-question-circle', color: '#95a5a6', text: 'Estado Desconocido', step: 0 };
+  const curStep = status.step || 0;
 
   // Formatear fecha
   const date = new Date(repair.created_at).toLocaleDateString('es-AR', {
@@ -106,19 +109,19 @@ function renderRepairStatus(repair) {
       <div class="timeline">
         <h4>Progreso de la reparación</h4>
         <div class="timeline-steps">
-          <div class="step ${['recibido', 'diagnostico', 'espera_repuesto', 'en_reparacion', 'listo', 'entregado'].includes(repair.status?.toLowerCase()) ? 'completed' : ''}">
+          <div class="step ${curStep >= 1 ? 'completed' : ''}">
             <div class="step-icon"><i class="fas fa-box-open"></i></div>
             <p>Recibido</p>
           </div>
-          <div class="step ${['diagnostico', 'espera_repuesto', 'en_reparacion', 'listo', 'entregado'].includes(repair.status?.toLowerCase()) ? 'completed' : ''}">
+          <div class="step ${curStep >= 2 ? 'completed' : ''}">
             <div class="step-icon"><i class="fas fa-stethoscope"></i></div>
             <p>Diagnóstico</p>
           </div>
-          <div class="step ${['en_reparacion', 'listo', 'entregado'].includes(repair.status?.toLowerCase()) ? 'completed' : ''}">
+          <div class="step ${curStep >= 3 ? 'completed' : ''}">
             <div class="step-icon"><i class="fas fa-tools"></i></div>
             <p>Reparación</p>
           </div>
-          <div class="step ${['listo', 'entregado'].includes(repair.status?.toLowerCase()) ? 'completed' : ''}">
+          <div class="step ${curStep >= 4 ? 'completed' : ''}">
             <div class="step-icon"><i class="fas fa-check-circle"></i></div>
             <p>Listo</p>
           </div>

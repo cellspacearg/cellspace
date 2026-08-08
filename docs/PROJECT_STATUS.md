@@ -177,7 +177,8 @@ Cada fase sigue el loop: analizar → implementar → conectar → probar (CRUD/
 ### ERP
 - `[~]` **Pedidos** — vista nueva `admin/js/views/orders.js` (listado + filtros + detalle + cambio de estado + confirmar pago vía RPC `confirm_manual_payment`). Ruta `#/orders` registrada. CRUD de datos verificado (SELECT + UPDATE reales). Falta test logueado.
 - `[~]` **RBAC granular** — DB verificada (tablas `permissions`+`role_permissions` con la matriz de 7 roles, `has_perm()`, `is_admin()` extendido). Frontend: `usePermissions.js` + gate del panel por `panel.access` (con ancla del owner). Falta test logueado multi-rol.
-- `[ ]` Reparaciones (+seguimiento público) · `[ ]` Inventario · `[ ]` Técnicos · `[ ]` Crédito técnicos · `[ ]` Proveedores · `[ ]` Promociones · `[ ]` Gastos · `[ ]` Reportes · `[ ]` Notificaciones · `[ ]` Auditoría
+- `[~]` **Reparaciones** — tablas `repairs` + `repair_status_history`; código de seguimiento + N° de orden autogenerados; historial de estados automático (trigger); RLS (gestión/técnico/cliente); RPC público `track_repair()` seguro (solo campos no privados). Admin `#/repairs` (alta/edición con todos los campos + cambio de estado + historial). Seguimiento público `reparaciones.html` ya funciona. CRUD de datos verificado. Falta test logueado del admin + "mis reparaciones" en la cuenta del cliente.
+- `[ ]` Inventario · `[ ]` Técnicos · `[ ]` Crédito técnicos · `[ ]` Proveedores · `[ ]` Promociones · `[ ]` Gastos · `[ ]` Reportes · `[ ]` Notificaciones · `[ ]` Auditoría
 
 ### Storage
 - `[✓]` Buckets creados y verificados: `cms-media` (público), `repair-media` (privado), `documents` (privado), además de `product-images` existente. Políticas: lectura pública + escritura admin (cms-media); solo admin (privados).
