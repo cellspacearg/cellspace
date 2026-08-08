@@ -165,8 +165,9 @@ Cada fase sigue el loop: analizar → implementar → conectar → probar (CRUD/
 ### Central Space — estado y problemas bien definidos
 - `[✓]` Datos existentes: 7 marcas, 17 categorías (con `min_role`). Faltan guías (0), dispositivos (0), tools (0).
 - `[~]` **Admin: publicación de guías** — nueva vista `admin/js/views/central.js` (`#/central`): crear/editar/publicar/eliminar guías con **estructura consistente** (título, resumen, marca, categoría, dificultad, método, advertencia, requisitos [lista], **pasos ordenados**, portada [subida a `cms-media`], badge, VIP, estado). Insert de datos verificado; modal + pasos/requisitos dinámicos verificados. Falta test logueado.
-- `[!]` **Problema 1 — Ficha de guía pública es un placeholder**: `js/central-space.js` muestra "La ficha de guía llega en la próxima etapa" en `#/g/{slug}`. Hay que renderizar la guía (pasos/requisitos/meta) para poder VER lo publicado. → siguiente paso.
-- `[!]` **Problema 2 — Secciones/categorías públicas "en construcción"**: `#/c/{slug}` también es placeholder.
+- `[~]` **Problema 1 — RESUELTO (a probar logueado): Ficha de guía pública**: `viewGuide()` en `js/central-space.js` renderiza la guía completa estilo screenshot con tu paleta — header + chips (marca/android/dificultad/método/vistas/rating/VIP), tabs (GUÍA/REQUISITOS/HERRAMIENTAS/ARCHIVOS/COMENTARIOS), pasos numerados, y sidebar (herramientas recomendadas, archivos, info del dispositivo, ticket de ayuda, tutoriales relacionados). Funciones definidas y sin error de carga; falta test logueado con una guía publicada.
+- `[~]` **Problema 2 — RESUELTO (a probar): Secciones/categorías públicas**: `viewCategory()` lista las guías publicadas de cada categoría (`#/c/{slug}`).
+- `[i]` **Disconnect Blog↔Central confirmado**: Blog escribe en `posts`, Central Space en `cs_guides`. Publicar en Blog nunca aparece en Central Space. Para guías técnicas usar `#/central`.
 - `[⚠]` **Problema 3 — Visibilidad**: RLS `cs_guides_read` exige `is_technician()`. Con 0 técnicos, las guías publicadas solo las ve el admin. Definir membresía FREE/VIP y `is_technician()` para los nuevos roles.
 - `[ ]` Admin de marcas/categorías/dispositivos/tools de Central Space (por ahora se editan por SQL; los dropdowns de guía ya usan marcas/categorías reales).
 
