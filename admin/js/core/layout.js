@@ -15,6 +15,7 @@ export const MENU = [
     { path: '#/services',   icon: 'fas fa-tools',      label: 'Servicios' },
     { path: '#/pages',      icon: 'fas fa-file-alt',   label: 'Páginas' },
     { path: '#/blog',       icon: 'fas fa-newspaper',  label: 'Blog' },
+    { path: '#/central',    icon: 'fas fa-screwdriver-wrench', label: 'Central Space' },
   ]},
   { group: 'Gestión', items: [
     { path: '#/orders',    icon: 'fas fa-shopping-cart', label: 'Pedidos', badgeId: 'ordersBadge' },

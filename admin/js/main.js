@@ -12,6 +12,7 @@ import { blogView, blogViewOnMount } from './views/blog.js';
 import { settingsView, settingsViewOnMount } from './views/settings.js';
 import { customersView, customersViewOnMount } from './views/customers.js';
 import { ordersView, ordersViewOnMount } from './views/orders.js';
+import { centralView, centralViewOnMount } from './views/central.js';
 import { notFoundView, notFoundViewOnMount } from './views/not-found.js';
 
 function showError(msg){
@@ -49,6 +50,7 @@ try {
     '/settings':   { component: settingsView,   onMount: settingsViewOnMount,   beforeEnter: auth },
     '/customers':  { component: customersView,  onMount: customersViewOnMount,  beforeEnter: auth },
     '/orders':     { component: ordersView,     onMount: ordersViewOnMount,     beforeEnter: auth },
+    '/central':    { component: centralView,    onMount: centralViewOnMount,    beforeEnter: auth },
     '/404':        { component: notFoundView,   onMount: notFoundViewOnMount,   beforeEnter: auth },
   };
 
