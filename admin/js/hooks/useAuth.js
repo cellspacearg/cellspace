@@ -16,14 +16,6 @@ export function initAuthListener() {
 // Login con email y contraseña
 export async function login(email, password) {
   try {
-    // Verificar que sea el admin correcto
-    if (email !== ADMIN_EMAIL) {
-      return {
-        success: false,
-        error: 'Este usuario no tiene permisos de administrador'
-      };
-    }
-
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
       password: password
@@ -32,7 +24,6 @@ export async function login(email, password) {
     if (error) {
       // Mensajes de error amigables
       let errorMessage = 'Error al iniciar sesión';
-      
       if (error.message.includes('Invalid login credentials')) {
         errorMessage = 'Email o contraseña incorrectos';
       } else if (error.message.includes('Email not confirmed')) {
@@ -40,34 +31,28 @@ export async function login(email, password) {
       } else {
         errorMessage = error.message;
       }
-
-      return {
-        success: false,
-        error: errorMessage
-      };
+      return { success: false, error: errorMessage };
     }
 
-    // Verificar que sea el admin
-    if (data.user.email !== ADMIN_EMAIL) {
-      await supabase.auth.signOut();
-      return {
-        success: false,
-        error: 'Este usuario no tiene permisos de administrador'
-      };
+    // Owner: acceso total, comportamiento intacto (ancla, sin lockout).
+    if (data.user.email === ADMIN_EMAIL) {
+      store.setState({ user: data.user });
+      return { success: true, user: data.user };
     }
 
-    store.setState({ user: data.user });
-    return {
-      success: true,
-      user: data.user
-    };
+    // Otros usuarios: requieren el permiso panel.access (RBAC).
+    const { loadPermissions, can } = await import('./usePermissions.js');
+    await loadPermissions(true);
+    if (can('panel.access')) {
+      store.setState({ user: data.user });
+      return { success: true, user: data.user };
+    }
+    await supabase.auth.signOut();
+    return { success: false, error: 'Tu usuario no tiene permisos para acceder al panel.' };
 
   } catch (error) {
     console.error('Error en login:', error);
-    return {
-      success: false,
-      error: 'Error de conexión. Intentalo de nuevo.'
-    };
+    return { success: false, error: 'Error de conexión. Intentalo de nuevo.' };
   }
 }
 
@@ -120,12 +105,24 @@ export async function logout() {
 // Verificar si hay sesión activa
 export async function checkSession() {
   const { data: { session } } = await supabase.auth.getSession();
-  
-  if (session && session.user.email === ADMIN_EMAIL) {
+  if (!session) { store.setState({ user: null }); return false; }
+
+  // Owner: siempre válido (ancla, sin lockout).
+  if (session.user.email === ADMIN_EMAIL) {
     store.setState({ user: session.user });
     return true;
   }
-  
+
+  // Otros: válidos solo si tienen panel.access.
+  try {
+    const { loadPermissions, can } = await import('./usePermissions.js');
+    await loadPermissions(true);
+    if (can('panel.access')) {
+      store.setState({ user: session.user });
+      return true;
+    }
+  } catch (e) { /* cae a no autorizado */ }
+
   store.setState({ user: null });
   return false;
 }

@@ -164,7 +164,8 @@ Cada fase sigue el loop: analizar → implementar → conectar → probar (CRUD/
 
 ### ERP
 - `[~]` **Pedidos** — vista nueva `admin/js/views/orders.js` (listado + filtros + detalle + cambio de estado + confirmar pago vía RPC `confirm_manual_payment`). Ruta `#/orders` registrada. CRUD de datos verificado (SELECT + UPDATE reales). Falta test logueado.
-- `[ ]` Reparaciones (+seguimiento público) · `[ ]` Inventario · `[ ]` Técnicos · `[ ]` Crédito técnicos · `[ ]` Proveedores · `[ ]` Promociones · `[ ]` Gastos · `[ ]` Reportes · `[ ]` Notificaciones · `[ ]` Auditoría · `[ ]` RBAC granular
+- `[~]` **RBAC granular** — DB verificada (tablas `permissions`+`role_permissions` con la matriz de 7 roles, `has_perm()`, `is_admin()` extendido). Frontend: `usePermissions.js` + gate del panel por `panel.access` (con ancla del owner). Falta test logueado multi-rol.
+- `[ ]` Reparaciones (+seguimiento público) · `[ ]` Inventario · `[ ]` Técnicos · `[ ]` Crédito técnicos · `[ ]` Proveedores · `[ ]` Promociones · `[ ]` Gastos · `[ ]` Reportes · `[ ]` Notificaciones · `[ ]` Auditoría
 
 ### Storage
 - `[✓]` Buckets creados y verificados: `cms-media` (público), `repair-media` (privado), `documents` (privado), además de `product-images` existente. Políticas: lectura pública + escritura admin (cms-media); solo admin (privados).
@@ -179,6 +180,13 @@ Cada fase sigue el loop: analizar → implementar → conectar → probar (CRUD/
 - `[~]` **Dashboard** conectado a datos reales (data-layer OK; falta test logueado).
 - `[✓]` Auditoría: los módulos CMS existentes son CRUD real sobre Supabase.
 - **Pendiente de prueba (dueño):** entrar al panel con el usuario admin y verificar Pedidos + Dashboard en vivo.
+
+**2026-08-08 — Fase B (RBAC granular):**
+- `[✓]` DB: `permissions` + `role_permissions` sembradas con la matriz aprobada de 7 roles.
+- `[✓]` `has_perm(key)` probada por rol (colaborador/administrador) simulando sesión; `is_admin()` extendido a super_admin/administrador. Guard anti-escalada reconfirmado.
+- `[✓]` RLS: `role_permissions`/`permissions` legibles solo por autenticados (anon = 0 filas); escritura solo super_admin.
+- `[~]` Frontend: `admin/js/hooks/usePermissions.js` (`can()`), gate `login()`/`checkSession()` por `panel.access` con ancla del owner (sin lockout). Falta test logueado con un usuario no-owner.
+- **Roles válidos:** super_admin, administrador, colaborador, vip_tech, tecnico_verificado, tecnico, cliente.
 
 ### Cuenta cliente
 - `[~]` Perfil (existe `perfil.html`) · `[ ]` Mis pedidos · `[ ]` Mis reparaciones · `[ ]` Presupuestos/pagos/garantías
