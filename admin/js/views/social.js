@@ -1,5 +1,5 @@
-import { supabase } from '../config.js?v=cb20';
-import { layout, mountLayout } from '../core/layout.js?v=cb20';
+import { supabase } from '../config.js?v=cb21';
+import { layout, mountLayout } from '../core/layout.js?v=cb21';
 
 /* ============================================================
    GENERADOR DE REDES — placas de productos para Instagram/Facebook
@@ -36,6 +36,11 @@ const state = {
   },
 };
 let audioFile = null;  // pista de música elegida por el usuario (File)
+// Elementos (stickers) que el usuario coloca libremente sobre la placa
+let stickers = [];      // { icon?|img?, x, y, scale, baseSize, color }
+let selSticker = null;
+let stickerCanvas = null;
+const TECH_STICKERS = ['chip','cpu','wifi','signal','bolt','hexagon','gear','circuit','orb','star'];
 
 /* ============================================================
    CATÁLOGO DE PLANTILLAS ESTÁTICAS (31)
@@ -262,6 +267,18 @@ export async function socialView(){
             <input type="text" id="sgIg" class="sg-input" value="cellspacearg">
           </div>
 
+          <div class="sg-card">
+            <label class="sg-lbl">Elementos (arrastralos en la vista)</label>
+            <div class="sg-icons" id="sgTechIcons"></div>
+            <input type="file" id="sgStickerImg" accept="image/png,image/*" class="sg-input" style="padding:8px;margin-top:8px;">
+            <span style="font-size:11.5px;color:#777;">Subí un PNG (mejor con fondo transparente, ej: un 3D de Freepik).</span>
+            <div id="sgStickerCtl" style="display:none;margin-top:10px;">
+              <label class="sg-lbl">Tamaño del elemento</label>
+              <input type="range" id="sgStickerSize" min="30" max="260" value="100" style="width:100%;">
+              <button type="button" class="btn-secondary" id="sgStickerDel" style="width:100%;padding:8px;font-size:13px;margin-top:6px;color:#ff6b6b;"><i class="fas fa-trash"></i> Quitar elemento</button>
+            </div>
+          </div>
+
           <button class="btn-primary sg-dl" id="sgDownload"><i class="fas fa-download"></i> <span id="sgDlText">Descargar PNG</span></button>
         </div>
 
@@ -295,6 +312,24 @@ export function socialViewOnMount(){
   document.getElementById('sgMotion').addEventListener('change', e => { state.opts.motion = e.target.value; renderPreview(); });
   document.getElementById('sgAudio').addEventListener('change', e => { audioFile = e.target.files[0] || null; document.getElementById('sgAudioName').textContent = audioFile ? '♪ ' + audioFile.name : ''; });
   document.getElementById('sgOutro').addEventListener('change', e => { state.opts.outro = e.target.checked; renderPreview(); });
+  // Elementos / stickers
+  const iconsBox = document.getElementById('sgTechIcons');
+  iconsBox.innerHTML = TECH_STICKERS.map(n => `<button class="sg-ic" data-ic="${n}" title="${n}"></button>`).join('') ;
+  iconsBox.querySelectorAll('.sg-ic').forEach(b => {
+    const c = document.createElement('canvas'); c.width = c.height = 40; drawIcon(c.getContext('2d'), b.dataset.ic, 20, 20, 22, '#ff9d2e'); b.style.backgroundImage = `url(${c.toDataURL()})`;
+    b.addEventListener('click', () => addSticker({ icon: b.dataset.ic }));
+  });
+  document.getElementById('sgStickerImg').addEventListener('change', e => {
+    const f = e.target.files[0]; if (!f) return;
+    const img = new Image(); img.onload = () => addSticker({ img }); img.src = URL.createObjectURL(f);
+  });
+  document.getElementById('sgStickerSize').addEventListener('input', e => {
+    if (selSticker){ selSticker.scale = Number(e.target.value) / 100; if (stickerCanvas) redrawStickers(stickerCanvas); }
+  });
+  document.getElementById('sgStickerDel').addEventListener('click', () => {
+    if (selSticker){ stickers = stickers.filter(s => s !== selSticker); selSticker = null; updateStickerUI(); if (stickerCanvas) redrawStickers(stickerCanvas); }
+  });
+
   document.getElementById('sgCopyVP').addEventListener('click', () => {
     const ta = document.getElementById('sgVPrompt');
     navigator.clipboard?.writeText(ta.value).catch(() => { ta.select(); document.execCommand('copy'); });
@@ -415,6 +450,11 @@ async function renderPreview(){
     canvas.className = 'sg-canvas';
     canvas.dataset.slide = String(i + 1);
     drawSlide(canvas, ep, state.size, slides[i], photo);
+    if (state.mode === 'single' && slides[i] === 'full'){
+      const base = document.createElement('canvas'); base.width = canvas.width; base.height = canvas.height;
+      base.getContext('2d').drawImage(canvas, 0, 0); canvas.__base = base;
+      stickerCanvas = canvas; drawStickers(canvas.getContext('2d'), canvas.width, canvas.height); wireStickerDrag(canvas);
+    }
     const box = document.createElement('div');
     box.className = 'sg-canvas-box';
     box.appendChild(canvas);
@@ -427,6 +467,57 @@ async function renderPreview(){
   }
   cont.innerHTML = '';
   cont.appendChild(frag);
+}
+
+/* ---------- elementos / stickers ---------- */
+function addSticker(def){
+  const W = stickerCanvas ? stickerCanvas.width : 1080;
+  const s = Object.assign({ x: W / 2, y: (stickerCanvas ? stickerCanvas.height : 1350) * 0.4, scale: 1, baseSize: W * 0.2, color: C.a }, def);
+  stickers.push(s); selSticker = s;
+  updateStickerUI();
+  if (stickerCanvas) redrawStickers(stickerCanvas);
+}
+function stickerSize(s, W){ return (s.baseSize || W * 0.2) * s.scale; }
+function drawStickers(ctx, W, H){
+  stickers.forEach(s => {
+    const size = stickerSize(s, W);
+    if (s.img){
+      const r = s.img.width / s.img.height; const w = size, h = size / r;
+      ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = size * 0.12; ctx.drawImage(s.img, s.x - w / 2, s.y - h / 2, w, h); ctx.restore();
+      s._w = w; s._h = h;
+    } else if (s.icon){
+      ctx.save(); ctx.shadowColor = rgba(s.color || C.a, 0.6); ctx.shadowBlur = size * 0.15; drawIcon(ctx, s.icon, s.x, s.y, size, s.color || C.a); ctx.restore();
+      s._w = size; s._h = size;
+    }
+    if (s === selSticker){ ctx.save(); ctx.strokeStyle = C.a; ctx.lineWidth = 3; ctx.setLineDash([12, 9]);
+      ctx.strokeRect(s.x - (s._w || size) / 2 - 6, s.y - (s._h || size) / 2 - 6, (s._w || size) + 12, (s._h || size) + 12); ctx.restore(); }
+  });
+}
+function redrawStickers(canvas){
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (canvas.__base) ctx.drawImage(canvas.__base, 0, 0);
+  drawStickers(ctx, canvas.width, canvas.height);
+}
+function wireStickerDrag(canvas){
+  const toC = e => { const r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left) * (canvas.width / r.width), y: (e.clientY - r.top) * (canvas.height / r.height) }; };
+  let dragging = null, off = { x: 0, y: 0 };
+  canvas.style.cursor = stickers.length ? 'grab' : 'default';
+  canvas.onpointerdown = e => {
+    const p = toC(e); dragging = null;
+    for (let i = stickers.length - 1; i >= 0; i--){ const s = stickers[i]; const w = s._w || stickerSize(s, canvas.width), h = s._h || stickerSize(s, canvas.width);
+      if (Math.abs(p.x - s.x) < w / 2 + 10 && Math.abs(p.y - s.y) < h / 2 + 10){ dragging = s; selSticker = s; off = { x: p.x - s.x, y: p.y - s.y }; break; } }
+    if (!dragging && selSticker){ selSticker = null; }
+    canvas.style.cursor = dragging ? 'grabbing' : 'grab';
+    updateStickerUI(); redrawStickers(canvas);
+  };
+  canvas.onpointermove = e => { if (!dragging) return; const p = toC(e); dragging.x = p.x - off.x; dragging.y = p.y - off.y; redrawStickers(canvas); };
+  canvas.onpointerup = canvas.onpointerleave = () => { dragging = null; canvas.style.cursor = stickers.length ? 'grab' : 'default'; };
+}
+function updateStickerUI(){
+  const ctl = document.getElementById('sgStickerCtl'); if (!ctl) return;
+  if (selSticker){ ctl.style.display = 'block'; document.getElementById('sgStickerSize').value = Math.round(selSticker.scale * 100); }
+  else ctl.style.display = 'none';
 }
 
 /* ---------- animación ---------- */
@@ -652,11 +743,14 @@ async function downloadAll(){
   const canvases = document.querySelectorAll('#sgPreview canvas');
   if (!canvases.length) return;
   const base = slug(product.name) + '-' + state.size;
+  const keepSel = selSticker; selSticker = null;              // no exportar el marco de selección
   for (let i = 0; i < canvases.length; i++){
+    if (canvases[i].__base) redrawStickers(canvases[i]);
     const suffix = canvases.length > 1 ? '-' + (i + 1) : '';
     await downloadCanvas(canvases[i], base + suffix + '.png');
     await new Promise(r => setTimeout(r, 250));
   }
+  selSticker = keepSel; if (stickerCanvas && stickerCanvas.__base) redrawStickers(stickerCanvas);
 }
 
 function downloadCanvas(canvas, filename){
@@ -1578,6 +1672,30 @@ function drawIcon(ctx, name, cx, cy, s, color){
     case 'whatsapp':
       ctx.beginPath(); ctx.arc(0,0,u*0.85,0,Math.PI*2); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(-u*0.3,-u*0.25); ctx.quadraticCurveTo(-u*0.1,u*0.45,u*0.4,u*0.35); ctx.lineTo(u*0.15,u*0.1); ctx.stroke(); break;
+    case 'chip':
+      R(-u*0.7,-u*0.7,u*1.4,u*1.4,u*0.15); ctx.stroke();
+      R(-u*0.35,-u*0.35,u*0.7,u*0.7,u*0.08); ctx.stroke();
+      for(let i=-1;i<=1;i++){ ctx.beginPath(); ctx.moveTo(i*u*0.4,-u*0.7); ctx.lineTo(i*u*0.4,-u); ctx.moveTo(i*u*0.4,u*0.7); ctx.lineTo(i*u*0.4,u); ctx.moveTo(-u*0.7,i*u*0.4); ctx.lineTo(-u,i*u*0.4); ctx.moveTo(u*0.7,i*u*0.4); ctx.lineTo(u,i*u*0.4); ctx.stroke(); }
+      break;
+    case 'cpu':
+      R(-u*0.75,-u*0.75,u*1.5,u*1.5,u*0.12); ctx.stroke();
+      ctx.font=`800 ${Math.round(s*0.35)}px Montserrat, Arial`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('AI',0,0); ctx.textBaseline='alphabetic'; break;
+    case 'wifi':
+      for(let i=1;i<=3;i++){ ctx.beginPath(); ctx.arc(0,u*0.55,u*0.32*i,Math.PI*1.25,Math.PI*1.75); ctx.stroke(); }
+      ctx.beginPath(); ctx.arc(0,u*0.55,u*0.06,0,Math.PI*2); ctx.fill(); break;
+    case 'signal':
+      for(let i=0;i<4;i++){ const h2=u*(0.4+i*0.35); R(-u*0.8+i*u*0.5, u*0.7-h2, u*0.28, h2, u*0.04); ctx.fill(); } break;
+    case 'hexagon':
+      ctx.beginPath(); for(let i=0;i<6;i++){ const a=Math.PI/3*i-Math.PI/6; const x=Math.cos(a)*u*0.9,y=Math.sin(a)*u*0.9; i?ctx.lineTo(x,y):ctx.moveTo(x,y);} ctx.closePath(); ctx.stroke(); break;
+    case 'gear':
+      ctx.beginPath(); for(let i=0;i<16;i++){ const rr=i%2?u*0.9:u*0.65; const a=Math.PI/8*i; const x=Math.cos(a)*rr,y=Math.sin(a)*rr; i?ctx.lineTo(x,y):ctx.moveTo(x,y);} ctx.closePath(); ctx.stroke(); ctx.beginPath(); ctx.arc(0,0,u*0.32,0,Math.PI*2); ctx.stroke(); break;
+    case 'circuit':
+      ctx.beginPath(); ctx.moveTo(-u,0); ctx.lineTo(-u*0.3,0); ctx.lineTo(0,-u*0.5); ctx.lineTo(u*0.5,-u*0.5); ctx.moveTo(-u*0.3,0); ctx.lineTo(u,0); ctx.stroke();
+      [[-u,0],[u*0.5,-u*0.5],[u,0]].forEach(([x,y])=>{ctx.beginPath();ctx.arc(x,y,u*0.12,0,Math.PI*2);ctx.fill();}); break;
+    case 'orb':
+      ctx.save(); const og=ctx.createRadialGradient(-u*0.2,-u*0.2,0,0,0,u); og.addColorStop(0,color); og.addColorStop(1,rgba(color,0.1)); ctx.fillStyle=og; ctx.beginPath(); ctx.arc(0,0,u*0.9,0,Math.PI*2); ctx.fill(); ctx.restore(); break;
+    case 'star':
+      ctx.beginPath(); for(let i=0;i<8;i++){ const rr=i%2?u:u*0.4; const a=Math.PI/4*i-Math.PI/2; const x=Math.cos(a)*rr,y=Math.sin(a)*rr; i?ctx.lineTo(x,y):ctx.moveTo(x,y);} ctx.closePath(); ctx.fill(); break;
     default:
       ctx.beginPath(); ctx.arc(0,0,u*0.7,0,Math.PI*2); ctx.stroke();
   }
@@ -1665,6 +1783,9 @@ function injectStyles(){
   .sg-size.on{border-color:#ff6a00;background:rgba(255,106,0,0.08);}
   .sg-size-name{font-weight:700;font-size:14px;}
   .sg-size-sub{font-size:11px;color:#888;}
+  .sg-icons{display:flex;gap:8px;flex-wrap:wrap;}
+  .sg-ic{width:40px;height:40px;border-radius:9px;border:1px solid #2c2c2c;background:#0f0f0f center/26px no-repeat;cursor:pointer;padding:0;}
+  .sg-ic:hover{border-color:#ff6a00;transform:scale(1.08);}
   .sg-themes{display:flex;gap:9px;flex-wrap:wrap;}
   .sg-theme{width:30px;height:30px;border-radius:8px;border:2px solid transparent;cursor:pointer;padding:0;transition:transform .1s;}
   .sg-theme:hover{transform:scale(1.1);}
