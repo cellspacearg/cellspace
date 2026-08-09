@@ -1,6 +1,6 @@
-import { supabase } from '../config.js?v=cb11';
-import { store } from '../core/state.js?v=cb11';
-import { layout, mountLayout, toolbar, emptyState } from '../core/layout.js?v=cb11';
+import { supabase } from '../config.js?v=cb12';
+import { store } from '../core/state.js?v=cb12';
+import { layout, mountLayout, toolbar, emptyState } from '../core/layout.js?v=cb12';
 
 let techs = [];
 let movements = [];       // todos los movimientos

@@ -217,6 +217,12 @@ Cada fase sigue el loop: analizar → implementar → conectar → probar (CRUD/
 - **Pendiente de prueba (dueño):** entrar logueado y verificar que Auditoría muestre los cambios y que Notificaciones liste los pedidos/reparaciones nuevos.
 - Con esto quedan cubiertos los 18 módulos del ERP.
 
+**2026-08-09 — Generador de redes (placas para Instagram/Facebook):**
+- `[~]` Admin `#/social`: genera placas de producto con datos reales (nombre, precio, precio anterior, transferencia, cuotas, batería, garantía, condición) en 3 tamaños — Cuadrado 1080×1080, Retrato 1080×1350, Historia 1080×1920 — cada uno con su propia composición (no el mismo diseño estirado). Modo "Placa única" o "Carrusel" (3 slides: portada / detalles / contacto). Sello opcional (ej. OFERTA), WhatsApp y web editables. Motor 100% Canvas (sin librerías), descarga PNG local — no publica solo.
+- Verificado visualmente (capturas reales, no solo lectura de código): se detectó y corrigió un choque real entre los chips (usado/batería/garantía) y el precio de transferencia/cuotas en el formato cuadrado cuando el producto trae mucha info; ahora el cuadrado usa una composición compacta dedicada y los chips se ubican dinámicamente después del precio, nunca a una posición fija.
+- Ruteado en `main.js` + menú (grupo Contenido). Cache-busting `cb12`. Panel bootea sin errores de consola.
+- Fuera de alcance de este build (posible fase futura): auto-publicar en Instagram/Facebook requiere la API de Meta (cuenta Business + revisión de app) — por ahora es descarga manual, tal como pidió el dueño. Texto/copy con IA para la publicación: no incluido (requeriría una API key de IA aparte).
+
 **2026-08-09 — Config Supabase (email + OAuth):**
 - `[✓]` **Emails de auth (OTP login + registro):** resuelto. Causa: el email incorporado de Supabase no entregaba a Gmail (200 OK pero sin delivery). Solución: **SMTP propio con Resend** (dominio `cellspacearg.com.ar` verificado por DKIM/DNS vía Cloudflare; sender `noreply@cellspacearg.com.ar`; host `smtp.resend.com:465`). Verificado: código de login llega al Gmail del dueño. Nota: los emails de *confirmación de pedido* siguen por **EmailJS** (client-side), son un canal aparte.
 - `[✓]` **Largo del código OTP:** el código llegaba de 8 dígitos pero la UI (`login.html`/`register-client.html`) tiene 6 casilleros. Corregido bajando **Email OTP Length = 6** en Supabase (Authentication → Providers → Email). Verificado: llega de 6 y encaja con la UI.

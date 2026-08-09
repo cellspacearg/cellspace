@@ -2,7 +2,7 @@
 // LAYOUT COMPARTIDO DEL PANEL
 // Todas las vistas lo usan: dejan de repetir sidebar/topbar/footer
 // ============================================================
-import { store } from './state.js?v=cb11';
+import { store } from './state.js?v=cb12';
 
 /* Menú en un solo lugar. Agregás un ítem acá y aparece en todo el panel. */
 export const MENU = [
@@ -16,6 +16,7 @@ export const MENU = [
     { path: '#/pages',      icon: 'fas fa-file-alt',   label: 'Páginas' },
     { path: '#/central',    icon: 'fas fa-screwdriver-wrench', label: 'Central Space' },
     { path: '#/promotions', icon: 'fas fa-percent',     label: 'Promociones' },
+    { path: '#/social',     icon: 'fas fa-share-nodes',  label: 'Generador redes' },
   ]},
   { group: 'Gestión', items: [
     { path: '#/orders',    icon: 'fas fa-shopping-cart', label: 'Pedidos', badgeId: 'ordersBadge' },
@@ -151,7 +152,7 @@ export async function refreshNotifBadge(){
   const el = document.getElementById('notifBadge');
   if (!el) return;
   try {
-    const { supabase } = await import('../config.js?v=cb11');
+    const { supabase } = await import('../config.js?v=cb12');
     const { count, error } = await supabase
       .from('notifications').select('id', { count: 'exact', head: true }).eq('is_read', false);
     if (error) return;
