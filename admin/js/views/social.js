@@ -1,5 +1,5 @@
-import { supabase } from '../config.js?v=cb14';
-import { layout, mountLayout } from '../core/layout.js?v=cb14';
+import { supabase } from '../config.js?v=cb15';
+import { layout, mountLayout } from '../core/layout.js?v=cb15';
 
 /* ============================================================
    GENERADOR DE REDES — placas de productos para Instagram/Facebook
@@ -23,12 +23,60 @@ const state = {
   size: 'portrait',
   mode: 'single',            // single | carousel
   category: 'usados',
+  template: 'product-hero',
   opts: {
     transfer: true, battery: true, warranty: true, oldPrice: true,
     hotSale: false, currency: 'ARS', theme: 'naranja',
     badge: '', whatsapp: '', web: 'cellspacearg.com.ar', instagram: 'cellspacearg',
+    // overrides editables (vacío = usa el dato del producto)
+    titleOv: '', taglineOv: '', priceOv: '', discountPct: '', ctaOv: '',
   },
 };
+
+/* ============================================================
+   CATÁLOGO DE PLANTILLAS ESTÁTICAS (31)
+   Cada una define una COMPOSICIÓN (archetipo) distinta + parámetros.
+   Los archetipos son composiciones realmente diferentes (no recolores).
+   ============================================================ */
+const TEMPLATES = [
+  // Producto
+  { id:'product-hero',  name:'Product Hero',      group:'Producto', arc:'hero',      p:{ callouts:true, bottom:true } },
+  { id:'premium',       name:'Premium Product',   group:'Producto', arc:'spotlight', p:{ tag:'PREMIUM' } },
+  { id:'product-card',  name:'Product Card',      group:'Producto', arc:'minimal',   p:{} },
+  { id:'product-specs', name:'Product Grid',      group:'Producto', arc:'spec',      p:{} },
+  { id:'new-arrival',   name:'New Arrival',       group:'Producto', arc:'hero',      p:{ tag:'NUEVO INGRESO', callouts:false, bottom:true } },
+  { id:'smartphone',    name:'Smartphone',        group:'Producto', arc:'hero',      p:{ callouts:true, bottom:false } },
+  { id:'android',       name:'Android',           group:'Producto', arc:'minimal',   p:{ tag:'ANDROID' } },
+  { id:'accesorios',    name:'Accesorios',        group:'Producto', arc:'minimal',   p:{ tag:'ACCESORIO' } },
+  { id:'fundas',        name:'Fundas',            group:'Producto', arc:'minimal',   p:{ tag:'FUNDA' } },
+  { id:'smartwatch',    name:'Smartwatch',        group:'Producto', arc:'spotlight', p:{ tag:'SMARTWATCH', circle:true } },
+  { id:'notebook',      name:'Notebook / PC',     group:'Producto', arc:'spec',      p:{ wide:true } },
+  { id:'consolas',      name:'Consolas',          group:'Producto', arc:'spotlight', p:{ tag:'GAMING' } },
+  // Ofertas
+  { id:'hot-sale',      name:'Hot Sale',          group:'Ofertas',  arc:'sale',      p:{ sale:'HOT SALE',     bg:'rays' } },
+  { id:'flash-sale',    name:'Flash Sale',        group:'Ofertas',  arc:'sale',      p:{ sale:'FLASH SALE',   bg:'diag' } },
+  { id:'cyber',         name:'Cyber Sale',        group:'Ofertas',  arc:'sale',      p:{ sale:'CYBER MONDAY', bg:'cyber' } },
+  { id:'black-friday',  name:'Black Friday',      group:'Ofertas',  arc:'sale',      p:{ sale:'BLACK FRIDAY', bg:'dark', mono:true } },
+  { id:'liquidacion',   name:'Liquidación',       group:'Ofertas',  arc:'sale',      p:{ sale:'LIQUIDACIÓN',  bg:'rays' } },
+  { id:'price-drop',    name:'Price Drop',        group:'Ofertas',  arc:'sale',      p:{ sale:'BAJÓ DE PRECIO', bg:'diag' } },
+  { id:'promo',         name:'Promoción',         group:'Ofertas',  arc:'sale',      p:{ sale:'PROMO',        bg:'diag' } },
+  { id:'comparacion',   name:'Comparación',       group:'Ofertas',  arc:'spec',      p:{ compare:true } },
+  // Servicio
+  { id:'servicio',      name:'Servicio Técnico',  group:'Servicio', arc:'service',   p:{ icon:'wrench', title:'SERVICIO TÉCNICO' } },
+  { id:'reparacion',    name:'Reparación',        group:'Servicio', arc:'service',   p:{ icon:'shield', title:'REPARACIÓN EXPRESS' } },
+  { id:'antes-despues', name:'Antes / Después',   group:'Servicio', arc:'service',   p:{ icon:'seal', title:'ANTES / DESPUÉS' } },
+  // Software / Tools
+  { id:'licencia',      name:'Licencia',          group:'Software', arc:'card',      p:{ kind:'LICENCIA' } },
+  { id:'activacion',    name:'Activación',        group:'Software', arc:'card',      p:{ kind:'ACTIVACIÓN' } },
+  { id:'tool',          name:'Tool / Herramienta',group:'Software', arc:'card',      p:{ kind:'HERRAMIENTA' } },
+  { id:'servidor',      name:'Servidor / Créditos',group:'Software',arc:'card',      p:{ kind:'CRÉDITOS' } },
+  { id:'software',      name:'Software',          group:'Software', arc:'card',      p:{ kind:'SOFTWARE' } },
+  // Institucional
+  { id:'comunicado',    name:'Comunicado',        group:'Institucional', arc:'editorial', p:{ eyebrow:'COMUNICADO' } },
+  { id:'central-space', name:'Central Space',     group:'Institucional', arc:'editorial', p:{ eyebrow:'CENTRAL SPACE' } },
+  { id:'ai-custom',     name:'AI Custom',         group:'Institucional', arc:'editorial', p:{ eyebrow:'CELL SPACE' } },
+];
+function currentTpl(){ return TEMPLATES.find(t => t.id === state.template) || TEMPLATES[0]; }
 
 // Rubros: cada uno ajusta el eyebrow y la lista de 3 features (ícono + 2 líneas).
 // Placeholders: {bat}=batería, {war}=garantía. Se resuelven con datos reales.
@@ -66,6 +114,25 @@ export async function socialView(){
             <select id="sgCategory" class="sg-input sg-select">
               ${Object.entries(CATEGORIES).map(([k, c]) => `<option value="${k}" ${k === state.category ? 'selected' : ''}>${c.label}</option>`).join('')}
             </select>
+          </div>
+
+          <div class="sg-card">
+            <label class="sg-lbl">Plantilla (${TEMPLATES.length})</label>
+            <select id="sgTemplate" class="sg-input sg-select">
+              ${[...new Set(TEMPLATES.map(t => t.group))].map(g =>
+                `<optgroup label="${g}">${TEMPLATES.filter(t => t.group === g).map(t => `<option value="${t.id}" ${t.id === state.template ? 'selected' : ''}>${t.name}</option>`).join('')}</optgroup>`).join('')}
+            </select>
+          </div>
+
+          <div class="sg-card">
+            <label class="sg-lbl">Textos (dejar vacío = automático)</label>
+            <input type="text" id="sgTitleOv" class="sg-input" placeholder="Título (ej: IPHONE 11)">
+            <input type="text" id="sgTaglineOv" class="sg-input" placeholder="Bajada / subtítulo">
+            <div style="display:flex;gap:8px;">
+              <input type="text" id="sgPriceOv" class="sg-input" placeholder="Precio (ej: 380000)" style="flex:2;">
+              <input type="text" id="sgDiscount" class="sg-input" placeholder="% desc" style="flex:1;">
+            </div>
+            <input type="text" id="sgCtaOv" class="sg-input" placeholder="CTA (ej: COMPRAR AHORA)">
           </div>
 
           <div class="sg-card">
@@ -130,6 +197,9 @@ export function socialViewOnMount(){
   document.getElementById('sgSearch').addEventListener('input', filterProducts);
   document.getElementById('sgProduct').addEventListener('change', e => { state.productId = e.target.value; renderPreview(); });
   document.getElementById('sgCategory').addEventListener('change', e => { state.category = e.target.value; renderPreview(); });
+  document.getElementById('sgTemplate').addEventListener('change', e => { state.template = e.target.value; renderPreview(); });
+  const ov = (id, key) => document.getElementById(id).addEventListener('input', e => { state.opts[key] = e.target.value; renderPreview(); });
+  ov('sgTitleOv', 'titleOv'); ov('sgTaglineOv', 'taglineOv'); ov('sgPriceOv', 'priceOv'); ov('sgDiscount', 'discountPct'); ov('sgCtaOv', 'ctaOv');
   document.querySelectorAll('.sg-mode[data-mode]').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('.sg-mode[data-mode]').forEach(x => x.classList.remove('on'));
     b.classList.add('on'); state.mode = b.dataset.mode; updateDlText(); renderPreview();
@@ -219,6 +289,7 @@ async function renderPreview(){
   cont.innerHTML = '<div class="sg-loading"><i class="fas fa-spinner fa-spin"></i> Armando placa...</div>';
 
   const photo = await loadImage(product.image_url).catch(() => null);
+  const ep = effProduct(product);
   const frag = document.createElement('div');
   frag.className = 'sg-canvases';
 
@@ -228,7 +299,7 @@ async function renderPreview(){
     canvas.width = s.w; canvas.height = s.h;
     canvas.className = 'sg-canvas';
     canvas.dataset.slide = String(i + 1);
-    drawSlide(canvas, product, state.size, slides[i], photo);
+    drawSlide(canvas, ep, state.size, slides[i], photo);
     const box = document.createElement('div');
     box.className = 'sg-canvas-box';
     box.appendChild(canvas);
@@ -295,24 +366,54 @@ function paletteFor(name){
 function hexToRgb(h){ h=String(h).replace('#',''); if(h.length===3) h=h.split('').map(c=>c+c).join(''); const n=parseInt(h,16); return [n>>16&255, (n>>8)&255, n&255]; }
 function rgba(hex, a){ const [r,g,b]=hexToRgb(hex); return `rgba(${r},${g},${b},${a})`; }
 
+const ARCHETYPES = {
+  hero: drawPoster, sale: drawArcSale, minimal: drawArcMinimal, spec: drawArcSpec,
+  card: drawArcCard, service: drawArcService, editorial: drawArcEditorial, spotlight: drawArcSpotlight,
+};
+
 function drawSlide(canvas, p, sizeKey, slide, photo){
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
   const pad = Math.round(W * 0.07);
   C = paletteFor(state.opts.theme);
 
+  // Placa única → plantilla elegida (cada archetipo dibuja su placa completa)
+  if (slide === 'full'){
+    const tpl = currentTpl();
+    (ARCHETYPES[tpl.arc] || drawPoster)(ctx, W, H, pad, p, sizeKey, photo, tpl.p || {});
+    return;
+  }
+  // Carrusel: portada / detalles / contacto
   drawTechBackground(ctx, W, H, sizeKey);
-  drawHeader(ctx, W, pad, slide === 'full' || slide === 'hero');
-
+  drawHeader(ctx, W, pad, slide === 'hero');
   if (slide === 'cta'){ drawCta(ctx, W, H, pad, p); drawFooter(ctx, W, H, pad); return; }
   if (slide === 'specs'){ drawSpecs(ctx, W, H, pad, p, sizeKey === 'story'); drawFooter(ctx, W, H, pad); return; }
-
-  drawPoster(ctx, W, H, pad, p, sizeKey, photo);
+  drawHeroContent(ctx, W, H, pad, p, sizeKey, photo, { callouts:true, bottom:true });
   drawFooter(ctx, W, H, pad);
 }
 
-/* ---------- POSTER (estilo referencia) ---------- */
-function drawPoster(ctx, W, H, pad, p, sizeKey, photo){
+// aplica overrides editables sobre el producto
+function effProduct(p){
+  const o = state.opts, e = Object.assign({}, p);
+  if (o.titleOv && o.titleOv.trim()) e.name = o.titleOv.trim();
+  if (o.taglineOv && o.taglineOv.trim()) e.tagline = o.taglineOv.trim();
+  if (o.priceOv && String(o.priceOv).trim()){ const n = Number(String(o.priceOv).replace(/[^\d]/g, '')); if (n) e.price = n; }
+  if (o.discountPct && String(o.discountPct).trim()){
+    const pct = parseFloat(String(o.discountPct).replace(/[^\d.]/g, ''));
+    if (pct > 0 && pct < 100) e.old_price = Math.round((Number(e.price) || 0) / (1 - pct/100));
+  }
+  if (o.ctaOv && o.ctaOv.trim()) e.cta = o.ctaOv.trim();
+  return e;
+}
+
+/* ---------- ARCHETIPO: HERO (estilo referencia) ---------- */
+function drawPoster(ctx, W, H, pad, p, sizeKey, photo, tp){
+  drawTechBackground(ctx, W, H, sizeKey);
+  drawHeader(ctx, W, pad, true);
+  drawHeroContent(ctx, W, H, pad, p, sizeKey, photo, tp || {});
+  drawFooter(ctx, W, H, pad);
+}
+function drawHeroContent(ctx, W, H, pad, p, sizeKey, photo, tp){
   const story = sizeKey === 'story', square = sizeKey === 'square';
   const cat = CATEGORIES[state.category] || CATEGORIES.otros;
 
@@ -454,10 +555,43 @@ function drawDots(ctx, cx, y, W){
 }
 
 /* ---------- fondo ---------- */
-function drawTechBackground(ctx, W, H, sizeKey){
+function drawTechBackground(ctx, W, H, sizeKey, bg){
+  // base
   const g = ctx.createLinearGradient(0, 0, W*0.3, H);
   g.addColorStop(0, C.bg0); g.addColorStop(1, C.bg1);
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+  if (bg === 'dark'){ // negro casi puro (Black Friday)
+    ctx.fillStyle = '#050506'; ctx.fillRect(0,0,W,H);
+    radialBlob(ctx, W*0.5, H*0.35, W*0.8, rgba(C.a, 0.12));
+    return;
+  }
+  if (bg === 'rays'){ // rayos de luz desde arriba
+    radialBlob(ctx, W*0.5, -H*0.05, W*1.0, rgba(C.a, 0.20));
+    ctx.save(); ctx.globalAlpha = 0.5;
+    for (let i=0;i<7;i++){ const a = -Math.PI/2 + (i-3)*0.22; ctx.strokeStyle = rgba(i%2? C.b : C.a, 0.10); ctx.lineWidth = W*0.02;
+      ctx.beginPath(); ctx.moveTo(W*0.5, -H*0.02); ctx.lineTo(W*0.5 + Math.cos(a)*H, H*0.02 + Math.sin(a)*H*1.4); ctx.stroke(); }
+    ctx.restore();
+    radialBlob(ctx, W*0.5, H*0.5, W*0.6, rgba(C.b, 0.08));
+    return;
+  }
+  if (bg === 'diag'){ // franja diagonal de color
+    ctx.save(); ctx.beginPath(); ctx.moveTo(0, H); ctx.lineTo(W, H*0.35); ctx.lineTo(W, H); ctx.closePath();
+    const dg = ctx.createLinearGradient(0,H,W,H*0.35); dg.addColorStop(0, rgba(C.a,0.9)); dg.addColorStop(1, rgba(C.a2,0.7));
+    ctx.fillStyle = dg; ctx.fill(); ctx.restore();
+    radialBlob(ctx, W*0.75, H*0.2, W*0.7, rgba(C.b, 0.14));
+    return;
+  }
+  if (bg === 'cyber'){ // grilla neón densa
+    ctx.save(); ctx.strokeStyle = rgba(C.b, 0.10); ctx.lineWidth = 1; const gs = Math.round(W*0.06);
+    for (let x=0;x<=W;x+=gs){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+    for (let yy=0;yy<=H;yy+=gs){ ctx.beginPath(); ctx.moveTo(0,yy); ctx.lineTo(W,yy); ctx.stroke(); }
+    ctx.restore();
+    radialBlob(ctx, W*0.5, H*0.3, W*0.85, rgba(C.a, 0.16));
+    radialBlob(ctx, W*0.5, H*0.9, W*0.7, rgba(C.b, 0.14));
+    return;
+  }
+  // default: puntos + blobs + barra de acento
   ctx.save();
   ctx.fillStyle = 'rgba(255,255,255,0.04)';
   const step = Math.round(W*0.05), r = Math.max(1, W*0.0015);
@@ -469,6 +603,236 @@ function drawTechBackground(ctx, W, H, sizeKey){
   const lg = ctx.createLinearGradient(0,0,W,0);
   lg.addColorStop(0, rgba(C.a,0)); lg.addColorStop(0.5, rgba(C.a,0.5)); lg.addColorStop(1, rgba(C.b,0.4));
   ctx.fillStyle = lg; ctx.fillRect(0, 0, W, Math.max(3, H*0.004)); ctx.restore();
+}
+
+/* ============================================================
+   ARCHETIPOS ADICIONALES (composiciones distintas)
+   ============================================================ */
+
+// starburst (sello dentado) para ofertas
+function drawStarburst(ctx, cx, cy, r, spikes, color){
+  ctx.save(); ctx.beginPath();
+  for (let i=0;i<spikes*2;i++){ const rr = i%2 ? r : r*0.82; const a = (Math.PI/spikes)*i - Math.PI/2;
+    const x = cx + Math.cos(a)*rr, y = cy + Math.sin(a)*rr; i? ctx.lineTo(x,y) : ctx.moveTo(x,y); }
+  ctx.closePath(); ctx.fillStyle = color; ctx.shadowColor = rgba(color,0.6); ctx.shadowBlur = 20; ctx.fill(); ctx.restore();
+}
+
+// texto de precio grande (moneda + número) centrado en x, devuelve alto usado
+function priceText(ctx, x, y, price, big, align){
+  const cur = state.opts.currency === 'USD' ? 'USD' : '$';
+  const num = (Number(price)||0).toLocaleString('es-AR', { maximumFractionDigits: 0 });
+  ctx.textAlign = align || 'left'; ctx.textBaseline = 'alphabetic';
+  const W = ctx.canvas.width;
+  ctx.font = `800 ${Math.round(big*0.5)}px Montserrat, "Arial Black", Arial`; const cw = ctx.measureText(cur).width;
+  ctx.font = `800 ${big}px Montserrat, "Arial Black", Arial`; const nw = ctx.measureText(num).width;
+  let startX = x; if (align === 'center') startX = x - (cw + W*0.015 + nw)/2; if (align === 'right') startX = x - (cw + W*0.015 + nw);
+  ctx.textAlign = 'left';
+  ctx.fillStyle = C.a; ctx.font = `800 ${Math.round(big*0.5)}px Montserrat, "Arial Black", Arial`; ctx.fillText(cur, startX, y);
+  ctx.fillStyle = C.ink; ctx.font = `800 ${big}px Montserrat, "Arial Black", Arial`;
+  ctx.save(); ctx.shadowColor = rgba(C.a,0.3); ctx.shadowBlur = 16; ctx.fillText(num, startX + cw + W*0.015, y); ctx.restore();
+}
+
+// ARCHETIPO: SALE (ofertas) — headline + producto der + burst % + barra de precio
+function drawArcSale(ctx, W, H, pad, p, sizeKey, photo, tp){
+  const story = sizeKey === 'story';
+  drawTechBackground(ctx, W, H, sizeKey, tp.bg || 'rays');
+  drawHeader(ctx, W, pad, false);
+
+  // headline de oferta (arriba-izquierda, ancho limitado para no pisar el producto)
+  ctx.textAlign = 'left';
+  ctx.fillStyle = C.ink;
+  const hf = `800 ${Math.round(W*0.09)}px Montserrat, "Arial Black", Arial`;
+  const words = wrapText(ctx, String(tp.sale || 'OFERTA').toUpperCase(), W*0.62, hf, 2);
+  let ly = story ? H*0.15 : H*0.155;
+  words.forEach(w => { ctx.font = hf; ly += Math.round(W*0.092); ctx.fillText(w, pad, ly); });
+
+  // producto: mitad derecha, centrado verticalmente en la zona media
+  const cxp = W*0.66, cyp = story ? H*0.45 : H*0.44, ph = story ? H*0.34 : H*0.32;
+  radialBlob(ctx, cxp, cyp + ph*0.3, ph*0.7, rgba(C.a, 0.2));
+  if (photo) drawImageContain(ctx, photo, cxp - ph*0.55, cyp - ph*0.5, ph*1.1, ph, true);
+
+  // burst de descuento arriba-derecha, sobre el producto
+  const oldp = Number(p.old_price)||0, price = Number(p.price)||0;
+  const pct = state.opts.discountPct ? parseInt(state.opts.discountPct) : (oldp > price && oldp>0 ? Math.round((1 - price/oldp)*100) : 0);
+  const bx = W*0.84, by = story ? H*0.30 : H*0.28, br = W*0.105;
+  drawStarburst(ctx, bx, by, br, 12, C.a);
+  ctx.fillStyle = '#150800'; ctx.textAlign = 'center';
+  if (pct > 0){ ctx.font = `800 ${Math.round(W*0.026)}px Montserrat, Arial`; ctx.fillText('FLAT!', bx, by - W*0.012);
+    ctx.font = `800 ${Math.round(W*0.058)}px Montserrat, "Arial Black", Arial`; ctx.fillText(pct + '%', bx, by + W*0.032); }
+  else { ctx.font = `800 ${Math.round(W*0.03)}px Montserrat, "Arial Black", Arial`; ctx.fillText('OFERTA', bx, by + W*0.01); }
+
+  // nombre + precio anterior (arriba de la barra)
+  const barY = story ? H*0.74 : H*0.75, barH = Math.round(W*0.145);
+  ctx.textAlign = 'left'; ctx.fillStyle = C.muted; ctx.font = `700 ${Math.round(W*0.03)}px Montserrat, Arial`;
+  ctx.fillText((p.brand?p.brand.toUpperCase()+' · ':'') + (p.name||'').toUpperCase(), pad, barY - Math.round(W*0.055));
+  if (state.opts.oldPrice && oldp > price && oldp>0){ ctx.fillStyle = C.faint; ctx.font = `600 ${Math.round(W*0.03)}px Montserrat, Arial`;
+    const t = money(oldp); ctx.fillText(t, pad, barY - Math.round(W*0.018)); const tw = ctx.measureText(t).width;
+    ctx.strokeStyle = '#ff5555'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(pad, barY - Math.round(W*0.026)); ctx.lineTo(pad+tw, barY - Math.round(W*0.026)); ctx.stroke(); }
+
+  // barra de precio
+  ctx.save(); ctx.shadowColor = rgba(C.a, 0.4); ctx.shadowBlur = 22;
+  ctx.fillStyle = C.a; roundRect(ctx, pad, barY, W - pad*2, barH, Math.round(W*0.02)); ctx.fill(); ctx.restore();
+  ctx.fillStyle = '#150800'; ctx.textBaseline = 'middle'; ctx.font = `800 ${Math.round(W*0.078)}px Montserrat, "Arial Black", Arial`;
+  const cur = state.opts.currency==='USD'?'USD ':'$'; ctx.fillText(cur + price.toLocaleString('es-AR'), pad + W*0.04, barY + barH*0.54);
+  ctx.textBaseline = 'alphabetic';
+  drawFooter(ctx, W, H, pad);
+}
+
+// ARCHETIPO: MINIMAL — producto centrado, mucho aire, precio en tag chico
+function drawArcMinimal(ctx, W, H, pad, p, sizeKey, photo, tp){
+  const story = sizeKey === 'story';
+  drawTechBackground(ctx, W, H, sizeKey, 'default');
+  drawHeader(ctx, W, pad, false);
+  if (tp.tag){ ctx.textAlign='center'; ctx.fillStyle=C.b; ctx.font=`700 ${Math.round(W*0.024)}px "Courier New", monospace`; ctx.fillText('// '+tp.tag, W/2, story?H*0.16:H*0.17); }
+  const cy = story ? H*0.42 : H*0.44, ph = story ? H*0.34 : H*0.40;
+  if (photo) drawImageContain(ctx, photo, W/2 - ph*0.55, cy - ph*0.5, ph*1.1, ph, true);
+  radialBlob(ctx, W/2, cy + ph*0.35, ph*0.7, rgba(C.a,0.16));
+  let y = cy + ph*0.6;
+  ctx.textAlign='center';
+  if (p.brand){ ctx.fillStyle=C.a; ctx.font=`700 ${Math.round(W*0.03)}px Montserrat, Arial`; y += Math.round(W*0.03); ctx.fillText(p.brand.toUpperCase(), W/2, y); }
+  ctx.fillStyle=C.ink; const nf=`800 ${Math.round(W*0.075)}px Montserrat, "Arial Black", Arial`;
+  wrapText(ctx,(p.name||'').toUpperCase(),W-pad*2,nf,2).forEach(l=>{ ctx.font=nf; y+=Math.round(W*0.08); ctx.fillText(l,W/2,y); });
+  if (p.tagline){ ctx.fillStyle=C.muted; ctx.font=`500 ${Math.round(W*0.032)}px Montserrat, Arial`; y+=Math.round(W*0.05); ctx.fillText(p.tagline, W/2, y); }
+  // precio tag
+  y += Math.round(W*0.09);
+  ctx.font=`800 ${Math.round(W*0.06)}px Montserrat, "Arial Black", Arial`;
+  const t = money(p.price); const tw = ctx.measureText(t).width, ph2=Math.round(W*0.1), px=Math.round(W*0.05);
+  ctx.strokeStyle=C.a; ctx.lineWidth=Math.max(2,W*0.004); ctx.fillStyle=rgba(C.a,0.08);
+  roundRect(ctx, W/2-tw/2-px, y-ph2*0.66, tw+px*2, ph2, ph2/2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle=C.ink; ctx.textBaseline='middle'; ctx.fillText(t, W/2, y-ph2*0.12); ctx.textBaseline='alphabetic';
+  drawFooter(ctx, W, H, pad);
+}
+
+// ARCHETIPO: SPEC — producto + ficha técnica en columnas
+function drawArcSpec(ctx, W, H, pad, p, sizeKey, photo, tp){
+  const story = sizeKey === 'story';
+  drawTechBackground(ctx, W, H, sizeKey, 'default');
+  drawHeader(ctx, W, pad, false);
+  // producto arriba
+  const ph = story ? H*0.26 : H*0.22, cy = story ? H*0.28 : H*0.24;
+  if (photo) drawImageContain(ctx, photo, W/2 - ph*0.55, cy - ph*0.5, ph*1.1, ph, true);
+  radialBlob(ctx, W/2, cy, ph*0.8, rgba(C.a,0.14));
+  // nombre
+  let y = cy + ph*0.62;
+  ctx.textAlign='center'; ctx.fillStyle=C.a; ctx.font=`700 ${Math.round(W*0.028)}px Montserrat, Arial`; ctx.fillText((p.brand||'').toUpperCase(), W/2, y);
+  ctx.fillStyle=C.ink; const nf=`800 ${Math.round(W*0.058)}px Montserrat, "Arial Black", Arial`; y+=Math.round(W*0.058); ctx.font=nf; ctx.fillText((p.name||'').toUpperCase(), W/2, y);
+  // filas de specs
+  const rows=[]; if(Number(p.battery_health)>0) rows.push(['Batería', p.battery_health+'%']);
+  if(p.device_condition) rows.push(['Condición', cap(p.device_condition)]);
+  if(p.warranty) rows.push(['Garantía', p.warranty]);
+  (Array.isArray(p.specs)?p.specs:[]).slice(0,4).forEach(s=>{ if(s&&s.label) rows.push([s.label,s.value||'']); else if(typeof s==='string') rows.push([s,'']); });
+  y += Math.round(W*0.045); const rowH = Math.round(W*0.078);
+  rows.slice(0, story?7:4).forEach(([k,v])=>{
+    ctx.fillStyle='rgba(255,255,255,0.03)'; roundRect(ctx, pad, y-rowH*0.6, W-pad*2, rowH*0.82, 10); ctx.fill();
+    ctx.textAlign='left'; ctx.fillStyle=C.muted; ctx.font=`600 ${Math.round(W*0.031)}px Montserrat, Arial`; ctx.fillText(String(k).toUpperCase(), pad+W*0.025, y);
+    ctx.textAlign='right'; ctx.fillStyle=C.ink; ctx.font=`700 ${Math.round(W*0.035)}px Montserrat, Arial`; ctx.fillText(String(v), W-pad-W*0.025, y);
+    y+=rowH;
+  });
+  // precio en barra (no caja, para no desbordar)
+  y += Math.round(W*0.04);
+  const oldp=Number(p.old_price)||0, price=Number(p.price)||0;
+  ctx.textAlign='center';
+  if(state.opts.oldPrice && oldp>price && oldp>0){ ctx.fillStyle=C.faint; ctx.font=`600 ${Math.round(W*0.03)}px Montserrat, Arial`; const t=money(oldp); ctx.fillText(t, W/2, y); const tw=ctx.measureText(t).width; ctx.strokeStyle='#ff5555'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(W/2-tw/2, y-W*0.01); ctx.lineTo(W/2+tw/2, y-W*0.01); ctx.stroke(); y+=Math.round(W*0.055); }
+  priceText(ctx, W/2, y, price, Math.round(W*0.08), 'center');
+  drawFooter(ctx, W, H, pad);
+}
+
+// ARCHETIPO: CARD — tarjeta de licencia/tool (logo + nombre + duración + precio)
+function drawArcCard(ctx, W, H, pad, p, sizeKey, photo, tp){
+  drawTechBackground(ctx, W, H, sizeKey, 'default');
+  // circuito decorativo
+  ctx.save(); ctx.strokeStyle = rgba(C.a, 0.18); ctx.lineWidth = 2;
+  for (let i=0;i<5;i++){ const yy = H*(0.12+i*0.18); ctx.beginPath(); ctx.moveTo(W*0.7, yy); ctx.lineTo(W*0.85, yy); ctx.lineTo(W*0.9, yy+H*0.04); ctx.lineTo(W, yy+H*0.04); ctx.stroke();
+    ctx.beginPath(); ctx.arc(W*0.7, yy, 4, 0, Math.PI*2); ctx.fillStyle=C.a; ctx.fill(); }
+  ctx.restore();
+  drawHeader(ctx, W, pad, false);
+  // logo grande + marca
+  const cy = H*0.4;
+  if (logoImg){ const ls=W*0.26, lw=ls*(logoImg.width/logoImg.height); ctx.save(); ctx.shadowColor=rgba(C.a,0.4); ctx.shadowBlur=24; ctx.drawImage(logoImg, W/2-lw/2, cy-ls/2, lw, ls); ctx.restore(); }
+  let y = cy + W*0.18;
+  ctx.textAlign='center'; ctx.fillStyle=C.b; ctx.font=`700 ${Math.round(W*0.028)}px "Courier New", monospace`; ctx.fillText('// '+(tp.kind||'LICENCIA'), W/2, y);
+  y += Math.round(W*0.075); ctx.fillStyle=C.ink; ctx.font=`800 ${Math.round(W*0.072)}px Montserrat, "Arial Black", Arial`; ctx.fillText((p.name||'TOOL').toUpperCase(), W/2, y);
+  // duración (de specs o tagline) + precio
+  const dur = p.tagline || (Array.isArray(p.specs)&&p.specs[0]&&p.specs[0].value) || 'ACTIVACIÓN';
+  y += Math.round(W*0.06); ctx.fillStyle=C.muted; ctx.font=`600 ${Math.round(W*0.036)}px Montserrat, Arial`; ctx.fillText(String(dur).toUpperCase(), W/2, y);
+  y += Math.round(W*0.11); priceText(ctx, W/2, y, p.price, Math.round(W*0.1), 'center');
+  // CTA pill
+  y += Math.round(W*0.08); const cta = p.cta || 'COMPRAR AHORA';
+  ctx.textAlign='center'; ctx.font=`800 ${Math.round(W*0.036)}px Montserrat, Arial`; const cw=ctx.measureText(cta).width, ch=Math.round(W*0.1), cpx=Math.round(W*0.05);
+  const g=ctx.createLinearGradient(W/2-cw/2,0,W/2+cw/2,0); g.addColorStop(0,C.a); g.addColorStop(1,C.a2);
+  ctx.save(); ctx.shadowColor=rgba(C.a,0.5); ctx.shadowBlur=22; ctx.fillStyle=g; roundRect(ctx, W/2-cw/2-cpx, y-ch*0.66, cw+cpx*2, ch, ch/2); ctx.fill(); ctx.restore();
+  ctx.fillStyle='#150800'; ctx.textBaseline='middle'; ctx.fillText(cta, W/2, y-ch*0.12); ctx.textBaseline='alphabetic';
+  drawFooter(ctx, W, H, pad);
+}
+
+// ARCHETIPO: SERVICE — ícono + título de servicio + producto + CTA
+function drawArcService(ctx, W, H, pad, p, sizeKey, photo, tp){
+  drawTechBackground(ctx, W, H, sizeKey, 'default');
+  drawHeader(ctx, W, pad, false);
+  const cy = H*0.3;
+  // ícono grande en círculo
+  ctx.save(); ctx.fillStyle=rgba(C.a,0.12); ctx.strokeStyle=C.a; ctx.lineWidth=Math.max(2,W*0.004);
+  ctx.beginPath(); ctx.arc(W/2, cy, W*0.11, 0, Math.PI*2); ctx.fill(); ctx.stroke(); ctx.restore();
+  drawIcon(ctx, tp.icon||'wrench', W/2, cy, W*0.1, C.a);
+  let y = cy + W*0.18;
+  ctx.textAlign='center'; ctx.fillStyle=C.ink; const nf=`800 ${Math.round(W*0.072)}px Montserrat, "Arial Black", Arial`;
+  wrapText(ctx,(tp.title||'SERVICIO TÉCNICO'),W-pad*2,nf,2).forEach(l=>{ ctx.font=nf; y+=Math.round(W*0.078); ctx.fillText(l,W/2,y); });
+  y += Math.round(W*0.04); ctx.fillStyle=C.muted; ctx.font=`600 ${Math.round(W*0.034)}px Montserrat, Arial`;
+  ctx.fillText((p.name||'').toUpperCase(), W/2, y);
+  // 3 features de servicio
+  const feats = [['bolt','RÁPIDO'],['shield','CON GARANTÍA'],['seal','REPUESTOS ORIGINALES']];
+  y += Math.round(W*0.06);
+  feats.forEach(([ic,l])=>{ y+=Math.round(W*0.072); drawIcon(ctx, ic, W/2 - W*0.22, y - W*0.01, W*0.035, C.a);
+    ctx.textAlign='left'; ctx.fillStyle=C.ink; ctx.font=`700 ${Math.round(W*0.034)}px Montserrat, Arial`; ctx.fillText(l, W/2 - W*0.16, y); });
+  // precio si hay (con aire para no pisar la última feature)
+  if (Number(p.price)>0){ y += Math.round(W*0.1); priceText(ctx, W/2, y, p.price, Math.round(W*0.085), 'center'); }
+  drawFooter(ctx, W, H, pad);
+}
+
+// ARCHETIPO: EDITORIAL — título grande arriba, producto abajo, franja precio/CTA
+function drawArcEditorial(ctx, W, H, pad, p, sizeKey, photo, tp){
+  const story = sizeKey==='story';
+  drawTechBackground(ctx, W, H, sizeKey, 'default');
+  drawHeader(ctx, W, pad, false);
+  ctx.textAlign='left';
+  let y = H*0.18;
+  ctx.fillStyle=C.a; ctx.font=`700 ${Math.round(W*0.026)}px "Courier New", monospace`; ctx.fillText('// '+(tp.eyebrow||'CELL SPACE'), pad, y);
+  ctx.fillStyle=C.ink; const nf=`800 ${Math.round(W*0.09)}px Montserrat, "Arial Black", Arial`;
+  wrapText(ctx,(p.name||'').toUpperCase(),W-pad*2,nf,3).forEach(l=>{ ctx.font=nf; y+=Math.round(W*0.095); ctx.fillText(l,pad,y); });
+  if (p.tagline){ ctx.fillStyle=C.muted; ctx.font=`500 ${Math.round(W*0.034)}px Montserrat, Arial`; y+=Math.round(W*0.055); ctx.fillText(p.tagline, pad, y); }
+  // producto abajo derecha
+  const ph = story ? H*0.30 : H*0.30, cxp=W*0.7, cyp=story?H*0.66:H*0.66;
+  if (photo) drawImageContain(ctx, photo, cxp-ph*0.55, cyp-ph*0.5, ph*1.1, ph, true);
+  // franja precio/CTA abajo izquierda
+  if (Number(p.price)>0){ priceText(ctx, pad, story?H*0.72:H*0.74, p.price, Math.round(W*0.08), 'left'); }
+  const cta = p.cta || 'CONSULTAR';
+  ctx.font=`800 ${Math.round(W*0.032)}px Montserrat, Arial`; const cw=ctx.measureText(cta).width, ch=Math.round(W*0.085), cpx=Math.round(W*0.04);
+  const cbY = story?H*0.78:H*0.80;
+  ctx.fillStyle=C.a; roundRect(ctx, pad, cbY, cw+cpx*2, ch, ch/2); ctx.fill();
+  ctx.fillStyle='#150800'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText(cta, pad+cpx, cbY+ch/2); ctx.textBaseline='alphabetic';
+  drawFooter(ctx, W, H, pad);
+}
+
+// ARCHETIPO: SPOTLIGHT — producto bajo cono de luz, precio abajo
+function drawArcSpotlight(ctx, W, H, pad, p, sizeKey, photo, tp){
+  const story = sizeKey==='story';
+  drawTechBackground(ctx, W, H, sizeKey, 'dark');
+  drawHeader(ctx, W, pad, false);
+  // cono de luz desde arriba
+  ctx.save(); const cg = ctx.createLinearGradient(0, H*0.1, 0, H*0.6);
+  cg.addColorStop(0, rgba(C.a,0.18)); cg.addColorStop(1, rgba(C.a,0));
+  ctx.fillStyle=cg; ctx.beginPath(); ctx.moveTo(W*0.42,H*0.08); ctx.lineTo(W*0.58,H*0.08); ctx.lineTo(W*0.78,H*0.6); ctx.lineTo(W*0.22,H*0.6); ctx.closePath(); ctx.fill(); ctx.restore();
+  if (tp.tag){ ctx.textAlign='center'; ctx.fillStyle=C.a; ctx.font=`800 ${Math.round(W*0.028)}px Montserrat, Arial`; ctx.fillText(tp.tag, W/2, H*0.16); }
+  // producto
+  const ph = story ? H*0.36 : H*0.40, cy=story?H*0.42:H*0.42;
+  radialBlob(ctx, W/2, cy+ph*0.35, ph*0.7, rgba(C.a,0.2));
+  if (tp.circle){ ctx.save(); ctx.strokeStyle=rgba(C.a,0.5); ctx.lineWidth=Math.max(3,W*0.006); ctx.beginPath(); ctx.arc(W/2, cy, ph*0.5, 0, Math.PI*2); ctx.stroke(); ctx.restore(); }
+  if (photo) drawImageContain(ctx, photo, W/2-ph*0.55, cy-ph*0.5, ph*1.1, ph, true);
+  let y = cy + ph*0.62;
+  ctx.textAlign='center'; ctx.fillStyle=C.a; ctx.font=`700 ${Math.round(W*0.03)}px Montserrat, Arial`; ctx.fillText((p.brand||'').toUpperCase(), W/2, y);
+  ctx.fillStyle=C.ink; const nf=`800 ${Math.round(W*0.078)}px Montserrat, "Arial Black", Arial`; y+=Math.round(W*0.078); ctx.font=nf; ctx.fillText((p.name||'').toUpperCase(), W/2, y);
+  y += Math.round(W*0.09); priceText(ctx, W/2, y, p.price, Math.round(W*0.1), 'center');
+  drawFooter(ctx, W, H, pad);
 }
 function radialBlob(ctx, cx, cy, rad, color){
   const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
