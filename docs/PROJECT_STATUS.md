@@ -182,7 +182,8 @@ Cada fase sigue el loop: analizar → implementar → conectar → probar (CRUD/
 - `[~]` **Reportes** — vista `#/reports` con KPIs (ingresos cobrados, pedidos, ticket promedio, reparaciones abiertas), ventas por mes (últimos 6), reparaciones por estado y productos más vendidos. Derivado de datos reales (orders/repairs/products), sin librerías (barras CSS). Falta test logueado.
 - `[~]` **Proveedores** — tablas `suppliers` + `supplier_purchases`; admin `#/suppliers` (alta/edición, compras por proveedor con total). RLS products.manage. Falta test logueado.
 - `[~]` **Gastos** — tabla `expenses` (categorías: alquiler/servicios/sueldos/insumos/impuestos/marketing/mantenimiento/otro). Admin `#/expenses` (alta/edición, filtros, total del mes y total general). RLS products.manage. Falta test logueado.
-- `[ ]` Técnicos · `[ ]` Crédito técnicos · `[ ]` Promociones · `[ ]` Notificaciones · `[ ]` Auditoría
+- `[~]` **Promociones** — tabla `promotions` (cupones: % o monto fijo, compra mínima, usos máximos, vigencia). Admin `#/promotions` (CRUD, activar/desactivar). RPC público `validate_coupon(code, subtotal)` verificado (BIENVENIDO10 10% → descuento OK). **Pendiente:** integrar el cupón en el checkout (checkout.js aún no lo aplica). Crédito de técnicos: SIN límite (definido por el dueño).
+- `[ ]` Técnicos · `[ ]` Crédito técnicos (sin límite) · `[ ]` Notificaciones · `[ ]` Auditoría
 
 ### Storage
 - `[✓]` Buckets creados y verificados: `cms-media` (público), `repair-media` (privado), `documents` (privado), además de `product-images` existente. Políticas: lectura pública + escritura admin (cms-media); solo admin (privados).

@@ -1,5 +1,5 @@
-import { supabase } from '../config.js?v=cb8';
-import { store } from '../core/state.js?v=cb8';
+import { supabase } from '../config.js?v=cb9';
+import { store } from '../core/state.js?v=cb9';
 
 let allProducts = [];
 let currentEditId = null;

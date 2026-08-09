@@ -3,7 +3,7 @@
 // Lee los permisos del usuario actual desde role_permissions y expone can(key).
 // El owner (ADMIN_EMAIL) siempre tiene todo ('*'), sin depender de la DB → sin lockout.
 // ============================================================
-import { supabase, ADMIN_EMAIL } from '../config.js?v=cb8';
+import { supabase, ADMIN_EMAIL } from '../config.js?v=cb9';
 
 let _perms = null;   // Set de permission_key ('*' = todos)
 let _role  = null;

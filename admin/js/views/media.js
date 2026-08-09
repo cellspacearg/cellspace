@@ -1,5 +1,5 @@
-import { supabase } from '../config.js?v=cb8';
-import { store } from '../core/state.js?v=cb8';
+import { supabase } from '../config.js?v=cb9';
+import { store } from '../core/state.js?v=cb9';
 
 const BUCKET = 'product-images';
 const IMG_EXT = ['png','jpg','jpeg','gif','webp','svg','avif'];

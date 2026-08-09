@@ -1,6 +1,6 @@
-import { supabase } from '../config.js?v=cb8';
-import { layout, mountLayout } from '../core/layout.js?v=cb8';
-import { store } from '../core/state.js?v=cb8';
+import { supabase } from '../config.js?v=cb9';
+import { layout, mountLayout } from '../core/layout.js?v=cb9';
+import { store } from '../core/state.js?v=cb9';
 
 function money(n){
   n = Number(n) || 0;
