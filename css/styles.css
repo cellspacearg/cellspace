@@ -3093,3 +3093,10 @@ body::after {
   .brand-text i { font-size: 28px; }
   .brand-text span { font-size: 10px; }
 }
+
+/* ===== Fix tema oscuro: opciones de <select> legibles ===== */
+select option,
+select optgroup {
+  background-color: #1a1a1a;
+  color: #f2f2f2;
+}

@@ -782,3 +782,10 @@ button.del.mini:hover { background: var(--admin-error); color: #fff; }
 .mini-row input[type=color]{ flex:0 0 42px; min-width:42px; height:38px; padding:3px; cursor:pointer; }
 .mini-row input:focus, .mini-row select:focus{ border-color:var(--admin-orange); }
 .chip-row{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; min-height:24px; }
+
+/* ===== Fix tema oscuro: opciones de <select> legibles (evita blanco sobre blanco) ===== */
+select option,
+select optgroup {
+  background-color: #1a1a1a;
+  color: #f2f2f2;
+}
