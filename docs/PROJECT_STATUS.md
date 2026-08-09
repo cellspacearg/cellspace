@@ -180,7 +180,8 @@ Cada fase sigue el loop: analizar → implementar → conectar → probar (CRUD/
 - `[~]` **Reparaciones** — tablas `repairs` + `repair_status_history`; código de seguimiento + N° de orden autogenerados; historial de estados automático (trigger); RLS (gestión/técnico/cliente); RPC público `track_repair()` seguro (solo campos no privados). Admin `#/repairs` (alta/edición con todos los campos + cambio de estado + historial). Seguimiento público `reparaciones.html` ya funciona. CRUD de datos verificado. Falta test logueado del admin + "mis reparaciones" en la cuenta del cliente.
 - `[~]` **Inventario** — tabla `stock_movements` (ledger) con trigger que ajusta `products.stock` automáticamente (entrada/salida/ajuste/devolución/venta) y guarda qty_before/after + motivo + usuario. RLS (products.manage). Admin `#/inventory`: registrar movimiento, historial, alerta de stock bajo. Trigger verificado (entrada +10 → stock 0→10). Falta test logueado.
 - `[~]` **Reportes** — vista `#/reports` con KPIs (ingresos cobrados, pedidos, ticket promedio, reparaciones abiertas), ventas por mes (últimos 6), reparaciones por estado y productos más vendidos. Derivado de datos reales (orders/repairs/products), sin librerías (barras CSS). Falta test logueado.
-- `[ ]` Técnicos · `[ ]` Crédito técnicos · `[ ]` Proveedores · `[ ]` Promociones · `[ ]` Gastos · `[ ]` Notificaciones · `[ ]` Auditoría
+- `[~]` **Proveedores** — tablas `suppliers` + `supplier_purchases`; admin `#/suppliers` (alta/edición, compras por proveedor con total). RLS products.manage. Falta test logueado.
+- `[ ]` Técnicos · `[ ]` Crédito técnicos · `[ ]` Promociones · `[ ]` Gastos · `[ ]` Notificaciones · `[ ]` Auditoría
 
 ### Storage
 - `[✓]` Buckets creados y verificados: `cms-media` (público), `repair-media` (privado), `documents` (privado), además de `product-images` existente. Políticas: lectura pública + escritura admin (cms-media); solo admin (privados).
