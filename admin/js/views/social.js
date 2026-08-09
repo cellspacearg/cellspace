@@ -1,5 +1,5 @@
-import { supabase } from '../config.js?v=cb12';
-import { layout, mountLayout } from '../core/layout.js?v=cb12';
+import { supabase } from '../config.js?v=cb13';
+import { layout, mountLayout } from '../core/layout.js?v=cb13';
 
 /* ============================================================
    GENERADOR DE REDES — placas de productos para Instagram/Facebook
@@ -219,147 +219,248 @@ function downloadCanvas(canvas, filename){
    MOTOR DE DIBUJO
    ============================================================ */
 
+// Paleta tech
+const C = {
+  bg0: '#0b0d13', bg1: '#05060a',
+  orange: '#ff6a00', orange2: '#ff9d2e',
+  cyan: '#19e3ff', cyan2: '#00b3d6',
+  ink: '#ffffff', muted: '#8b93a7', faint: '#5a6072',
+  glass: 'rgba(255,255,255,0.045)', glassLine: 'rgba(255,255,255,0.14)',
+};
+
 function drawSlide(canvas, p, sizeKey, slide, photo){
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
   const story = sizeKey === 'story';
   const pad = Math.round(W * 0.075);
 
-  // Fondo: degradé oscuro + glow naranja
-  const g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, '#141414'); g.addColorStop(1, '#080808');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  const glow = ctx.createRadialGradient(W * 0.5, H * (story ? 0.34 : 0.4), 0, W * 0.5, H * (story ? 0.34 : 0.4), W * 0.75);
-  glow.addColorStop(0, 'rgba(255,106,0,0.16)'); glow.addColorStop(1, 'rgba(255,106,0,0)');
-  ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
-
-  // Marca (arriba)
+  drawTechBackground(ctx, W, H, story);
   drawHeader(ctx, W, pad, story);
 
   if (slide === 'cta'){ drawCta(ctx, W, H, pad, p, story); drawFooter(ctx, W, H, pad); return; }
   if (slide === 'specs'){ drawSpecs(ctx, W, H, pad, p, story); drawFooter(ctx, W, H, pad); return; }
 
   // slide 'full' o 'hero' → foto + nombre + precio
-  // El cuadrado (1:1) tiene mucho menos alto disponible que el retrato o la
-  // historia, así que en 'full' usa una versión compacta (foto más chica,
-  // tipografía más chica, sin línea de cuotas) para que nada se pise.
   const compact = !story && sizeKey === 'square' && slide === 'full';
-  const topY = story ? H * 0.16 : H * 0.14;
-  const imgH = story ? H * 0.40 : (compact ? H * 0.30 : (slide === 'full' ? H * 0.36 : H * 0.42));
-  if (photo){
-    drawImageContain(ctx, photo, pad, topY, W - pad * 2, imgH);
-  } else {
-    ctx.fillStyle = '#1c1c1c'; roundRect(ctx, pad, topY, W - pad * 2, imgH, 24); ctx.fill();
-    ctx.fillStyle = '#3a3a3a'; ctx.font = `${Math.round(W*0.05)}px Arial`; ctx.textAlign = 'center';
-    ctx.fillText('sin foto', W / 2, topY + imgH / 2);
-  }
+  const roomy = story || slide === 'hero';
+  const topY = story ? H * 0.155 : H * 0.135;
+  const imgH = story ? H * 0.40 : (compact ? H * 0.30 : (slide === 'full' ? H * 0.33 : H * 0.44));
 
-  // Sello (badge) arriba a la derecha
+  drawProductStage(ctx, pad, topY, W - pad * 2, imgH, photo);
+
   const badge = (state.opts.badge || '').trim();
-  if (badge) drawBadge(ctx, W - pad, topY - Math.round(W*0.005), badge);
+  if (badge) drawBadge(ctx, W - pad + Math.round(W*0.01), topY + Math.round(W*0.02), badge);
 
-  // Bloque de texto
-  let y = topY + imgH + (story ? H * 0.05 : (compact ? W * 0.04 : W * 0.055));
+  let y = topY + imgH + (story ? H * 0.055 : (compact ? W * 0.05 : W * 0.055));
   y = drawTitle(ctx, W, pad, y, p, compact);
-  y += story ? H * 0.008 : W * 0.01;
-  y = drawPriceBlock(ctx, W, pad, y, p, story, compact);
+  y += story ? H * 0.006 : W * 0.008;
+  y = drawPriceBlock(ctx, W, pad, y, p, roomy, compact);
 
   if (slide === 'full'){
-    // Los chips van justo debajo de donde terminó el precio (nunca a una
-    // posición fija) para que no se pisen con "transferencia"/"cuotas"
-    // cuando el producto trae mucha info.
-    const chipsY = y + Math.round(W * (compact ? 0.055 : 0.075));
+    const chipsY = y + Math.round(W * (compact ? 0.05 : 0.07));
     drawChips(ctx, W, pad, chipsY, p, compact);
   }
   drawFooter(ctx, W, H, pad);
 }
 
-function drawHeader(ctx, W, pad, story){
-  const y = pad * 0.85;
-  const size = Math.round(W * 0.075);
-  if (logoImg){
-    const lh = size, lw = lh * (logoImg.width / logoImg.height);
-    ctx.drawImage(logoImg, pad, y, lw, lh);
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#fff'; ctx.font = `800 ${Math.round(W*0.036)}px Montserrat, "Arial Black", Arial`;
-    ctx.fillText('CELL SPACE', pad + lw + 18, y + lh * 0.42);
-    ctx.fillStyle = '#ff6a00'; ctx.font = `700 ${Math.round(W*0.022)}px Montserrat, Arial`;
-    ctx.fillText('ARGENTINA', pad + lw + 18, y + lh * 0.82);
-  } else {
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#fff'; ctx.font = `800 ${Math.round(W*0.05)}px Montserrat, "Arial Black", Arial`;
-    ctx.fillText('CELL SPACE', pad, y + size * 0.6);
-  }
+/* ---------- fondo tech ---------- */
+function drawTechBackground(ctx, W, H, story){
+  const g = ctx.createLinearGradient(0, 0, W * 0.3, H);
+  g.addColorStop(0, C.bg0); g.addColorStop(1, C.bg1);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+  // grilla de puntos sutil
+  ctx.save();
+  ctx.fillStyle = 'rgba(255,255,255,0.045)';
+  const step = Math.round(W * 0.05), r = Math.max(1, W * 0.0016);
+  for (let x = step; x < W; x += step)
+    for (let yy = step; yy < H; yy += step){ ctx.beginPath(); ctx.arc(x, yy, r, 0, Math.PI*2); ctx.fill(); }
+  ctx.restore();
+
+  // blob naranja (arriba) y cyan (abajo) para profundidad
+  radialBlob(ctx, W * 0.72, H * (story ? 0.22 : 0.26), W * 0.85, 'rgba(255,106,0,0.20)');
+  radialBlob(ctx, W * 0.16, H * (story ? 0.82 : 0.9), W * 0.7, 'rgba(25,227,255,0.10)');
+
+  // barra de acento diagonal arriba
+  ctx.save();
+  ctx.globalAlpha = 0.5;
+  const lg = ctx.createLinearGradient(0, 0, W, 0);
+  lg.addColorStop(0, 'rgba(255,106,0,0)'); lg.addColorStop(0.5, 'rgba(255,106,0,0.5)'); lg.addColorStop(1, 'rgba(25,227,255,0.4)');
+  ctx.fillStyle = lg; ctx.fillRect(0, 0, W, Math.max(3, H*0.004));
+  ctx.restore();
+}
+function radialBlob(ctx, cx, cy, rad, color){
+  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
+  g.addColorStop(0, color); g.addColorStop(1, color.replace(/[\d.]+\)$/, '0)'));
+  ctx.fillStyle = g; ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 }
 
+/* ---------- header ---------- */
+function drawHeader(ctx, W, pad, story){
+  const y = pad * 0.8;
+  const size = Math.round(W * 0.072);
+  let rightOfLogo = pad;
+  if (logoImg){
+    const lh = size, lw = lh * (logoImg.width / logoImg.height);
+    ctx.save(); ctx.shadowColor = 'rgba(255,106,0,0.5)'; ctx.shadowBlur = 22;
+    ctx.drawImage(logoImg, pad, y, lw, lh); ctx.restore();
+    rightOfLogo = pad + lw + 18;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = C.ink; ctx.font = `800 ${Math.round(W*0.036)}px Montserrat, "Arial Black", Arial`;
+    ctx.fillText('CELL SPACE', rightOfLogo, y + lh * 0.42);
+    ctx.fillStyle = C.orange; ctx.font = `700 ${Math.round(W*0.021)}px Montserrat, Arial`;
+    ctx.fillText('ARGENTINA', rightOfLogo, y + lh * 0.82);
+  } else {
+    ctx.textAlign = 'left';
+    ctx.fillStyle = C.ink; ctx.font = `800 ${Math.round(W*0.05)}px Montserrat, "Arial Black", Arial`;
+    ctx.fillText('CELL SPACE', pad, y + size * 0.6);
+  }
+  // etiqueta tech a la derecha
+  ctx.textAlign = 'right';
+  ctx.fillStyle = C.cyan; ctx.font = `700 ${Math.round(W*0.02)}px "Courier New", monospace`;
+  ctx.fillText('// TECH STORE', W - pad, y + size * 0.5);
+  ctx.textAlign = 'left';
+}
+
+/* ---------- foto sobre panel glass + aro neón + HUD ---------- */
+function drawProductStage(ctx, x, y, w, h, photo){
+  const W = ctx.canvas.width;
+  // panel glass
+  ctx.save();
+  ctx.fillStyle = C.glass;
+  roundRect(ctx, x, y, w, h, Math.round(W*0.03)); ctx.fill();
+  // aro neón (borde con degradé)
+  const ring = ctx.createLinearGradient(x, y, x + w, y + h);
+  ring.addColorStop(0, 'rgba(255,106,0,0.9)'); ring.addColorStop(0.5, 'rgba(255,157,46,0.35)'); ring.addColorStop(1, 'rgba(25,227,255,0.8)');
+  ctx.lineWidth = Math.max(2, W*0.004); ctx.strokeStyle = ring;
+  ctx.shadowColor = 'rgba(255,106,0,0.35)'; ctx.shadowBlur = 30;
+  roundRect(ctx, x, y, w, h, Math.round(W*0.03)); ctx.stroke();
+  ctx.restore();
+
+  // reflejo elíptico bajo el producto
+  ctx.save();
+  const gy = y + h - h*0.06;
+  const rg = ctx.createRadialGradient(x + w/2, gy, 0, x + w/2, gy, w*0.4);
+  rg.addColorStop(0, 'rgba(255,106,0,0.28)'); rg.addColorStop(1, 'rgba(255,106,0,0)');
+  ctx.fillStyle = rg; ctx.beginPath(); ctx.ellipse(x + w/2, gy, w*0.34, h*0.05, 0, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  // foto (contain con margen interno)
+  const m = Math.round(w * 0.07);
+  if (photo){
+    drawImageContain(ctx, photo, x + m, y + m, w - m*2, h - m*2, true);
+  } else {
+    ctx.fillStyle = C.faint; ctx.font = `${Math.round(W*0.045)}px Montserrat, Arial`; ctx.textAlign = 'center';
+    ctx.fillText('sin foto', x + w/2, y + h/2); ctx.textAlign = 'left';
+  }
+
+  drawHudBrackets(ctx, x, y, w, h);
+}
+function drawHudBrackets(ctx, x, y, w, h){
+  const W = ctx.canvas.width;
+  const s = Math.round(W * 0.035), lw = Math.max(2, W*0.005), off = Math.round(W*0.018);
+  ctx.save(); ctx.strokeStyle = C.cyan; ctx.lineWidth = lw; ctx.lineCap = 'round';
+  ctx.shadowColor = 'rgba(25,227,255,0.6)'; ctx.shadowBlur = 12;
+  const corners = [
+    [x - off, y - off, 1, 1], [x + w + off, y - off, -1, 1],
+    [x - off, y + h + off, 1, -1], [x + w + off, y + h + off, -1, -1],
+  ];
+  corners.forEach(([cx, cy, sx, sy]) => {
+    ctx.beginPath();
+    ctx.moveTo(cx + s*sx, cy); ctx.lineTo(cx, cy); ctx.lineTo(cx, cy + s*sy);
+    ctx.stroke();
+  });
+  ctx.restore();
+}
+
+/* ---------- título ---------- */
 function drawTitle(ctx, W, pad, y, p, compact){
-  const k = compact ? 0.8 : 1;
+  const k = compact ? 0.82 : 1;
   ctx.textAlign = 'left';
   if (p.brand){
-    ctx.fillStyle = '#ff6a00'; ctx.font = `700 ${Math.round(W*0.03*k)}px Montserrat, Arial`;
-    ctx.fillText(p.brand.toUpperCase(), pad, y);
-    y += Math.round(W * 0.03 * k);
+    // eyebrow con tick cyan
+    ctx.fillStyle = C.cyan; ctx.fillRect(pad, y - Math.round(W*0.022*k), Math.round(W*0.012), Math.round(W*0.028*k));
+    ctx.fillStyle = C.orange; ctx.font = `700 ${Math.round(W*0.03*k)}px Montserrat, Arial`;
+    ctx.fillText(p.brand.toUpperCase(), pad + Math.round(W*0.024), y);
+    y += Math.round(W * 0.032 * k);
   }
-  ctx.fillStyle = '#ffffff';
-  const fs = Math.round(W * 0.072 * k);
-  const lines = wrapText(ctx, (p.name || '').toUpperCase(), W - pad * 2, `800 ${fs}px Montserrat, "Arial Black", Arial`, 2);
-  ctx.font = `800 ${fs}px Montserrat, "Arial Black", Arial`;
-  lines.forEach(l => { y += Math.round(W * 0.078 * k); ctx.fillText(l, pad, y); });
+  ctx.fillStyle = C.ink;
+  const fs = Math.round(W * 0.074 * k);
+  const font = `800 ${fs}px Montserrat, "Arial Black", Arial`;
+  const lines = wrapText(ctx, (p.name || '').toUpperCase(), W - pad * 2, font, 2);
+  ctx.font = font;
+  lines.forEach(l => { y += Math.round(W * 0.08 * k); ctx.fillText(l, pad, y); });
   return y;
 }
 
-function drawPriceBlock(ctx, W, pad, y, p, story, compact){
-  const k = compact ? 0.8 : 1;
+/* ---------- precio (tag con degradé) ---------- */
+function drawPriceBlock(ctx, W, pad, y, p, roomy, compact){
+  const k = compact ? 0.82 : 1;
   ctx.textAlign = 'left';
   const price = Number(p.price) || 0;
   const oldp = Number(p.old_price) || 0;
-  y += Math.round(W * 0.04 * k);
+  y += Math.round(W * 0.045 * k);
 
   if (state.opts.oldPrice && oldp > price && oldp > 0){
-    ctx.fillStyle = '#8a8a8a'; ctx.font = `600 ${Math.round(W*0.036*k)}px Montserrat, Arial`;
+    ctx.fillStyle = C.faint; ctx.font = `600 ${Math.round(W*0.036*k)}px Montserrat, Arial`;
     const t = money(oldp); ctx.fillText(t, pad, y);
     const tw = ctx.measureText(t).width;
     ctx.strokeStyle = '#ff5555'; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(pad, y - Math.round(W*0.011)); ctx.lineTo(pad + tw, y - Math.round(W*0.011)); ctx.stroke();
-    y += Math.round(W * 0.028 * k);
+    y += Math.round(W * 0.03 * k);
   }
 
-  ctx.fillStyle = '#ff6a00';
-  ctx.font = `800 ${Math.round(W*0.11*k)}px Montserrat, "Arial Black", Arial`;
-  y += Math.round(W * 0.085 * k);
-  ctx.fillText(money(price), pad, y);
+  // el precio grande con degradé naranja + glow
+  const fs = Math.round(W * 0.115 * k);
+  ctx.font = `800 ${fs}px Montserrat, "Arial Black", Arial`;
+  const t = money(price), tw = ctx.measureText(t).width;
+  y += Math.round(W * 0.09 * k);
+  const grad = ctx.createLinearGradient(pad, y - fs, pad + tw, y);
+  grad.addColorStop(0, C.orange2); grad.addColorStop(1, C.orange);
+  ctx.save();
+  ctx.shadowColor = 'rgba(255,106,0,0.45)'; ctx.shadowBlur = 26;
+  ctx.fillStyle = grad; ctx.fillText(t, pad, y);
+  ctx.restore();
 
   if (state.opts.transfer && Number(p.price_transfer) > 0){
-    y += Math.round(W * 0.05 * k);
-    ctx.fillStyle = '#cfcfcf'; ctx.font = `600 ${Math.round(W*0.033*k)}px Montserrat, Arial`;
-    ctx.fillText(`${money(Number(p.price_transfer))} con transferencia`, pad, y);
+    y += Math.round(W * 0.052 * k);
+    // pastilla "transferencia"
+    ctx.font = `700 ${Math.round(W*0.03*k)}px Montserrat, Arial`;
+    const label = `${money(Number(p.price_transfer))} transferencia`;
+    const lw2 = ctx.measureText(label).width, ph = Math.round(W*0.05*k), px = Math.round(W*0.022*k);
+    ctx.fillStyle = 'rgba(25,227,255,0.12)'; ctx.strokeStyle = 'rgba(25,227,255,0.5)'; ctx.lineWidth = 2;
+    roundRect(ctx, pad, y - ph*0.72, lw2 + px*2, ph, ph/2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = C.cyan; ctx.fillText(label, pad + px, y - ph*0.06);
   }
-  if (p.installments && !compact){
-    y += Math.round(W * 0.045);
-    ctx.fillStyle = '#9a9a9a'; ctx.font = `500 ${Math.round(W*0.03)}px Montserrat, Arial`;
+  if (p.installments && roomy){
+    y += Math.round(W * 0.05);
+    ctx.fillStyle = C.muted; ctx.font = `500 ${Math.round(W*0.03)}px Montserrat, Arial`;
     ctx.fillText(String(p.installments), pad, y);
   }
   return y;
 }
 
+/* ---------- chips glass ---------- */
 function drawChips(ctx, W, pad, y, p, compact){
   const chips = buildChips(p);
   if (!chips.length) return;
-  const k = compact ? 0.82 : 1;
+  const k = compact ? 0.8 : 1;
   ctx.textAlign = 'left';
-  ctx.font = `700 ${Math.round(W*0.028*k)}px Montserrat, Arial`;
+  ctx.font = `700 ${Math.round(W*0.024*k)}px Montserrat, Arial`;
   let x = pad;
-  const h = Math.round(W * 0.058 * k), padx = Math.round(W * 0.028 * k);
+  const h = Math.round(W * 0.054 * k), padx = Math.round(W * 0.022 * k), dot = Math.round(W*0.007), gapLbl = Math.round(W*0.008);
   chips.forEach(txt => {
     const tw = ctx.measureText(txt).width;
-    const cw = tw + padx * 2;
-    if (x + cw > W - pad){ x = pad; y += h + Math.round(W * 0.02); }
-    ctx.fillStyle = 'rgba(255,106,0,0.14)';
-    ctx.strokeStyle = 'rgba(255,106,0,0.55)'; ctx.lineWidth = 2;
+    const cw = tw + padx * 2 + dot * 2 + gapLbl;
+    if (x + cw > W - pad){ x = pad; y += h + Math.round(W * 0.018); }
+    ctx.fillStyle = C.glass; ctx.strokeStyle = C.glassLine; ctx.lineWidth = 2;
     roundRect(ctx, x, y, cw, h, h / 2); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#ff9a4d';
-    ctx.fillText(txt, x + padx, y + h * 0.66);
-    x += cw + Math.round(W * 0.022);
+    // punto naranja con glow
+    ctx.save(); ctx.shadowColor = 'rgba(255,106,0,0.8)'; ctx.shadowBlur = 10;
+    ctx.fillStyle = C.orange; ctx.beginPath(); ctx.arc(x + padx + dot, y + h/2, dot, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = '#e8ebf2'; ctx.fillText(txt, x + padx + dot*2 + gapLbl, y + h * 0.64);
+    x += cw + Math.round(W * 0.018);
   });
 }
 
@@ -372,80 +473,123 @@ function buildChips(p){
   return chips;
 }
 
+/* ---------- slide DETALLES (tech spec sheet) ---------- */
 function drawSpecs(ctx, W, H, pad, p, story){
   ctx.textAlign = 'left';
-  ctx.fillStyle = '#ff6a00'; ctx.font = `700 ${Math.round(W*0.032)}px Montserrat, Arial`;
-  ctx.fillText('DETALLES', pad, H * 0.20);
-  ctx.fillStyle = '#fff'; ctx.font = `800 ${Math.round(W*0.06)}px Montserrat, "Arial Black", Arial`;
-  wrapText(ctx, (p.name || '').toUpperCase(), W - pad*2, `800 ${Math.round(W*0.06)}px Montserrat, "Arial Black", Arial`, 2)
-    .forEach((l, i) => ctx.fillText(l, pad, H * 0.20 + Math.round(W*0.075) * (i + 1)));
+  ctx.fillStyle = C.cyan; ctx.font = `700 ${Math.round(W*0.024)}px "Courier New", monospace`;
+  ctx.fillText('// FICHA TÉCNICA', pad, H * 0.185);
+  ctx.fillStyle = C.ink; ctx.font = `800 ${Math.round(W*0.062)}px Montserrat, "Arial Black", Arial`;
+  const nameLines = wrapText(ctx, (p.name || '').toUpperCase(), W - pad*2, `800 ${Math.round(W*0.062)}px Montserrat, "Arial Black", Arial`, 2);
+  let ny = H * 0.185;
+  nameLines.forEach(l => { ny += Math.round(W*0.072); ctx.fillText(l, pad, ny); });
+
+  // barra de batería visual (si hay)
+  let y = story ? H * 0.36 : H * 0.40;
+  if (Number(p.battery_health) > 0){
+    const bh = Number(p.battery_health);
+    ctx.fillStyle = C.muted; ctx.font = `600 ${Math.round(W*0.032)}px Montserrat, Arial`;
+    ctx.fillText('SALUD DE BATERÍA', pad, y);
+    ctx.textAlign = 'right'; ctx.fillStyle = C.ink; ctx.font = `800 ${Math.round(W*0.038)}px Montserrat, Arial`;
+    ctx.fillText(bh + '%', W - pad, y); ctx.textAlign = 'left';
+    y += Math.round(W*0.022);
+    const barW = W - pad*2, barH = Math.round(W*0.028);
+    ctx.fillStyle = 'rgba(255,255,255,0.08)'; roundRect(ctx, pad, y, barW, barH, barH/2); ctx.fill();
+    const fillW = Math.max(barH, barW * Math.min(1, bh/100));
+    const bg = ctx.createLinearGradient(pad, 0, pad + fillW, 0);
+    bg.addColorStop(0, C.cyan); bg.addColorStop(1, C.orange);
+    ctx.save(); ctx.shadowColor = 'rgba(255,106,0,0.5)'; ctx.shadowBlur = 14;
+    ctx.fillStyle = bg; roundRect(ctx, pad, y, fillW, barH, barH/2); ctx.fill(); ctx.restore();
+    y += Math.round(W*0.075);
+  }
 
   const rows = [];
   if (p.brand) rows.push(['Marca', p.brand]);
   if (p.device_condition) rows.push(['Condición', cap(p.device_condition)]);
-  if (Number(p.battery_health) > 0) rows.push(['Batería', p.battery_health + '%']);
   if (p.warranty) rows.push(['Garantía', p.warranty]);
   const specs = Array.isArray(p.specs) ? p.specs : [];
-  specs.slice(0, 5).forEach(s => {
+  specs.slice(0, 6).forEach(s => {
     if (typeof s === 'string') rows.push([s, '']);
     else if (s && s.label) rows.push([s.label, s.value || '']);
   });
 
-  let y = H * (story ? 0.40 : 0.42);
-  const rowH = Math.round(W * 0.085);
-  ctx.font = `600 ${Math.round(W*0.038)}px Montserrat, Arial`;
-  rows.slice(0, story ? 9 : 6).forEach(([k, v]) => {
-    ctx.fillStyle = '#8a8a8a'; ctx.textAlign = 'left'; ctx.fillText(k, pad, y);
-    ctx.fillStyle = '#fff'; ctx.textAlign = 'right'; ctx.fillText(String(v), W - pad, y);
-    ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(pad, y + rowH * 0.32); ctx.lineTo(W - pad, y + rowH * 0.32); ctx.stroke();
+  const rowH = Math.round(W * 0.088);
+  ctx.font = `600 ${Math.round(W*0.037)}px Montserrat, Arial`;
+  rows.slice(0, story ? 8 : 5).forEach(([k, v]) => {
+    ctx.fillStyle = 'rgba(255,255,255,0.03)'; roundRect(ctx, pad, y - rowH*0.6, W - pad*2, rowH*0.82, 10); ctx.fill();
+    ctx.fillStyle = C.muted; ctx.textAlign = 'left'; ctx.font = `600 ${Math.round(W*0.033)}px Montserrat, Arial`;
+    ctx.fillText(String(k).toUpperCase(), pad + Math.round(W*0.025), y);
+    ctx.fillStyle = C.ink; ctx.textAlign = 'right'; ctx.font = `700 ${Math.round(W*0.037)}px Montserrat, Arial`;
+    ctx.fillText(String(v), W - pad - Math.round(W*0.025), y);
     y += rowH;
   });
   ctx.textAlign = 'left';
 }
 
+/* ---------- slide CTA ---------- */
 function drawCta(ctx, W, H, pad, p, story){
   ctx.textAlign = 'center';
   const cx = W / 2;
-  let y = H * (story ? 0.34 : 0.34);
-  ctx.fillStyle = '#fff'; ctx.font = `800 ${Math.round(W*0.085)}px Montserrat, "Arial Black", Arial`;
-  ctx.fillText('¿LO QUERÉS?', cx, y);
-  y += Math.round(W * 0.075);
-  ctx.fillStyle = '#cfcfcf'; ctx.font = `500 ${Math.round(W*0.038)}px Montserrat, Arial`;
-  ctx.fillText('Escribinos y te lo reservamos', cx, y);
+  let y = H * (story ? 0.32 : 0.32);
 
-  // botón WhatsApp
+  ctx.fillStyle = C.cyan; ctx.font = `700 ${Math.round(W*0.026)}px "Courier New", monospace`;
+  ctx.fillText('// CONSULTÁ AHORA', cx, y);
+  y += Math.round(W * 0.085);
+  ctx.fillStyle = C.ink; ctx.font = `800 ${Math.round(W*0.095)}px Montserrat, "Arial Black", Arial`;
+  ctx.fillText('¿LO QUERÉS?', cx, y);
+  y += Math.round(W * 0.07);
+  ctx.fillStyle = C.muted; ctx.font = `500 ${Math.round(W*0.037)}px Montserrat, Arial`;
+  ctx.fillText('Escribinos y te lo reservamos hoy', cx, y);
+
+  // botón WhatsApp con degradé + glow
   const wa = (state.opts.whatsapp || '').trim();
   y += Math.round(W * 0.11);
-  const bw = W * 0.7, bx = (W - bw) / 2, bh = Math.round(W * 0.11);
-  ctx.fillStyle = '#25D366'; roundRect(ctx, bx, y, bw, bh, bh / 2); ctx.fill();
-  ctx.fillStyle = '#062b14'; ctx.font = `800 ${Math.round(W*0.04)}px Montserrat, Arial`;
-  ctx.fillText('WhatsApp ' + (wa || ''), cx, y + bh * 0.66);
+  const bw = W * 0.74, bx = (W - bw) / 2, bh = Math.round(W * 0.115);
+  const bg = ctx.createLinearGradient(bx, 0, bx + bw, 0);
+  bg.addColorStop(0, '#25D366'); bg.addColorStop(1, '#128C7E');
+  ctx.save(); ctx.shadowColor = 'rgba(37,211,102,0.5)'; ctx.shadowBlur = 28;
+  ctx.fillStyle = bg; roundRect(ctx, bx, y, bw, bh, bh / 2); ctx.fill(); ctx.restore();
+  ctx.fillStyle = '#ffffff'; ctx.font = `800 ${Math.round(W*0.042)}px Montserrat, Arial`;
+  ctx.fillText('WhatsApp ' + (wa || ''), cx, y + bh * 0.64);
 
-  y += bh + Math.round(W * 0.06);
-  ctx.fillStyle = '#ff6a00'; ctx.font = `700 ${Math.round(W*0.042)}px Montserrat, Arial`;
-  ctx.fillText(state.opts.web || 'cellspacearg.com.ar', cx, y);
+  // web en pastilla
+  y += bh + Math.round(W * 0.07);
+  ctx.font = `700 ${Math.round(W*0.04)}px Montserrat, Arial`;
+  const web = state.opts.web || 'cellspacearg.com.ar';
+  const lw2 = ctx.measureText(web).width, ph = Math.round(W*0.07), px = Math.round(W*0.04);
+  ctx.strokeStyle = C.glassLine; ctx.lineWidth = 2; ctx.fillStyle = C.glass;
+  roundRect(ctx, cx - lw2/2 - px, y - ph*0.68, lw2 + px*2, ph, ph/2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = C.orange; ctx.fillText(web, cx, y - ph*0.05);
   ctx.textAlign = 'left';
 }
 
+/* ---------- sello ---------- */
 function drawBadge(ctx, xRight, yTop, text){
+  const W = ctx.canvas.width;
   ctx.save();
   ctx.textAlign = 'center';
-  ctx.font = `800 ${Math.round(ctx.canvas.width*0.036)}px Montserrat, "Arial Black", Arial`;
+  ctx.font = `800 ${Math.round(W*0.038)}px Montserrat, "Arial Black", Arial`;
   const tw = ctx.measureText(text.toUpperCase()).width;
-  const w = tw + 44, h = Math.round(ctx.canvas.width * 0.072);
+  const w = tw + Math.round(W*0.05), h = Math.round(W * 0.078);
   const x = xRight - w;
-  ctx.translate(x + w / 2, yTop + h / 2); ctx.rotate(-0.06);
-  ctx.fillStyle = '#ff6a00'; roundRect(ctx, -w/2, -h/2, w, h, 10); ctx.fill();
-  ctx.fillStyle = '#0a0a0a'; ctx.fillText(text.toUpperCase(), 0, h * 0.16);
+  ctx.translate(x + w / 2, yTop + h / 2); ctx.rotate(-0.07);
+  const g = ctx.createLinearGradient(-w/2, 0, w/2, 0);
+  g.addColorStop(0, '#ff3d00'); g.addColorStop(1, C.orange2);
+  ctx.shadowColor = 'rgba(255,61,0,0.55)'; ctx.shadowBlur = 22;
+  ctx.fillStyle = g; roundRect(ctx, -w/2, -h/2, w, h, 12); ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#1a0a00'; ctx.fillText(text.toUpperCase(), 0, h * 0.16);
   ctx.restore();
 }
 
 function drawFooter(ctx, W, H, pad){
+  const y = H - pad * 0.72;
+  // divisor con degradé
+  const lg = ctx.createLinearGradient(pad, 0, W - pad, 0);
+  lg.addColorStop(0, 'rgba(255,106,0,0)'); lg.addColorStop(0.5, 'rgba(255,106,0,0.45)'); lg.addColorStop(1, 'rgba(25,227,255,0)');
+  ctx.fillStyle = lg; ctx.fillRect(pad, y - Math.round(W*0.045), W - pad*2, 2);
   ctx.textAlign = 'center';
-  ctx.fillStyle = 'rgba(255,255,255,0.45)';
-  ctx.font = `600 ${Math.round(W*0.026)}px Montserrat, Arial`;
-  ctx.fillText('Cell Space Argentina  ·  ' + (state.opts.web || 'cellspacearg.com.ar'), W / 2, H - pad * 0.7);
+  ctx.fillStyle = C.muted; ctx.font = `600 ${Math.round(W*0.026)}px Montserrat, Arial`;
+  ctx.fillText('CELL SPACE ARGENTINA   ·   ' + (state.opts.web || 'cellspacearg.com.ar'), W / 2, y);
   ctx.textAlign = 'left';
 }
 
@@ -462,14 +606,15 @@ function roundRect(ctx, x, y, w, h, r){
   ctx.closePath();
 }
 
-function drawImageContain(ctx, img, x, y, w, h){
+function drawImageContain(ctx, img, x, y, w, h, softShadow){
   const ir = img.width / img.height, br = w / h;
   let dw, dh;
   if (ir > br){ dw = w; dh = w / ir; } else { dh = h; dw = h * ir; }
   const dx = x + (w - dw) / 2, dy = y + (h - dh) / 2;
   ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 16;
-  roundRect(ctx, dx, dy, dw, dh, 22); ctx.clip();
+  if (softShadow){ ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = 34; ctx.shadowOffsetY = 20; }
+  else { ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 16; }
+  roundRect(ctx, dx, dy, dw, dh, Math.round(ctx.canvas.width*0.02)); ctx.clip();
   ctx.drawImage(img, dx, dy, dw, dh);
   ctx.restore();
 }

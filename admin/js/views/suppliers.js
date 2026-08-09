@@ -1,6 +1,6 @@
-import { supabase } from '../config.js?v=cb12';
-import { store } from '../core/state.js?v=cb12';
-import { layout, mountLayout, toolbar, emptyState } from '../core/layout.js?v=cb12';
+import { supabase } from '../config.js?v=cb13';
+import { store } from '../core/state.js?v=cb13';
+import { layout, mountLayout, toolbar, emptyState } from '../core/layout.js?v=cb13';
 
 let allSuppliers = [];
 let purchasesBySupplier = {};
