@@ -1,5 +1,5 @@
-import { supabase } from '../config.js?v=cb15';
-import { layout, mountLayout } from '../core/layout.js?v=cb15';
+import { supabase } from '../config.js?v=cb16';
+import { layout, mountLayout } from '../core/layout.js?v=cb16';
 
 function money(n){ n=Number(n)||0; return (n%1===0)? n.toLocaleString('es-AR') : n.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }

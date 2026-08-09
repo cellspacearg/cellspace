@@ -1,4 +1,4 @@
-import { initAuthListener } from '../hooks/useAuth.js?v=cb15';
+import { initAuthListener } from '../hooks/useAuth.js?v=cb16';
 
 class Router {
   constructor(routes) {

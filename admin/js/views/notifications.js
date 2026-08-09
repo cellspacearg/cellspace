@@ -1,5 +1,5 @@
-import { supabase } from '../config.js?v=cb15';
-import { layout, mountLayout, toolbar, emptyState, refreshNotifBadge } from '../core/layout.js?v=cb15';
+import { supabase } from '../config.js?v=cb16';
+import { layout, mountLayout, toolbar, emptyState, refreshNotifBadge } from '../core/layout.js?v=cb16';
 
 let allNotifs = [];
 

@@ -1,5 +1,5 @@
-import { supabase } from '../config.js?v=cb15';
-import { layout, mountLayout } from '../core/layout.js?v=cb15';
+import { supabase } from '../config.js?v=cb16';
+import { layout, mountLayout } from '../core/layout.js?v=cb16';
 
 /* ============================================================
    GENERADOR DE REDES — placas de productos para Instagram/Facebook
@@ -30,6 +30,8 @@ const state = {
     badge: '', whatsapp: '', web: 'cellspacearg.com.ar', instagram: 'cellspacearg',
     // overrides editables (vacío = usa el dato del producto)
     titleOv: '', taglineOv: '', priceOv: '', discountPct: '', ctaOv: '',
+    // animación
+    motion: 'auto', duration: 30,
   },
 };
 
@@ -148,8 +150,28 @@ export async function socialView(){
           <div class="sg-card">
             <label class="sg-lbl">Tipo</label>
             <div class="sg-modes">
-              <button class="sg-mode on" data-mode="single"><i class="fas fa-image"></i> Placa única</button>
-              <button class="sg-mode" data-mode="carousel"><i class="fas fa-layer-group"></i> Carrusel (3)</button>
+              <button class="sg-mode on" data-mode="single"><i class="fas fa-image"></i> Placa</button>
+              <button class="sg-mode" data-mode="carousel"><i class="fas fa-layer-group"></i> Carrusel</button>
+              <button class="sg-mode" data-mode="animated"><i class="fas fa-film"></i> Animado</button>
+            </div>
+            <div id="sgAnimOpts" style="display:none;margin-top:12px;">
+              <label class="sg-lbl">Movimiento</label>
+              <select id="sgMotion" class="sg-input sg-select">
+                <option value="auto">Automático (según plantilla)</option>
+                <option value="kenburns">Zoom cinematográfico</option>
+                <option value="reveal">Reveal / cortina</option>
+                <option value="glow">Glow + barrido de luz</option>
+                <option value="slide">Slide de entrada</option>
+                <option value="punch">Zoom punch</option>
+                <option value="float">Flotante</option>
+              </select>
+              <label class="sg-lbl" style="margin-top:12px;">Duración</label>
+              <div class="sg-modes" id="sgDur">
+                <button class="sg-mode" data-dur="15">15s</button>
+                <button class="sg-mode" data-dur="20">20s</button>
+                <button class="sg-mode on" data-dur="30">30s</button>
+                <button class="sg-mode" data-dur="45">45s</button>
+              </div>
             </div>
           </div>
 
@@ -202,7 +224,14 @@ export function socialViewOnMount(){
   ov('sgTitleOv', 'titleOv'); ov('sgTaglineOv', 'taglineOv'); ov('sgPriceOv', 'priceOv'); ov('sgDiscount', 'discountPct'); ov('sgCtaOv', 'ctaOv');
   document.querySelectorAll('.sg-mode[data-mode]').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('.sg-mode[data-mode]').forEach(x => x.classList.remove('on'));
-    b.classList.add('on'); state.mode = b.dataset.mode; updateDlText(); renderPreview();
+    b.classList.add('on'); state.mode = b.dataset.mode;
+    document.getElementById('sgAnimOpts').style.display = state.mode === 'animated' ? 'block' : 'none';
+    updateDlText(); renderPreview();
+  }));
+  document.getElementById('sgMotion').addEventListener('change', e => { state.opts.motion = e.target.value; renderPreview(); });
+  document.querySelectorAll('#sgDur .sg-mode').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('#sgDur .sg-mode').forEach(x => x.classList.remove('on'));
+    b.classList.add('on'); state.opts.duration = Number(b.dataset.dur); renderPreview();
   }));
   document.querySelectorAll('.sg-mode[data-cur]').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('.sg-mode[data-cur]').forEach(x => x.classList.remove('on'));
@@ -275,21 +304,29 @@ function filterProducts(e){
 }
 
 function updateDlText(){
-  document.getElementById('sgDlText').textContent = state.mode === 'carousel' ? 'Descargar las 3' : 'Descargar PNG';
+  const el = document.getElementById('sgDlText');
+  el.textContent = state.mode === 'carousel' ? 'Descargar las 3'
+    : state.mode === 'animated' ? 'Exportar video (WEBM)' : 'Descargar PNG';
 }
 
 /* ---------- preview ---------- */
 
+let animLoop = null; // handle del requestAnimationFrame del preview animado
+function stopAnim(){ if (animLoop){ cancelAnimationFrame(animLoop); animLoop = null; } }
+
 async function renderPreview(){
+  stopAnim();
   const cont = document.getElementById('sgPreview');
   const product = allProducts.find(p => p.id === state.productId);
   if (!product){ cont.innerHTML = '<div class="sg-empty"><i class="fas fa-arrow-left"></i> Elegí un producto para ver la placa</div>'; return; }
 
-  const slides = state.mode === 'carousel' ? ['hero', 'specs', 'cta'] : ['full'];
   cont.innerHTML = '<div class="sg-loading"><i class="fas fa-spinner fa-spin"></i> Armando placa...</div>';
-
   const photo = await loadImage(product.image_url).catch(() => null);
   const ep = effProduct(product);
+
+  if (state.mode === 'animated'){ renderAnimatedPreview(cont, ep, photo); return; }
+
+  const slides = state.mode === 'carousel' ? ['hero', 'specs', 'cta'] : ['full'];
   const frag = document.createElement('div');
   frag.className = 'sg-canvases';
 
@@ -314,17 +351,119 @@ async function renderPreview(){
   cont.appendChild(frag);
 }
 
+/* ---------- animación ---------- */
+
+function motionForTemplate(){
+  if (state.opts.motion !== 'auto') return state.opts.motion;
+  const arc = currentTpl().arc;
+  return ({ hero:'kenburns', sale:'punch', minimal:'float', spec:'reveal', card:'reveal', service:'slide', editorial:'slide', spotlight:'float' })[arc] || 'kenburns';
+}
+function easeOut(x){ return 1 - Math.pow(1 - x, 3); }
+
+function renderAnimatedPreview(cont, ep, photo){
+  const s = SIZES[state.size];
+  const base = document.createElement('canvas'); base.width = s.w; base.height = s.h;
+  drawSlide(base, ep, state.size, 'full', photo); // fija el tema/acento actual en C
+  const canvas = document.createElement('canvas'); canvas.width = s.w; canvas.height = s.h; canvas.className = 'sg-canvas';
+  const ctx = canvas.getContext('2d');
+  const box = document.createElement('div'); box.className = 'sg-canvas-box'; box.appendChild(canvas);
+  const tag = document.createElement('span'); tag.className = 'sg-slide-tag';
+  tag.textContent = `Animado · ${state.opts.duration}s · ${motionForTemplate()}`; box.appendChild(tag);
+  const frag = document.createElement('div'); frag.className = 'sg-canvases'; frag.appendChild(box);
+  cont.innerHTML = ''; cont.appendChild(frag);
+  const motion = motionForTemplate(), durMs = state.opts.duration * 1000, start = performance.now();
+  function loop(now){ const t = ((now - start) % durMs) / durMs; drawAnimFrame(ctx, base, t, motion); animLoop = requestAnimationFrame(loop); }
+  animLoop = requestAnimationFrame(loop);
+}
+
+function drawAnimFrame(ctx, base, t, motion){
+  const W = ctx.canvas.width, H = ctx.canvas.height;
+  ctx.save();
+  ctx.fillStyle = '#05070c'; ctx.fillRect(0, 0, W, H);
+  const intro = 0.12, outro = 0.94;
+  const ein = easeOut(Math.min(1, t / intro));
+  const amb = Math.min(1, Math.max(0, (t - intro) / (outro - intro)));
+  let sc = 1, tx = 0, ty = 0, alpha = 1, clipW = W;
+  if (motion === 'kenburns'){ sc = (1.05 - 0.03 * ein) + 0.05 * t; tx = -W * 0.02 * t; ty = -H * 0.01 * t; alpha = ein; }
+  else if (motion === 'punch'){ sc = 1.18 - 0.18 * ein + 0.01 * Math.sin(amb * Math.PI * 4); alpha = ein; }
+  else if (motion === 'float'){ sc = 1.02 + 0.02 * t; ty = Math.sin(t * Math.PI * 4) * H * 0.008; alpha = ein; }
+  else if (motion === 'slide'){ ty = (1 - ein) * H * 0.12; alpha = ein; sc = 1.02; }
+  else if (motion === 'reveal'){ clipW = ein * W; sc = 1.02; }
+  else { sc = 1.02 + 0.015 * t; alpha = ein; }
+  ctx.globalAlpha = alpha;
+  ctx.save();
+  if (motion === 'reveal'){ ctx.beginPath(); ctx.rect(0, 0, clipW, H); ctx.clip(); }
+  ctx.translate(W / 2 + tx, H / 2 + ty); ctx.scale(sc, sc); ctx.translate(-W / 2, -H / 2);
+  ctx.drawImage(base, 0, 0, W, H);
+  ctx.restore();
+  ctx.globalAlpha = 1;
+  // barrido de luz
+  const sweep = (t * 1.4) % 1, sx = sweep * W * 1.6 - W * 0.3;
+  const inten = motion === 'glow' ? 0.14 : 0.06;
+  const lg = ctx.createLinearGradient(sx, 0, sx + W * 0.3, H);
+  lg.addColorStop(0, 'rgba(255,255,255,0)'); lg.addColorStop(0.5, `rgba(255,255,255,${inten})`); lg.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H);
+  if (motion === 'glow'){ const pulse = 0.08 + 0.1 * Math.abs(Math.sin(t * Math.PI * 3));
+    const rg = ctx.createRadialGradient(W / 2, H * 0.4, 0, W / 2, H * 0.4, W * 0.7);
+    rg.addColorStop(0, rgba(C.a, pulse)); rg.addColorStop(1, rgba(C.a, 0)); ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H); }
+  ctx.restore();
+}
+
+async function exportWebm(ep, photo, btn){
+  const s = SIZES[state.size];
+  const base = document.createElement('canvas'); base.width = s.w; base.height = s.h;
+  drawSlide(base, ep, state.size, 'full', photo);
+  const cap = document.createElement('canvas'); cap.width = s.w; cap.height = s.h;
+  const cctx = cap.getContext('2d');
+  if (typeof cap.captureStream !== 'function' || typeof MediaRecorder === 'undefined'){
+    alert('Tu navegador no soporta exportar video. Probá con Chrome actualizado.'); return;
+  }
+  const motion = motionForTemplate(), durMs = state.opts.duration * 1000;
+  const stream = cap.captureStream(30);
+  const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
+  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 8000000 });
+  const chunks = []; rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+  const stopped = new Promise(res => rec.onstop = res);
+  rec.start(200);
+  const start = performance.now();
+  await new Promise(res => {
+    function frame(now){
+      const t = Math.min(1, (now - start) / durMs);
+      drawAnimFrame(cctx, base, t, motion);
+      if (btn) btn.querySelector('#sgDlText').textContent = `Grabando ${Math.round(t*100)}%`;
+      if (t < 1) requestAnimationFrame(frame); else res();
+    }
+    requestAnimationFrame(frame);
+  });
+  rec.stop(); await stopped;
+  const blob = new Blob(chunks, { type: 'video/webm' });
+  const url = URL.createObjectURL(blob); const a = document.createElement('a');
+  a.href = url; a.download = slug(ep.name) + '-' + state.size + '-' + state.opts.duration + 's.webm';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
 /* ---------- descarga ---------- */
 
 async function downloadAll(){
+  const btn = document.getElementById('sgDownload');
+  const product = allProducts.find(p => p.id === state.productId);
+  if (!product) return;
+
+  if (state.mode === 'animated'){
+    btn.disabled = true;
+    try { const photo = await loadImage(product.image_url).catch(() => null); await exportWebm(effProduct(product), photo, btn); }
+    catch (e) { alert('No se pudo exportar el video: ' + e.message); }
+    finally { btn.disabled = false; updateDlText(); }
+    return;
+  }
+
   const canvases = document.querySelectorAll('#sgPreview canvas');
   if (!canvases.length) return;
-  const product = allProducts.find(p => p.id === state.productId);
-  const base = slug(product ? product.name : 'placa') + '-' + state.size;
+  const base = slug(product.name) + '-' + state.size;
   for (let i = 0; i < canvases.length; i++){
     const suffix = canvases.length > 1 ? '-' + (i + 1) : '';
     await downloadCanvas(canvases[i], base + suffix + '.png');
-    await new Promise(r => setTimeout(r, 250)); // el navegador necesita aire entre descargas
+    await new Promise(r => setTimeout(r, 250));
   }
 }
 
