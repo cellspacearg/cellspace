@@ -1,5 +1,5 @@
-import { supabase } from '../config.js?v=cb17';
-import { layout, mountLayout } from '../core/layout.js?v=cb17';
+import { supabase } from '../config.js?v=cb18';
+import { layout, mountLayout } from '../core/layout.js?v=cb18';
 
 /* ============================================================
    GENERADOR DE REDES — placas de productos para Instagram/Facebook
@@ -83,6 +83,41 @@ const TEMPLATES = [
   { id:'ai-custom',     name:'AI Custom',         group:'Institucional', arc:'editorial', p:{ eyebrow:'CELL SPACE' } },
 ];
 function currentTpl(){ return TEMPLATES.find(t => t.id === state.template) || TEMPLATES[0]; }
+
+// Prompts de video IA (Runway/Kling) por plantilla. El {P} se reemplaza por el nombre del producto.
+const VP = {
+  phone:  'Commercial product ad for a smartphone {P}, isolated transparent PNG floating centered, dark premium studio with soft top spotlight, smooth 360 Y-axis rotation, metallic edge reflections, lens flare sweep, professional 4k, 9:16.',
+  newph:  'High speed commercial intro, isolated smartphone PNG {P} bursting forward from center, smooth ease-out stop, vibrant blue energy shockwave ring behind, studio lighting, cinematic 4k, 9:16.',
+  flagship:'Modern tech ad, floating isolated smartphone PNG {P} on right, frosted glass spec panels on left, ambient lighting, gentle floating bobbing, bokeh depth, minimalist, ultra sharp 4k, 9:16.',
+  case:   'Slow motion protection ad, isolated smartphone PNG {P} falling gracefully, shockwave aura, cinematic dark studio, floating dust particles, crisp shadows, 4k, 9:16.',
+  charger:'High power charger commercial, isolated GaN charger PNG {P} floating in dark room, electric lightning pulsing in, glowing particles, fast edit, 4k 60fps, 9:16.',
+  cable:  'Macro USB-C cable ad, isolated braided cable PNG {P} floating angled, extreme close-up slide over metallic connector, dark industrial background, high contrast, 4k, 9:16.',
+  watch:  'Smartwatch fitness commercial, isolated smartwatch PNG {P} floating angled, holographic health rings spinning around it, dark energetic background, orbit camera, 4k, 9:16.',
+  earbuds:'Wireless earbuds video, isolated earbud PNG {P} hovering, concentric 3D soundwave rings expanding, dark purple aesthetic, volumetric lighting, camera float, 4k, 9:16.',
+  console:'Cinematic gaming ad, isolated console PNG {P} floating, glowing blue/cyan energy portal opening behind, volumetric beams, slow camera drift, 3d motion graphics, 4k, 9:16.',
+  laptop: 'Premium laptop commercial, isolated laptop PNG {P} slowly lifting and opening in mid-air, diffused architectural studio lighting, frosted glass aesthetic, high-end 4k, 9:16.',
+  license:'Digital product showcase, glowing 3D metallic license card PNG {P} floating, cyber data streams and code lines behind, gold and cyan light sweep, camera tilt, 4k, 9:16.',
+  sale:   'Fast-paced flash sale promo, isolated product PNG {P} floating centered, dramatic flashing amber lights, energetic camera pulse, floating sale badges, high contrast, 4k, 9:16.',
+  premium:'Ultra luxury tech ad, isolated product PNG {P} hovering over dark marble with gold accent reflections, slow cinematic overhead tilt, elegant minimalist, hyper real, 4k 60fps, 9:16.',
+  service:'Tech repair service ad, technician hands and smartphone {P}, clean modern studio, tools and glowing UI overlays, smooth camera, professional 4k, 9:16.',
+  store:  'Tech store promo, brand logo and product montage {P}, dynamic modern transitions, neon accents on dark background, energetic motion graphics, 4k, 9:16.',
+  generic:'Modern tech product commercial, isolated transparent PNG {P} floating in a dark premium studio, soft spotlight, subtle rotation and light sweep, clean motion graphics, 4k, 9:16.',
+};
+const TPL_VP = {
+  'product-hero':'flagship','premium':'premium','product-card':'flagship','product-specs':'flagship','new-arrival':'newph',
+  'smartphone':'phone','android':'phone','accesorios':'generic','fundas':'case','cargadores':'charger','cables':'cable',
+  'smartwatch':'watch','notebook':'laptop','consolas':'console',
+  'hot-sale':'sale','flash-sale':'sale','cyber':'sale','black-friday':'sale','liquidacion':'sale','price-drop':'sale','promo':'sale','comparacion':'flagship',
+  'servicio':'service','reparacion':'service','antes-despues':'service',
+  'licencia':'license','activacion':'license','tool':'license','servidor':'license','software':'license',
+  'comunicado':'store','central-space':'store','promo-web':'store','ai-custom':'generic',
+};
+function videoPromptFor(){
+  const key = TPL_VP[state.template] || 'generic';
+  const prod = allProducts.find(p => p.id === state.productId);
+  const name = prod ? (prod.name || '') : '';
+  return (VP[key] || VP.generic).replace('{P}', name ? '(' + name + ')' : '').replace('  ', ' ');
+}
 
 // Rubros: cada uno ajusta el eyebrow y la lista de 3 features (ícono + 2 líneas).
 // Placeholders: {bat}=batería, {war}=garantía. Se resuelven con datos reales.
@@ -182,6 +217,10 @@ export async function socialView(){
               <label style="display:flex;align-items:center;gap:9px;font-size:13.5px;color:#ddd;cursor:pointer;margin-top:10px;">
                 <input type="checkbox" id="sgOutro" checked style="accent-color:#ff6a00;width:16px;height:16px;"> Cierre con logo + web
               </label>
+              <label class="sg-lbl" style="margin-top:14px;">Prompt para video IA (Runway/Kling)</label>
+              <textarea id="sgVPrompt" class="sg-input" rows="4" readonly style="resize:vertical;font-size:12px;line-height:1.4;"></textarea>
+              <button type="button" class="btn-secondary" id="sgCopyVP" style="width:100%;padding:9px;font-size:13px;"><i class="fas fa-copy"></i> Copiar prompt</button>
+              <p style="font-size:11.5px;color:#777;margin:6px 0 0;">Para la versión 3D cinematográfica (rotación/partículas), pegá este prompt en Runway o Kling. El panel exporta la versión 2D branded.</p>
             </div>
           </div>
 
@@ -241,6 +280,11 @@ export function socialViewOnMount(){
   document.getElementById('sgMotion').addEventListener('change', e => { state.opts.motion = e.target.value; renderPreview(); });
   document.getElementById('sgAudio').addEventListener('change', e => { audioFile = e.target.files[0] || null; document.getElementById('sgAudioName').textContent = audioFile ? '♪ ' + audioFile.name : ''; });
   document.getElementById('sgOutro').addEventListener('change', e => { state.opts.outro = e.target.checked; renderPreview(); });
+  document.getElementById('sgCopyVP').addEventListener('click', () => {
+    const ta = document.getElementById('sgVPrompt');
+    navigator.clipboard?.writeText(ta.value).catch(() => { ta.select(); document.execCommand('copy'); });
+    const b = document.getElementById('sgCopyVP'); const h = b.innerHTML; b.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!'; setTimeout(() => b.innerHTML = h, 1500);
+  });
   document.querySelectorAll('#sgDur .sg-mode').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('#sgDur .sg-mode').forEach(x => x.classList.remove('on'));
     b.classList.add('on'); state.opts.duration = Number(b.dataset.dur); renderPreview();
@@ -326,8 +370,14 @@ function updateDlText(){
 let animLoop = null; // handle del requestAnimationFrame del preview animado
 function stopAnim(){ if (animLoop){ cancelAnimationFrame(animLoop); animLoop = null; } }
 
+function updateVPrompt(){
+  const ta = document.getElementById('sgVPrompt');
+  if (ta) ta.value = videoPromptFor();
+}
+
 async function renderPreview(){
   stopAnim();
+  updateVPrompt();
   const cont = document.getElementById('sgPreview');
   const isWeb = currentTpl().arc === 'web';
   const product = allProducts.find(p => p.id === state.productId) || (isWeb ? { name: 'CELL SPACE' } : null);
