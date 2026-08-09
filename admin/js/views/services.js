@@ -1,5 +1,5 @@
-import { supabase } from '../config.js?v=cb7';
-import { store } from '../core/state.js?v=cb7';
+import { supabase } from '../config.js?v=cb8';
+import { store } from '../core/state.js?v=cb8';
 
 let allServices = [];
 let currentEditId = null;

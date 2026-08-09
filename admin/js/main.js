@@ -1,22 +1,23 @@
-import Router from './core/router.js?v=cb7';
-import { checkSession } from './hooks/useAuth.js?v=cb7';
-import { loginView, loginViewOnMount } from './views/login.js?v=cb7';
-import { dashboardView, dashboardViewOnMount } from './views/dashboard.js?v=cb7';
-import { productsView, productsViewOnMount } from './views/products.js?v=cb7';
-import { categoriesView, categoriesViewOnMount } from './views/categories.js?v=cb7';
-import { servicesView, servicesViewOnMount } from './views/services.js?v=cb7';
-import { pagesView, pagesViewOnMount } from './views/pages.js?v=cb7';
-import { builderView, builderViewOnMount } from './views/builder.js?v=cb7';
-import { mediaView, mediaViewOnMount } from './views/media.js?v=cb7';
-import { settingsView, settingsViewOnMount } from './views/settings.js?v=cb7';
-import { customersView, customersViewOnMount } from './views/customers.js?v=cb7';
-import { ordersView, ordersViewOnMount } from './views/orders.js?v=cb7';
-import { centralView, centralViewOnMount } from './views/central.js?v=cb7';
-import { repairsView, repairsViewOnMount } from './views/repairs.js?v=cb7';
-import { inventoryView, inventoryViewOnMount } from './views/inventory.js?v=cb7';
-import { reportsView, reportsViewOnMount } from './views/reports.js?v=cb7';
-import { suppliersView, suppliersViewOnMount } from './views/suppliers.js?v=cb7';
-import { notFoundView, notFoundViewOnMount } from './views/not-found.js?v=cb7';
+import Router from './core/router.js?v=cb8';
+import { checkSession } from './hooks/useAuth.js?v=cb8';
+import { loginView, loginViewOnMount } from './views/login.js?v=cb8';
+import { dashboardView, dashboardViewOnMount } from './views/dashboard.js?v=cb8';
+import { productsView, productsViewOnMount } from './views/products.js?v=cb8';
+import { categoriesView, categoriesViewOnMount } from './views/categories.js?v=cb8';
+import { servicesView, servicesViewOnMount } from './views/services.js?v=cb8';
+import { pagesView, pagesViewOnMount } from './views/pages.js?v=cb8';
+import { builderView, builderViewOnMount } from './views/builder.js?v=cb8';
+import { mediaView, mediaViewOnMount } from './views/media.js?v=cb8';
+import { settingsView, settingsViewOnMount } from './views/settings.js?v=cb8';
+import { customersView, customersViewOnMount } from './views/customers.js?v=cb8';
+import { ordersView, ordersViewOnMount } from './views/orders.js?v=cb8';
+import { centralView, centralViewOnMount } from './views/central.js?v=cb8';
+import { repairsView, repairsViewOnMount } from './views/repairs.js?v=cb8';
+import { inventoryView, inventoryViewOnMount } from './views/inventory.js?v=cb8';
+import { reportsView, reportsViewOnMount } from './views/reports.js?v=cb8';
+import { suppliersView, suppliersViewOnMount } from './views/suppliers.js?v=cb8';
+import { expensesView, expensesViewOnMount } from './views/expenses.js?v=cb8';
+import { notFoundView, notFoundViewOnMount } from './views/not-found.js?v=cb8';
 
 function showError(msg){
   const app = document.getElementById('app');
@@ -57,6 +58,7 @@ try {
     '/inventory':  { component: inventoryView,  onMount: inventoryViewOnMount,  beforeEnter: auth },
     '/reports':    { component: reportsView,    onMount: reportsViewOnMount,    beforeEnter: auth },
     '/suppliers':  { component: suppliersView,  onMount: suppliersViewOnMount,  beforeEnter: auth },
+    '/expenses':   { component: expensesView,   onMount: expensesViewOnMount,   beforeEnter: auth },
     '/404':        { component: notFoundView,   onMount: notFoundViewOnMount,   beforeEnter: auth },
   };
 

@@ -181,7 +181,8 @@ Cada fase sigue el loop: analizar → implementar → conectar → probar (CRUD/
 - `[~]` **Inventario** — tabla `stock_movements` (ledger) con trigger que ajusta `products.stock` automáticamente (entrada/salida/ajuste/devolución/venta) y guarda qty_before/after + motivo + usuario. RLS (products.manage). Admin `#/inventory`: registrar movimiento, historial, alerta de stock bajo. Trigger verificado (entrada +10 → stock 0→10). Falta test logueado.
 - `[~]` **Reportes** — vista `#/reports` con KPIs (ingresos cobrados, pedidos, ticket promedio, reparaciones abiertas), ventas por mes (últimos 6), reparaciones por estado y productos más vendidos. Derivado de datos reales (orders/repairs/products), sin librerías (barras CSS). Falta test logueado.
 - `[~]` **Proveedores** — tablas `suppliers` + `supplier_purchases`; admin `#/suppliers` (alta/edición, compras por proveedor con total). RLS products.manage. Falta test logueado.
-- `[ ]` Técnicos · `[ ]` Crédito técnicos · `[ ]` Promociones · `[ ]` Gastos · `[ ]` Notificaciones · `[ ]` Auditoría
+- `[~]` **Gastos** — tabla `expenses` (categorías: alquiler/servicios/sueldos/insumos/impuestos/marketing/mantenimiento/otro). Admin `#/expenses` (alta/edición, filtros, total del mes y total general). RLS products.manage. Falta test logueado.
+- `[ ]` Técnicos · `[ ]` Crédito técnicos · `[ ]` Promociones · `[ ]` Notificaciones · `[ ]` Auditoría
 
 ### Storage
 - `[✓]` Buckets creados y verificados: `cms-media` (público), `repair-media` (privado), `documents` (privado), además de `product-images` existente. Políticas: lectura pública + escritura admin (cms-media); solo admin (privados).
