@@ -1,0 +1,236 @@
+<title>Herramientas de Cell Space Argentina</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --bg:#f4f4f6; --panel:#ffffff; --line:#e4e4e8; --line-soft:#eeeef1;
+    --ink:#18181b; --muted:#6b6b74; --faint:#9a9aa2;
+    --accent:#e85f00; --accent-ink:#ffffff; --accent-tint:#fbe9d8;
+    --ok:#2e7d46; --chip:#f0f0f3;
+    --radius:16px; --maxw:1080px;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#0d0d0f; --panel:#161619; --line:#2a2a2f; --line-soft:#212125;
+      --ink:#f3f3f5; --muted:#a2a2ac; --faint:#6c6c76;
+      --accent:#ff6a00; --accent-ink:#0d0d0f; --accent-tint:#3a2313;
+      --ok:#4caf6a; --chip:#1e1e22;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f4f4f6; --panel:#ffffff; --line:#e4e4e8; --line-soft:#eeeef1;
+    --ink:#18181b; --muted:#6b6b74; --faint:#9a9aa2;
+    --accent:#e85f00; --accent-ink:#ffffff; --accent-tint:#fbe9d8;
+    --ok:#2e7d46; --chip:#f0f0f3;
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d0d0f; --panel:#161619; --line:#2a2a2f; --line-soft:#212125;
+    --ink:#f3f3f5; --muted:#a2a2ac; --faint:#6c6c76;
+    --accent:#ff6a00; --accent-ink:#0d0d0f; --accent-tint:#3a2313;
+    --ok:#4caf6a; --chip:#1e1e22;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);
+    line-height:1.55;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:48px 24px 72px;}
+
+  /* Header */
+  .head{border-bottom:1px solid var(--line);padding-bottom:28px;margin-bottom:36px;}
+  .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);
+    font-weight:700;margin:0 0 10px;}
+  h1{font-size:clamp(28px,5vw,40px);line-height:1.08;letter-spacing:-.02em;margin:0 0 12px;
+    font-weight:800;text-wrap:balance;}
+  .lede{font-size:16px;color:var(--muted);max-width:60ch;margin:0;}
+
+  /* Quick access */
+  .quick{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:28px 0 44px;}
+  @media (max-width:620px){.quick{grid-template-columns:1fr}}
+  .qcard{display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit;
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px 20px;transition:border-color .15s,transform .15s;}
+  .qcard:hover{border-color:var(--accent);transform:translateY(-2px);}
+  .qcard .qi{font-size:24px;line-height:1;}
+  .qcard b{display:block;font-size:15px;}
+  .qcard span{font-size:13px;color:var(--muted);}
+  .qcard .go{margin-left:auto;color:var(--accent);font-weight:700;font-size:18px;}
+
+  /* Section */
+  .section{margin-top:40px;}
+  .section-h{display:flex;align-items:baseline;gap:12px;margin:0 0 4px;}
+  .section-h h2{font-size:14px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink);font-weight:700;margin:0;}
+  .section-h .rule{flex:1;height:1px;background:var(--line);}
+  .section > p.note{color:var(--faint);font-size:13px;margin:0 0 18px;}
+
+  /* Tool cards */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media (max-width:720px){.grid{grid-template-columns:1fr}}
+  .tool{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px;display:flex;flex-direction:column;gap:12px;}
+  .tool-top{display:flex;align-items:center;gap:12px;}
+  .badge{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;
+    font-size:22px;background:var(--accent-tint);flex-shrink:0;}
+  .tool-top .name{font-size:17px;font-weight:800;letter-spacing:-.01em;}
+  .tool-top .kind{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.1em;
+    margin-top:1px;}
+  .tool p{margin:0;font-size:14px;color:var(--muted);}
+  .tool .use{font-size:13px;color:var(--ink);background:var(--chip);border-radius:10px;
+    padding:10px 12px;}
+  .tool .use b{color:var(--accent);}
+  .tool-foot{display:flex;align-items:center;gap:10px;margin-top:auto;padding-top:4px;flex-wrap:wrap;}
+  .link{display:inline-flex;align-items:center;gap:6px;text-decoration:none;
+    background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:13px;
+    padding:9px 15px;border-radius:10px;transition:opacity .15s;}
+  .link:hover{opacity:.88;}
+  .login{font-size:12px;color:var(--faint);}
+  .login b{color:var(--muted);font-weight:600;}
+
+  footer{margin-top:52px;padding-top:22px;border-top:1px solid var(--line);
+    color:var(--faint);font-size:13px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  a.plain{color:var(--accent);text-decoration:none;}
+</style>
+
+<div class="wrap">
+  <header class="head">
+    <p class="eyebrow">Cell Space Argentina · Guía interna</p>
+    <h1>Las herramientas de tu sistema, y qué hace cada una</h1>
+    <p class="lede">Todo lo que mantiene tu web y tu panel funcionando. Guardá esta página en favoritos: cada tarjeta te dice para qué sirve el servicio y te lleva directo a su panel.</p>
+  </header>
+
+  <!-- Tus paneles de trabajo -->
+  <div class="quick">
+    <a class="qcard" href="https://cellspacearg.com.ar/admin" target="_blank" rel="noopener">
+      <span class="qi">🗂️</span>
+      <span><b>Tu Panel (CMS + ERP)</b><span>Donde manejás productos, pedidos, reparaciones, stock…</span></span>
+      <span class="go">→</span>
+    </a>
+    <a class="qcard" href="https://cellspacearg.com.ar" target="_blank" rel="noopener">
+      <span class="qi">🌐</span>
+      <span><b>Tu Web pública</b><span>Lo que ven tus clientes: cellspacearg.com.ar</span></span>
+      <span class="go">→</span>
+    </a>
+  </div>
+
+  <!-- FUNDAMENTOS -->
+  <section class="section">
+    <div class="section-h"><h2>El motor</h2><span class="rule"></span></div>
+    <p class="note">La base sobre la que corre todo. Si algo grande falla, suele estar acá.</p>
+    <div class="grid">
+
+      <article class="tool">
+        <div class="tool-top">
+          <div class="badge">🧠</div>
+          <div><div class="name">Supabase</div><div class="kind">Backend · Base de datos</div></div>
+        </div>
+        <p>El cerebro del sistema. Guarda todo: productos, pedidos, reparaciones, clientes, las cuentas de usuario (login/registro), las imágenes y la lógica de los pagos.</p>
+        <div class="use"><b>En Cell Space:</b> tu panel y tu web leen y escriben acá. Los códigos por email y el login con Google también se configuran desde acá.</div>
+        <div class="tool-foot">
+          <a class="link" href="https://supabase.com/dashboard/project/cfoajkbzsqyimbfjhfsa" target="_blank" rel="noopener">Abrir panel ↗</a>
+          <span class="login">Entrás con <b>tu cuenta de Supabase</b></span>
+        </div>
+      </article>
+
+      <article class="tool">
+        <div class="tool-top">
+          <div class="badge">💾</div>
+          <div><div class="name">GitHub</div><div class="kind">Código · Publicación</div></div>
+        </div>
+        <p>Guarda el código de tu web y lo publica online. Cada cambio que se sube acá se ve en cellspacearg.com.ar a los pocos minutos.</p>
+        <div class="use"><b>En Cell Space:</b> es el hosting de tu sitio. No lo tocás en el día a día; trabaja solo.</div>
+        <div class="tool-foot">
+          <a class="link" href="https://github.com/cellspacearg/cellspace" target="_blank" rel="noopener">Abrir repositorio ↗</a>
+          <span class="login">Entrás con <b>tu cuenta de GitHub</b></span>
+        </div>
+      </article>
+
+      <article class="tool">
+        <div class="tool-top">
+          <div class="badge">☁️</div>
+          <div><div class="name">Cloudflare</div><div class="kind">Dominio · DNS</div></div>
+        </div>
+        <p>Maneja tu dominio <b>cellspacearg.com.ar</b> (el DNS): la conexión entre el nombre de tu web y los servidores.</p>
+        <div class="use"><b>En Cell Space:</b> acá se verificó el dominio para que Resend pueda mandar tus emails desde <b>@cellspacearg.com.ar</b>.</div>
+        <div class="tool-foot">
+          <a class="link" href="https://dash.cloudflare.com" target="_blank" rel="noopener">Abrir panel ↗</a>
+          <span class="login">Entrás con <b>tu cuenta de Cloudflare</b></span>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- EMAILS -->
+  <section class="section">
+    <div class="section-h"><h2>Emails</h2><span class="rule"></span></div>
+    <p class="note">Son dos servicios distintos, cada uno manda un tipo de mail diferente. No se pisan.</p>
+    <div class="grid">
+
+      <article class="tool">
+        <div class="tool-top">
+          <div class="badge">📮</div>
+          <div><div class="name">Resend</div><div class="kind">Emails de acceso</div></div>
+        </div>
+        <p>Manda los <b>códigos de seguridad</b>: el de iniciar sesión, el de registro y el de recuperar contraseña. Llegan confiables a la casilla del cliente.</p>
+        <div class="use"><b>En Cell Space:</b> conectado a Supabase por SMTP. Fue lo que resolvió que los códigos “no llegaban”.</div>
+        <div class="tool-foot">
+          <a class="link" href="https://resend.com/overview" target="_blank" rel="noopener">Abrir panel ↗</a>
+          <span class="login">Entrás con <b>tu cuenta de Resend</b></span>
+        </div>
+      </article>
+
+      <article class="tool">
+        <div class="tool-top">
+          <div class="badge">🧾</div>
+          <div><div class="name">EmailJS</div><div class="kind">Aviso de pedido</div></div>
+        </div>
+        <p>Manda el <b>email de confirmación de pedido</b> cuando un cliente completa una compra en el checkout.</p>
+        <div class="use"><b>En Cell Space:</b> es un canal aparte de los códigos. Se dispara solo desde la web al comprar.</div>
+        <div class="tool-foot">
+          <a class="link" href="https://dashboard.emailjs.com/admin" target="_blank" rel="noopener">Abrir panel ↗</a>
+          <span class="login">Entrás con <b>tu cuenta de EmailJS</b></span>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ACCESO Y PAGOS -->
+  <section class="section">
+    <div class="section-h"><h2>Acceso y pagos</h2><span class="rule"></span></div>
+    <p class="note">Lo que permite que tus clientes entren y te compren.</p>
+    <div class="grid">
+
+      <article class="tool">
+        <div class="tool-top">
+          <div class="badge">🔑</div>
+          <div><div class="name">Google Cloud</div><div class="kind">Login con Google</div></div>
+        </div>
+        <p>Genera las credenciales que hacen funcionar el botón <b>“Continuar con Google”</b> en tu login.</p>
+        <div class="use"><b>En Cell Space:</b> creaste ahí el “cliente OAuth” y esas claves se pegaron en Supabase. Es de configurar una vez y olvidarse.</div>
+        <div class="tool-foot">
+          <a class="link" href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Abrir panel ↗</a>
+          <span class="login">Entrás con <b>tu cuenta de Google</b></span>
+        </div>
+      </article>
+
+      <article class="tool">
+        <div class="tool-top">
+          <div class="badge">💳</div>
+          <div><div class="name">Mercado Pago</div><div class="kind">Cobros online</div></div>
+        </div>
+        <p>Procesa los <b>pagos con tarjeta</b> del checkout (Checkout Pro) y te avisa cuándo un pedido quedó pagado.</p>
+        <div class="use"><b>En Cell Space:</b> conectado a la web por una clave secreta. Ahí ves y administrás la plata que entra.</div>
+        <div class="tool-foot">
+          <a class="link" href="https://www.mercadopago.com.ar/home" target="_blank" rel="noopener">Abrir panel ↗</a>
+          <span class="login">Entrás con <b>tu cuenta de Mercado Pago</b></span>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <footer>
+    <span>Guía interna de Cell Space Argentina · Guardala en favoritos.</span>
+    <span><a class="plain" href="https://cellspacearg.com.ar" target="_blank" rel="noopener">cellspacearg.com.ar</a></span>
+  </footer>
+</div>
