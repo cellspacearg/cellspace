@@ -2,7 +2,7 @@
 // LAYOUT COMPARTIDO DEL PANEL
 // Todas las vistas lo usan: dejan de repetir sidebar/topbar/footer
 // ============================================================
-import { store } from './state.js?v=cb13';
+import { store } from './state.js?v=cb14';
 
 /* Menú en un solo lugar. Agregás un ítem acá y aparece en todo el panel. */
 export const MENU = [
@@ -152,7 +152,7 @@ export async function refreshNotifBadge(){
   const el = document.getElementById('notifBadge');
   if (!el) return;
   try {
-    const { supabase } = await import('../config.js?v=cb13');
+    const { supabase } = await import('../config.js?v=cb14');
     const { count, error } = await supabase
       .from('notifications').select('id', { count: 'exact', head: true }).eq('is_read', false);
     if (error) return;

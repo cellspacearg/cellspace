@@ -1,5 +1,5 @@
-import { supabase, ADMIN_EMAIL } from '../config.js?v=cb13';
-import { store } from '../core/state.js?v=cb13';
+import { supabase, ADMIN_EMAIL } from '../config.js?v=cb14';
+import { store } from '../core/state.js?v=cb14';
 
 // Listener de sesión persistente (se ejecuta una sola vez al cargar)
 export function initAuthListener() {
