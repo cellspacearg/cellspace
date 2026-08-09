@@ -1,5 +1,5 @@
-import { supabase } from '../config.js?v=cb18';
-import { layout, mountLayout } from '../core/layout.js?v=cb18';
+import { supabase } from '../config.js?v=cb19';
+import { layout, mountLayout } from '../core/layout.js?v=cb19';
 
 /* ============================================================
    GENERADOR DE REDES — placas de productos para Instagram/Facebook
@@ -203,6 +203,10 @@ export async function socialView(){
                 <option value="slide">Slide de entrada</option>
                 <option value="punch">Zoom punch</option>
                 <option value="float">Flotante</option>
+                <option value="burst">Burst / onda de choque</option>
+                <option value="flash">Flash de oferta</option>
+                <option value="particles">Partículas / destellos</option>
+                <option value="rays">Rayos de luz</option>
               </select>
               <label class="sg-lbl" style="margin-top:12px;">Duración</label>
               <div class="sg-modes" id="sgDur">
@@ -419,7 +423,7 @@ async function renderPreview(){
 function motionForTemplate(){
   if (state.opts.motion !== 'auto') return state.opts.motion;
   const arc = currentTpl().arc;
-  return ({ hero:'kenburns', sale:'punch', minimal:'float', spec:'reveal', card:'reveal', service:'slide', editorial:'slide', spotlight:'float' })[arc] || 'kenburns';
+  return ({ hero:'kenburns', sale:'flash', minimal:'float', spec:'reveal', card:'burst', service:'slide', editorial:'slide', spotlight:'rays', web:'rays' })[arc] || 'kenburns';
 }
 function easeOut(x){ return 1 - Math.pow(1 - x, 3); }
 
@@ -449,9 +453,12 @@ function drawAnimFrame(ctx, base, t, motion){
   let sc = 1, tx = 0, ty = 0, alpha = 1, clipW = W;
   if (motion === 'kenburns'){ sc = (1.05 - 0.03 * ein) + 0.05 * t; tx = -W * 0.02 * t; ty = -H * 0.01 * t; alpha = ein; }
   else if (motion === 'punch'){ sc = 1.18 - 0.18 * ein + 0.01 * Math.sin(amb * Math.PI * 4); alpha = ein; }
-  else if (motion === 'float'){ sc = 1.02 + 0.02 * t; ty = Math.sin(t * Math.PI * 4) * H * 0.008; alpha = ein; }
+  else if (motion === 'float' || motion === 'particles'){ sc = 1.02 + 0.02 * t; ty = Math.sin(t * Math.PI * 4) * H * 0.008; alpha = ein; }
   else if (motion === 'slide'){ ty = (1 - ein) * H * 0.12; alpha = ein; sc = 1.02; }
   else if (motion === 'reveal'){ clipW = ein * W; sc = 1.02; }
+  else if (motion === 'burst'){ const eb = easeOut(Math.min(1, t / 0.22)); sc = 0.5 + 0.55 * eb - 0.05 * Math.sin(eb * Math.PI); alpha = Math.min(1, t / 0.1); }
+  else if (motion === 'flash'){ sc = 1.03 + 0.006 * Math.sin(t * Math.PI * 30); ty = Math.sin(t * Math.PI * 26) * H * 0.003; alpha = ein; }
+  else if (motion === 'rays'){ sc = 1.02 + 0.02 * t; alpha = ein; }
   else { sc = 1.02 + 0.015 * t; alpha = ein; }
   ctx.globalAlpha = alpha;
   ctx.save();
@@ -460,6 +467,11 @@ function drawAnimFrame(ctx, base, t, motion){
   ctx.drawImage(base, 0, 0, W, H);
   ctx.restore();
   ctx.globalAlpha = 1;
+  // efectos por preset (dibujados en canvas: aproximan el look de las referencias)
+  if (motion === 'burst') drawShockwave(ctx, W, H, t);
+  if (motion === 'burst' || motion === 'particles') drawSparkles(ctx, W, H, t, motion === 'particles' ? 26 : 12);
+  if (motion === 'rays') drawRays(ctx, W, H, t);
+  if (motion === 'flash') drawStrobe(ctx, W, H, t);
   // barrido de luz
   const sweep = (t * 1.4) % 1, sx = sweep * W * 1.6 - W * 0.3;
   const inten = motion === 'glow' ? 0.14 : 0.06;
@@ -503,6 +515,62 @@ function drawOutroCard(ctx, W, H, o){
   ctx.fillStyle = C.muted; ctx.font = `600 ${Math.round(W*0.03)}px Montserrat, Arial`;
   ctx.fillText('@' + (state.opts.instagram || 'cellspacearg'), W/2, py + W*0.09);
   ctx.restore();
+}
+
+/* ---------- efectos de animación (canvas) ---------- */
+function _rnd(i){ const x = Math.sin(i * 12.9898) * 43758.5453; return x - Math.floor(x); }
+
+function drawShockwave(ctx, W, H, t){
+  // una o dos ondas que se expanden en el arranque y se repiten sutil
+  ctx.save();
+  const cx = W / 2, cy = H * 0.42;
+  for (let k = 0; k < 2; k++){
+    const phase = ((t + k * 0.5) % 1);
+    if (phase > 0.5) continue;
+    const p = phase / 0.5;                 // 0..1
+    const r = p * W * 0.7;
+    ctx.globalAlpha = (1 - p) * 0.5;
+    ctx.strokeStyle = C.a; ctx.lineWidth = Math.max(2, W * 0.006 * (1 - p));
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawSparkles(ctx, W, H, t, n){
+  ctx.save();
+  for (let i = 0; i < n; i++){
+    const bx = _rnd(i) * W;
+    const speed = 0.4 + _rnd(i + 99) * 0.8;
+    const by = H - ((t * speed + _rnd(i + 7)) % 1) * H;      // sube
+    const tw = 0.4 + 0.6 * Math.abs(Math.sin((t * 6 + i) * Math.PI));
+    const r = (0.8 + _rnd(i + 3) * 1.6) * (W * 0.0022);
+    ctx.globalAlpha = tw * 0.8;
+    ctx.fillStyle = i % 3 === 0 ? C.b : C.a2;
+    ctx.beginPath(); ctx.arc(bx, by, r, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawRays(ctx, W, H, t){
+  ctx.save();
+  const cx = W / 2, cy = H * 0.4;
+  ctx.translate(cx, cy); ctx.rotate(t * Math.PI * 0.5);
+  ctx.globalCompositeOperation = 'lighter';
+  const n = 12, R = Math.max(W, H);
+  for (let i = 0; i < n; i++){
+    ctx.rotate((Math.PI * 2) / n);
+    const g = ctx.createLinearGradient(0, 0, R, 0);
+    g.addColorStop(0, rgba(i % 2 ? C.b : C.a, 0.10)); g.addColorStop(1, rgba(C.a, 0));
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(R, -W * 0.02); ctx.lineTo(R, W * 0.02); ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawStrobe(ctx, W, H, t){
+  // destellos rítmicos suaves (no epilépticos)
+  const beat = Math.pow(Math.max(0, Math.sin(t * Math.PI * 8)), 8);
+  if (beat > 0.02){ ctx.save(); ctx.globalAlpha = beat * 0.12; ctx.fillStyle = C.a2; ctx.fillRect(0, 0, W, H); ctx.restore(); }
 }
 
 async function exportWebm(ep, photo, btn){
