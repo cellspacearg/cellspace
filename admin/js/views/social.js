@@ -1,5 +1,5 @@
-import { supabase } from '../config.js?v=cb19';
-import { layout, mountLayout } from '../core/layout.js?v=cb19';
+import { supabase } from '../config.js?v=cb20';
+import { layout, mountLayout } from '../core/layout.js?v=cb20';
 
 /* ============================================================
    GENERADOR DE REDES — placas de productos para Instagram/Facebook
@@ -29,7 +29,8 @@ const state = {
     hotSale: false, currency: 'ARS', theme: 'naranja',
     badge: '', whatsapp: '', web: 'cellspacearg.com.ar', instagram: 'cellspacearg',
     // overrides editables (vacío = usa el dato del producto)
-    titleOv: '', taglineOv: '', priceOv: '', discountPct: '', ctaOv: '',
+    brandOv: '', titleOv: '', taglineOv: '', priceOv: '', discountPct: '', transferOv: '', ctaOv: '',
+    feat1: '', feat2: '', feat3: '',
     // animación
     motion: 'auto', duration: 30, outro: true,
   },
@@ -48,6 +49,9 @@ const TEMPLATES = [
   { id:'product-card',  name:'Product Card',      group:'Producto', arc:'minimal',   p:{} },
   { id:'product-specs', name:'Product Grid',      group:'Producto', arc:'spec',      p:{} },
   { id:'new-arrival',   name:'New Arrival',       group:'Producto', arc:'hero',      p:{ tag:'NUEVO INGRESO', callouts:false, bottom:true } },
+  { id:'frame',         name:'Marco Neón',        group:'Producto', arc:'frame',     p:{} },
+  { id:'grad-card',     name:'Card Gradiente',    group:'Producto', arc:'gradcard',  p:{} },
+  { id:'big-price',     name:'Precio Gigante',    group:'Ofertas',  arc:'bigprice',  p:{} },
   { id:'smartphone',    name:'Smartphone',        group:'Producto', arc:'hero',      p:{ callouts:true, bottom:false } },
   { id:'android',       name:'Android',           group:'Producto', arc:'minimal',   p:{ tag:'ANDROID' } },
   { id:'accesorios',    name:'Accesorios',        group:'Producto', arc:'minimal',   p:{ tag:'ACCESORIO' } },
@@ -167,13 +171,19 @@ export async function socialView(){
 
           <div class="sg-card">
             <label class="sg-lbl">Textos (dejar vacío = automático)</label>
+            <input type="text" id="sgBrandOv" class="sg-input" placeholder="Marca (ej: APPLE)">
             <input type="text" id="sgTitleOv" class="sg-input" placeholder="Título (ej: IPHONE 11)">
             <input type="text" id="sgTaglineOv" class="sg-input" placeholder="Bajada / subtítulo">
             <div style="display:flex;gap:8px;">
               <input type="text" id="sgPriceOv" class="sg-input" placeholder="Precio (ej: 380000)" style="flex:2;">
               <input type="text" id="sgDiscount" class="sg-input" placeholder="% desc" style="flex:1;">
             </div>
+            <input type="text" id="sgTransferOv" class="sg-input" placeholder="Precio transferencia (ej: 342000)">
             <input type="text" id="sgCtaOv" class="sg-input" placeholder="CTA (ej: COMPRAR AHORA)">
+            <label class="sg-lbl" style="margin-top:10px;">Características (reemplazan las del rubro)</label>
+            <input type="text" id="sgFeat1" class="sg-input" placeholder="Feature 1 (ej: BATERÍA 100%)">
+            <input type="text" id="sgFeat2" class="sg-input" placeholder="Feature 2 (ej: GARANTÍA 6 MESES)">
+            <input type="text" id="sgFeat3" class="sg-input" placeholder="Feature 3 (ej: EQUIPO ORIGINAL)">
           </div>
 
           <div class="sg-card">
@@ -274,7 +284,8 @@ export function socialViewOnMount(){
   document.getElementById('sgCategory').addEventListener('change', e => { state.category = e.target.value; renderPreview(); });
   document.getElementById('sgTemplate').addEventListener('change', e => { state.template = e.target.value; renderPreview(); });
   const ov = (id, key) => document.getElementById(id).addEventListener('input', e => { state.opts[key] = e.target.value; renderPreview(); });
-  ov('sgTitleOv', 'titleOv'); ov('sgTaglineOv', 'taglineOv'); ov('sgPriceOv', 'priceOv'); ov('sgDiscount', 'discountPct'); ov('sgCtaOv', 'ctaOv');
+  ov('sgBrandOv','brandOv'); ov('sgTitleOv', 'titleOv'); ov('sgTaglineOv', 'taglineOv'); ov('sgPriceOv', 'priceOv'); ov('sgDiscount', 'discountPct');
+  ov('sgTransferOv','transferOv'); ov('sgCtaOv', 'ctaOv'); ov('sgFeat1','feat1'); ov('sgFeat2','feat2'); ov('sgFeat3','feat3');
   document.querySelectorAll('.sg-mode[data-mode]').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('.sg-mode[data-mode]').forEach(x => x.classList.remove('on'));
     b.classList.add('on'); state.mode = b.dataset.mode;
@@ -689,7 +700,7 @@ function rgba(hex, a){ const [r,g,b]=hexToRgb(hex); return `rgba(${r},${g},${b},
 const ARCHETYPES = {
   hero: drawPoster, sale: drawArcSale, minimal: drawArcMinimal, spec: drawArcSpec,
   card: drawArcCard, service: drawArcService, editorial: drawArcEditorial, spotlight: drawArcSpotlight,
-  web: drawArcWeb,
+  web: drawArcWeb, frame: drawArcFrame, bigprice: drawArcBigPrice, gradcard: drawArcGradientCard,
 };
 
 function drawSlide(canvas, p, sizeKey, slide, photo){
@@ -716,9 +727,11 @@ function drawSlide(canvas, p, sizeKey, slide, photo){
 // aplica overrides editables sobre el producto
 function effProduct(p){
   const o = state.opts, e = Object.assign({}, p);
+  if (o.brandOv && o.brandOv.trim()) e.brand = o.brandOv.trim();
   if (o.titleOv && o.titleOv.trim()) e.name = o.titleOv.trim();
   if (o.taglineOv && o.taglineOv.trim()) e.tagline = o.taglineOv.trim();
   if (o.priceOv && String(o.priceOv).trim()){ const n = Number(String(o.priceOv).replace(/[^\d]/g, '')); if (n) e.price = n; }
+  if (o.transferOv && String(o.transferOv).trim()){ const n = Number(String(o.transferOv).replace(/[^\d]/g, '')); if (n) e.price_transfer = n; }
   if (o.discountPct && String(o.discountPct).trim()){
     const pct = parseFloat(String(o.discountPct).replace(/[^\d.]/g, ''));
     if (pct > 0 && pct < 100) e.old_price = Math.round((Number(e.price) || 0) / (1 - pct/100));
@@ -860,6 +873,16 @@ function drawFeatureList(ctx, W, x, cy, zoneH, feats, square){
 }
 
 function resolveFeatures(p, cat){
+  const o = state.opts;
+  const ovs = [o.feat1, o.feat2, o.feat3].map(s => (s || '').trim()).filter(Boolean);
+  if (ovs.length){
+    const icons = cat.features.map(f => f[0]);
+    return ovs.map((txt, i) => {
+      const parts = txt.split(/\s+/); let l1 = txt, l2 = '';
+      if (parts.length > 2){ const half = Math.ceil(parts.length / 2); l1 = parts.slice(0, half).join(' '); l2 = parts.slice(half).join(' '); }
+      return [icons[i] || 'seal', l1.toUpperCase(), l2.toUpperCase()];
+    });
+  }
   const bat = Number(p.battery_health) > 0 ? String(p.battery_health) : '100';
   const war = (p.warranty && String(p.warranty).trim()) ? String(p.warranty).toUpperCase() : '30 DÍAS';
   return cat.features.map(([icon, l1, l2]) => [
@@ -1131,6 +1154,91 @@ function drawArcEditorial(ctx, W, H, pad, p, sizeKey, photo, tp){
   const cbY = story?H*0.78:H*0.80;
   ctx.fillStyle=C.a; roundRect(ctx, pad, cbY, cw+cpx*2, ch, ch/2); ctx.fill();
   ctx.fillStyle='#150800'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText(cta, pad+cpx, cbY+ch/2); ctx.textBaseline='alphabetic';
+  drawFooter(ctx, W, H, pad);
+}
+
+function drawHudBrackets(ctx, x, y, w, h){
+  const W = ctx.canvas.width, s = Math.round(W*0.035), lw = Math.max(2, W*0.005), off = Math.round(W*0.015);
+  ctx.save(); ctx.strokeStyle = C.b; ctx.lineWidth = lw; ctx.lineCap = 'round';
+  ctx.shadowColor = rgba(C.b, 0.6); ctx.shadowBlur = 12;
+  [[x-off,y-off,1,1],[x+w+off,y-off,-1,1],[x-off,y+h+off,1,-1],[x+w+off,y+h+off,-1,-1]].forEach(([cx,cy,sx,sy])=>{
+    ctx.beginPath(); ctx.moveTo(cx+s*sx,cy); ctx.lineTo(cx,cy); ctx.lineTo(cx,cy+s*sy); ctx.stroke();
+  });
+  ctx.restore();
+}
+
+// ARCHETIPO: FRAME — producto en marco neón rectangular + título + precio
+function drawArcFrame(ctx, W, H, pad, p, sizeKey, photo, tp){
+  const story = sizeKey === 'story', square = sizeKey === 'square';
+  drawTechBackground(ctx, W, H, sizeKey, 'default');
+  drawHeader(ctx, W, pad, false);
+  const fx = pad, fw = W - pad*2, fy = story ? H*0.16 : H*0.135, fh = story ? H*0.42 : (square ? H*0.34 : H*0.38);
+  ctx.fillStyle = rgba('#ffffff', 0.03); roundRect(ctx, fx, fy, fw, fh, W*0.045); ctx.fill();
+  ctx.save(); const g = ctx.createLinearGradient(fx, fy, fx+fw, fy+fh); g.addColorStop(0, C.a); g.addColorStop(1, C.b);
+  ctx.strokeStyle = g; ctx.lineWidth = Math.max(4, W*0.008); ctx.shadowColor = rgba(C.a, 0.5); ctx.shadowBlur = 30;
+  roundRect(ctx, fx, fy, fw, fh, W*0.045); ctx.stroke(); ctx.restore();
+  const m = W*0.06; if (photo) drawImageContain(ctx, photo, fx+m, fy+m, fw-m*2, fh-m*2, true);
+  drawHudBrackets(ctx, fx, fy, fw, fh);
+  const badge = (state.opts.badge||'').trim(); if (badge) drawBadge(ctx, fx+fw+W*0.01, fy+W*0.02, badge);
+  let y = fy + fh + (story ? H*0.06 : H*0.045);
+  y = drawTitle(ctx, W, pad, y, p, square);
+  y += square ? H*0.01 : H*0.016; y = drawPriceBox(ctx, W, pad, y, p, square);
+  if (!square){ y += story ? H*0.05 : H*0.04; drawBottomFeatures(ctx, W, pad, y); }
+  drawFooter(ctx, W, H, pad);
+}
+
+// ARCHETIPO: BIGPRICE — el precio es el héroe (gigante), producto arriba
+function drawArcBigPrice(ctx, W, H, pad, p, sizeKey, photo, tp){
+  const story = sizeKey === 'story';
+  drawTechBackground(ctx, W, H, sizeKey, 'default');
+  drawHeader(ctx, W, pad, false);
+  const ph = story ? H*0.32 : H*0.32, cy = story ? H*0.32 : H*0.30;
+  radialBlob(ctx, W/2, cy+ph*0.3, ph*0.7, rgba(C.a, 0.2));
+  if (photo) drawImageContain(ctx, photo, W/2-ph*0.55, cy-ph*0.5, ph*1.1, ph, true);
+  let y = cy + ph*0.6; ctx.textAlign = 'center';
+  ctx.fillStyle = C.a; ctx.font = `700 ${Math.round(W*0.028)}px Montserrat, Arial`; ctx.fillText((p.brand||'').toUpperCase(), W/2, y);
+  ctx.fillStyle = C.ink; const nf = `800 ${Math.round(W*0.05)}px Montserrat, "Arial Black", Arial`; y += Math.round(W*0.05); ctx.font = nf; ctx.fillText((p.name||'').toUpperCase(), W/2, y);
+  const oldp = Number(p.old_price)||0, price = Number(p.price)||0;
+  if (state.opts.oldPrice && oldp > price && oldp>0){ y += Math.round(W*0.055); ctx.fillStyle = C.faint; ctx.font = `600 ${Math.round(W*0.036)}px Montserrat, Arial`;
+    const tt = money(oldp); ctx.fillText(tt, W/2, y); const tw = ctx.measureText(tt).width; ctx.strokeStyle = '#ff5555'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(W/2-tw/2, y-W*0.012); ctx.lineTo(W/2+tw/2, y-W*0.012); ctx.stroke(); }
+  y += Math.round(W*0.15); priceText(ctx, W/2, y, price, Math.round(W*0.155), 'center');
+  if (state.opts.transfer && Number(p.price_transfer) > 0){ y += Math.round(W*0.05); ctx.fillStyle = C.b; ctx.font = `700 ${Math.round(W*0.03)}px Montserrat, Arial`; ctx.textAlign='center'; ctx.fillText(money(Number(p.price_transfer)) + ' con transferencia', W/2, y); }
+  const cta = p.cta || 'CONSULTAR AHORA'; y += Math.round(W*0.09);
+  ctx.font = `800 ${Math.round(W*0.036)}px Montserrat, Arial`; const cw = ctx.measureText(cta).width, ch = Math.round(W*0.1), cpx = Math.round(W*0.05);
+  const gg = ctx.createLinearGradient(W/2-cw/2,0,W/2+cw/2,0); gg.addColorStop(0,C.a); gg.addColorStop(1,C.a2);
+  ctx.save(); ctx.shadowColor = rgba(C.a,0.5); ctx.shadowBlur = 22; ctx.fillStyle = gg; roundRect(ctx, W/2-cw/2-cpx, y-ch*0.66, cw+cpx*2, ch, ch/2); ctx.fill(); ctx.restore();
+  ctx.fillStyle = '#150800'; ctx.textBaseline='middle'; ctx.textAlign='center'; ctx.fillText(cta, W/2, y-ch*0.12); ctx.textBaseline='alphabetic';
+  drawFooter(ctx, W, H, pad);
+}
+
+// ARCHETIPO: GRADCARD — producto sobre card con gradiente de acento
+function drawArcGradientCard(ctx, W, H, pad, p, sizeKey, photo, tp){
+  const story = sizeKey === 'story', square = sizeKey === 'square';
+  drawTechBackground(ctx, W, H, sizeKey, 'default');
+  drawHeader(ctx, W, pad, false);
+  const cx0 = pad, cy0 = story ? H*0.15 : H*0.135, cw = W-pad*2, ch = story ? H*0.48 : (square ? H*0.42 : H*0.46);
+  ctx.save(); const g = ctx.createLinearGradient(cx0, cy0, cx0+cw, cy0+ch); g.addColorStop(0, rgba(C.a, 0.95)); g.addColorStop(1, rgba(C.a2, 0.7));
+  ctx.shadowColor = rgba(C.a, 0.4); ctx.shadowBlur = 30; ctx.fillStyle = g; roundRect(ctx, cx0, cy0, cw, ch, W*0.05); ctx.fill(); ctx.restore();
+  // brillo diagonal en el card
+  ctx.save(); roundRect(ctx, cx0, cy0, cw, ch, W*0.05); ctx.clip();
+  const sh = ctx.createLinearGradient(cx0, cy0, cx0+cw*0.6, cy0+ch); sh.addColorStop(0, 'rgba(255,255,255,0.16)'); sh.addColorStop(0.5, 'rgba(255,255,255,0)');
+  ctx.fillStyle = sh; ctx.fillRect(cx0, cy0, cw, ch); ctx.restore();
+  const badge = (state.opts.badge||'').trim(); if (badge) drawBadge(ctx, cx0+cw+W*0.01, cy0+W*0.02, badge);
+  const ph = ch*0.66, cyp = cy0+ch*0.42; if (photo) drawImageContain(ctx, photo, W/2-ph*0.55, cyp-ph*0.5, ph*1.1, ph, true);
+  // nombre dentro del card (abajo)
+  ctx.textAlign = 'left'; ctx.fillStyle = '#1a0a00';
+  ctx.font = `700 ${Math.round(W*0.028)}px Montserrat, Arial`; if (p.brand) ctx.fillText(p.brand.toUpperCase(), cx0+W*0.05, cy0+ch-W*0.09);
+  ctx.font = `800 ${Math.round(W*0.052)}px Montserrat, "Arial Black", Arial`; ctx.fillText((p.name||'').toUpperCase(), cx0+W*0.05, cy0+ch-W*0.04);
+  // precio + CTA debajo del card
+  let y = cy0 + ch + (story ? H*0.06 : H*0.05);
+  const oldp = Number(p.old_price)||0, price = Number(p.price)||0;
+  if (state.opts.oldPrice && oldp > price && oldp>0){ ctx.fillStyle = C.faint; ctx.font = `600 ${Math.round(W*0.032)}px Montserrat, Arial`; const tt = money(oldp); ctx.fillText(tt, pad, y-W*0.005); const tw = ctx.measureText(tt).width; ctx.strokeStyle='#ff5555'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(pad, y-W*0.015); ctx.lineTo(pad+tw, y-W*0.015); ctx.stroke(); y += W*0.03; }
+  priceText(ctx, pad, y + W*0.06, price, Math.round(W*0.09), 'left');
+  const cta = p.cta || 'COMPRAR'; ctx.textAlign='right'; ctx.font = `800 ${Math.round(W*0.034)}px Montserrat, Arial`;
+  const cw2 = ctx.measureText(cta).width, ch2 = Math.round(W*0.09), cpx = Math.round(W*0.045), cbx = W-pad;
+  ctx.fillStyle = C.a; roundRect(ctx, cbx-cw2-cpx*2, y+W*0.06-ch2*0.66, cw2+cpx*2, ch2, ch2/2); ctx.fill();
+  ctx.fillStyle = '#150800'; ctx.textBaseline='middle'; ctx.textAlign='center'; ctx.fillText(cta, cbx-cw2/2-cpx, y+W*0.06-ch2*0.12); ctx.textBaseline='alphabetic'; ctx.textAlign='left';
   drawFooter(ctx, W, H, pad);
 }
 
