@@ -201,9 +201,32 @@
         <div class="cf-box" style="padding:25px;">
           <h2 style="color:white; font-size:18px; margin-bottom:20px;"><i class="fas fa-receipt" style="color:var(--orange);"></i> Tu pedido</h2>
           <div id="orderItemsList" style="display:flex; flex-direction:column; gap:14px; margin-bottom:20px;"></div>
-          <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:15px; display:flex; justify-content:space-between; font-size:18px; font-weight:800; color:white;">
-            <span>Total</span>
-            <span id="orderTotal" style="color:var(--orange);">$0</span>
+
+          <!-- CUPÓN -->
+          <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:15px; margin-bottom:6px;">
+            <label style="display:block; color:#aaa; font-size:13px; margin-bottom:8px;">¿Tenés un cupón de descuento?</label>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="couponInput" placeholder="Ingresá tu cupón" autocomplete="off"
+                style="flex:1; padding:11px 12px; background:#111; border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; font-size:14px; text-transform:uppercase;">
+              <button type="button" id="applyCouponBtn"
+                style="padding:11px 16px; background:rgba(255,106,0,0.15); border:1px solid var(--orange); color:var(--orange); border-radius:10px; font-weight:700; font-size:14px; cursor:pointer; white-space:nowrap;">Aplicar</button>
+            </div>
+            <p id="couponMsg" style="font-size:12.5px; margin:8px 0 0; display:none;"></p>
+          </div>
+
+          <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:15px; display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; justify-content:space-between; font-size:14px; color:#bbb;">
+              <span>Subtotal</span>
+              <span id="orderSubtotal">$0</span>
+            </div>
+            <div id="orderDiscountRow" style="display:none; justify-content:space-between; font-size:14px; color:#4CAF50;">
+              <span id="orderDiscountLabel">Descuento</span>
+              <span id="orderDiscount">-$0</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:18px; font-weight:800; color:white; padding-top:6px; border-top:1px solid rgba(255,255,255,0.08);">
+              <span>Total</span>
+              <span id="orderTotal" style="color:var(--orange);">$0</span>
+            </div>
           </div>
         </div>
 
