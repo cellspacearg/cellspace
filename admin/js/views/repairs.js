@@ -1,6 +1,6 @@
-import { supabase } from '../config.js?v=cb9';
-import { store } from '../core/state.js?v=cb9';
-import { layout, mountLayout, toolbar, emptyState } from '../core/layout.js?v=cb9';
+import { supabase } from '../config.js?v=cb10';
+import { store } from '../core/state.js?v=cb10';
+import { layout, mountLayout, toolbar, emptyState } from '../core/layout.js?v=cb10';
 
 let allRepairs = [];
 let techs = [];

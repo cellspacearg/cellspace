@@ -1,24 +1,25 @@
-import Router from './core/router.js?v=cb9';
-import { checkSession } from './hooks/useAuth.js?v=cb9';
-import { loginView, loginViewOnMount } from './views/login.js?v=cb9';
-import { dashboardView, dashboardViewOnMount } from './views/dashboard.js?v=cb9';
-import { productsView, productsViewOnMount } from './views/products.js?v=cb9';
-import { categoriesView, categoriesViewOnMount } from './views/categories.js?v=cb9';
-import { servicesView, servicesViewOnMount } from './views/services.js?v=cb9';
-import { pagesView, pagesViewOnMount } from './views/pages.js?v=cb9';
-import { builderView, builderViewOnMount } from './views/builder.js?v=cb9';
-import { mediaView, mediaViewOnMount } from './views/media.js?v=cb9';
-import { settingsView, settingsViewOnMount } from './views/settings.js?v=cb9';
-import { customersView, customersViewOnMount } from './views/customers.js?v=cb9';
-import { ordersView, ordersViewOnMount } from './views/orders.js?v=cb9';
-import { centralView, centralViewOnMount } from './views/central.js?v=cb9';
-import { repairsView, repairsViewOnMount } from './views/repairs.js?v=cb9';
-import { inventoryView, inventoryViewOnMount } from './views/inventory.js?v=cb9';
-import { reportsView, reportsViewOnMount } from './views/reports.js?v=cb9';
-import { suppliersView, suppliersViewOnMount } from './views/suppliers.js?v=cb9';
-import { expensesView, expensesViewOnMount } from './views/expenses.js?v=cb9';
-import { promotionsView, promotionsViewOnMount } from './views/promotions.js?v=cb9';
-import { notFoundView, notFoundViewOnMount } from './views/not-found.js?v=cb9';
+import Router from './core/router.js?v=cb10';
+import { checkSession } from './hooks/useAuth.js?v=cb10';
+import { loginView, loginViewOnMount } from './views/login.js?v=cb10';
+import { dashboardView, dashboardViewOnMount } from './views/dashboard.js?v=cb10';
+import { productsView, productsViewOnMount } from './views/products.js?v=cb10';
+import { categoriesView, categoriesViewOnMount } from './views/categories.js?v=cb10';
+import { servicesView, servicesViewOnMount } from './views/services.js?v=cb10';
+import { pagesView, pagesViewOnMount } from './views/pages.js?v=cb10';
+import { builderView, builderViewOnMount } from './views/builder.js?v=cb10';
+import { mediaView, mediaViewOnMount } from './views/media.js?v=cb10';
+import { settingsView, settingsViewOnMount } from './views/settings.js?v=cb10';
+import { customersView, customersViewOnMount } from './views/customers.js?v=cb10';
+import { ordersView, ordersViewOnMount } from './views/orders.js?v=cb10';
+import { centralView, centralViewOnMount } from './views/central.js?v=cb10';
+import { repairsView, repairsViewOnMount } from './views/repairs.js?v=cb10';
+import { inventoryView, inventoryViewOnMount } from './views/inventory.js?v=cb10';
+import { reportsView, reportsViewOnMount } from './views/reports.js?v=cb10';
+import { suppliersView, suppliersViewOnMount } from './views/suppliers.js?v=cb10';
+import { expensesView, expensesViewOnMount } from './views/expenses.js?v=cb10';
+import { promotionsView, promotionsViewOnMount } from './views/promotions.js?v=cb10';
+import { techniciansView, techniciansViewOnMount } from './views/technicians.js?v=cb10';
+import { notFoundView, notFoundViewOnMount } from './views/not-found.js?v=cb10';
 
 function showError(msg){
   const app = document.getElementById('app');
@@ -61,6 +62,7 @@ try {
     '/suppliers':  { component: suppliersView,  onMount: suppliersViewOnMount,  beforeEnter: auth },
     '/expenses':   { component: expensesView,   onMount: expensesViewOnMount,   beforeEnter: auth },
     '/promotions': { component: promotionsView, onMount: promotionsViewOnMount, beforeEnter: auth },
+    '/technicians':{ component: techniciansView,onMount: techniciansViewOnMount, beforeEnter: auth },
     '/404':        { component: notFoundView,   onMount: notFoundViewOnMount,   beforeEnter: auth },
   };
 
