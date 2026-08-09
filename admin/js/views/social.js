@@ -1,5 +1,5 @@
-import { supabase } from '../config.js?v=cb21';
-import { layout, mountLayout } from '../core/layout.js?v=cb21';
+import { supabase } from '../config.js?v=cb22';
+import { layout, mountLayout } from '../core/layout.js?v=cb22';
 
 /* ============================================================
    GENERADOR DE REDES — placas de productos para Instagram/Facebook
@@ -31,11 +31,8 @@ const state = {
     // overrides editables (vacío = usa el dato del producto)
     brandOv: '', titleOv: '', taglineOv: '', priceOv: '', discountPct: '', transferOv: '', ctaOv: '',
     feat1: '', feat2: '', feat3: '',
-    // animación
-    motion: 'auto', duration: 30, outro: true,
   },
 };
-let audioFile = null;  // pista de música elegida por el usuario (File)
 // Elementos (stickers) que el usuario coloca libremente sobre la placa
 let stickers = [];      // { icon?|img?, x, y, scale, baseSize, color }
 let selSticker = null;
@@ -92,41 +89,6 @@ const TEMPLATES = [
   { id:'ai-custom',     name:'AI Custom',         group:'Institucional', arc:'editorial', p:{ eyebrow:'CELL SPACE' } },
 ];
 function currentTpl(){ return TEMPLATES.find(t => t.id === state.template) || TEMPLATES[0]; }
-
-// Prompts de video IA (Runway/Kling) por plantilla. El {P} se reemplaza por el nombre del producto.
-const VP = {
-  phone:  'Commercial product ad for a smartphone {P}, isolated transparent PNG floating centered, dark premium studio with soft top spotlight, smooth 360 Y-axis rotation, metallic edge reflections, lens flare sweep, professional 4k, 9:16.',
-  newph:  'High speed commercial intro, isolated smartphone PNG {P} bursting forward from center, smooth ease-out stop, vibrant blue energy shockwave ring behind, studio lighting, cinematic 4k, 9:16.',
-  flagship:'Modern tech ad, floating isolated smartphone PNG {P} on right, frosted glass spec panels on left, ambient lighting, gentle floating bobbing, bokeh depth, minimalist, ultra sharp 4k, 9:16.',
-  case:   'Slow motion protection ad, isolated smartphone PNG {P} falling gracefully, shockwave aura, cinematic dark studio, floating dust particles, crisp shadows, 4k, 9:16.',
-  charger:'High power charger commercial, isolated GaN charger PNG {P} floating in dark room, electric lightning pulsing in, glowing particles, fast edit, 4k 60fps, 9:16.',
-  cable:  'Macro USB-C cable ad, isolated braided cable PNG {P} floating angled, extreme close-up slide over metallic connector, dark industrial background, high contrast, 4k, 9:16.',
-  watch:  'Smartwatch fitness commercial, isolated smartwatch PNG {P} floating angled, holographic health rings spinning around it, dark energetic background, orbit camera, 4k, 9:16.',
-  earbuds:'Wireless earbuds video, isolated earbud PNG {P} hovering, concentric 3D soundwave rings expanding, dark purple aesthetic, volumetric lighting, camera float, 4k, 9:16.',
-  console:'Cinematic gaming ad, isolated console PNG {P} floating, glowing blue/cyan energy portal opening behind, volumetric beams, slow camera drift, 3d motion graphics, 4k, 9:16.',
-  laptop: 'Premium laptop commercial, isolated laptop PNG {P} slowly lifting and opening in mid-air, diffused architectural studio lighting, frosted glass aesthetic, high-end 4k, 9:16.',
-  license:'Digital product showcase, glowing 3D metallic license card PNG {P} floating, cyber data streams and code lines behind, gold and cyan light sweep, camera tilt, 4k, 9:16.',
-  sale:   'Fast-paced flash sale promo, isolated product PNG {P} floating centered, dramatic flashing amber lights, energetic camera pulse, floating sale badges, high contrast, 4k, 9:16.',
-  premium:'Ultra luxury tech ad, isolated product PNG {P} hovering over dark marble with gold accent reflections, slow cinematic overhead tilt, elegant minimalist, hyper real, 4k 60fps, 9:16.',
-  service:'Tech repair service ad, technician hands and smartphone {P}, clean modern studio, tools and glowing UI overlays, smooth camera, professional 4k, 9:16.',
-  store:  'Tech store promo, brand logo and product montage {P}, dynamic modern transitions, neon accents on dark background, energetic motion graphics, 4k, 9:16.',
-  generic:'Modern tech product commercial, isolated transparent PNG {P} floating in a dark premium studio, soft spotlight, subtle rotation and light sweep, clean motion graphics, 4k, 9:16.',
-};
-const TPL_VP = {
-  'product-hero':'flagship','premium':'premium','product-card':'flagship','product-specs':'flagship','new-arrival':'newph',
-  'smartphone':'phone','android':'phone','accesorios':'generic','fundas':'case','cargadores':'charger','cables':'cable',
-  'smartwatch':'watch','notebook':'laptop','consolas':'console',
-  'hot-sale':'sale','flash-sale':'sale','cyber':'sale','black-friday':'sale','liquidacion':'sale','price-drop':'sale','promo':'sale','comparacion':'flagship',
-  'servicio':'service','reparacion':'service','antes-despues':'service',
-  'licencia':'license','activacion':'license','tool':'license','servidor':'license','software':'license',
-  'comunicado':'store','central-space':'store','promo-web':'store','ai-custom':'generic',
-};
-function videoPromptFor(){
-  const key = TPL_VP[state.template] || 'generic';
-  const prod = allProducts.find(p => p.id === state.productId);
-  const name = prod ? (prod.name || '') : '';
-  return (VP[key] || VP.generic).replace('{P}', name ? '(' + name + ')' : '').replace('  ', ' ');
-}
 
 // Rubros: cada uno ajusta el eyebrow y la lista de 3 features (ícono + 2 líneas).
 // Placeholders: {bat}=batería, {war}=garantía. Se resuelven con datos reales.
@@ -206,40 +168,6 @@ export async function socialView(){
             <div class="sg-modes">
               <button class="sg-mode on" data-mode="single"><i class="fas fa-image"></i> Placa</button>
               <button class="sg-mode" data-mode="carousel"><i class="fas fa-layer-group"></i> Carrusel</button>
-              <button class="sg-mode" data-mode="animated"><i class="fas fa-film"></i> Animado</button>
-            </div>
-            <div id="sgAnimOpts" style="display:none;margin-top:12px;">
-              <label class="sg-lbl">Movimiento</label>
-              <select id="sgMotion" class="sg-input sg-select">
-                <option value="auto">Automático (según plantilla)</option>
-                <option value="kenburns">Zoom cinematográfico</option>
-                <option value="reveal">Reveal / cortina</option>
-                <option value="glow">Glow + barrido de luz</option>
-                <option value="slide">Slide de entrada</option>
-                <option value="punch">Zoom punch</option>
-                <option value="float">Flotante</option>
-                <option value="burst">Burst / onda de choque</option>
-                <option value="flash">Flash de oferta</option>
-                <option value="particles">Partículas / destellos</option>
-                <option value="rays">Rayos de luz</option>
-              </select>
-              <label class="sg-lbl" style="margin-top:12px;">Duración</label>
-              <div class="sg-modes" id="sgDur">
-                <button class="sg-mode" data-dur="15">15s</button>
-                <button class="sg-mode" data-dur="20">20s</button>
-                <button class="sg-mode on" data-dur="30">30s</button>
-                <button class="sg-mode" data-dur="45">45s</button>
-              </div>
-              <label class="sg-lbl" style="margin-top:12px;">Música (opcional, libre de copyright)</label>
-              <input type="file" id="sgAudio" accept="audio/*" class="sg-input" style="padding:8px;">
-              <span id="sgAudioName" style="font-size:12px;color:#888;"></span>
-              <label style="display:flex;align-items:center;gap:9px;font-size:13.5px;color:#ddd;cursor:pointer;margin-top:10px;">
-                <input type="checkbox" id="sgOutro" checked style="accent-color:#ff6a00;width:16px;height:16px;"> Cierre con logo + web
-              </label>
-              <label class="sg-lbl" style="margin-top:14px;">Prompt para video IA (Runway/Kling)</label>
-              <textarea id="sgVPrompt" class="sg-input" rows="4" readonly style="resize:vertical;font-size:12px;line-height:1.4;"></textarea>
-              <button type="button" class="btn-secondary" id="sgCopyVP" style="width:100%;padding:9px;font-size:13px;"><i class="fas fa-copy"></i> Copiar prompt</button>
-              <p style="font-size:11.5px;color:#777;margin:6px 0 0;">Para la versión 3D cinematográfica (rotación/partículas), pegá este prompt en Runway o Kling. El panel exporta la versión 2D branded.</p>
             </div>
           </div>
 
@@ -306,12 +234,8 @@ export function socialViewOnMount(){
   document.querySelectorAll('.sg-mode[data-mode]').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('.sg-mode[data-mode]').forEach(x => x.classList.remove('on'));
     b.classList.add('on'); state.mode = b.dataset.mode;
-    document.getElementById('sgAnimOpts').style.display = state.mode === 'animated' ? 'block' : 'none';
     updateDlText(); renderPreview();
   }));
-  document.getElementById('sgMotion').addEventListener('change', e => { state.opts.motion = e.target.value; renderPreview(); });
-  document.getElementById('sgAudio').addEventListener('change', e => { audioFile = e.target.files[0] || null; document.getElementById('sgAudioName').textContent = audioFile ? '♪ ' + audioFile.name : ''; });
-  document.getElementById('sgOutro').addEventListener('change', e => { state.opts.outro = e.target.checked; renderPreview(); });
   // Elementos / stickers
   const iconsBox = document.getElementById('sgTechIcons');
   iconsBox.innerHTML = TECH_STICKERS.map(n => `<button class="sg-ic" data-ic="${n}" title="${n}"></button>`).join('') ;
@@ -330,15 +254,6 @@ export function socialViewOnMount(){
     if (selSticker){ stickers = stickers.filter(s => s !== selSticker); selSticker = null; updateStickerUI(); if (stickerCanvas) redrawStickers(stickerCanvas); }
   });
 
-  document.getElementById('sgCopyVP').addEventListener('click', () => {
-    const ta = document.getElementById('sgVPrompt');
-    navigator.clipboard?.writeText(ta.value).catch(() => { ta.select(); document.execCommand('copy'); });
-    const b = document.getElementById('sgCopyVP'); const h = b.innerHTML; b.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!'; setTimeout(() => b.innerHTML = h, 1500);
-  });
-  document.querySelectorAll('#sgDur .sg-mode').forEach(b => b.addEventListener('click', () => {
-    document.querySelectorAll('#sgDur .sg-mode').forEach(x => x.classList.remove('on'));
-    b.classList.add('on'); state.opts.duration = Number(b.dataset.dur); renderPreview();
-  }));
   document.querySelectorAll('.sg-mode[data-cur]').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('.sg-mode[data-cur]').forEach(x => x.classList.remove('on'));
     b.classList.add('on'); state.opts.currency = b.dataset.cur; renderPreview();
@@ -411,23 +326,12 @@ function filterProducts(e){
 
 function updateDlText(){
   const el = document.getElementById('sgDlText');
-  el.textContent = state.mode === 'carousel' ? 'Descargar las 3'
-    : state.mode === 'animated' ? 'Exportar video (WEBM)' : 'Descargar PNG';
+  el.textContent = state.mode === 'carousel' ? 'Descargar las 3' : 'Descargar PNG';
 }
 
 /* ---------- preview ---------- */
 
-let animLoop = null; // handle del requestAnimationFrame del preview animado
-function stopAnim(){ if (animLoop){ cancelAnimationFrame(animLoop); animLoop = null; } }
-
-function updateVPrompt(){
-  const ta = document.getElementById('sgVPrompt');
-  if (ta) ta.value = videoPromptFor();
-}
-
 async function renderPreview(){
-  stopAnim();
-  updateVPrompt();
   const cont = document.getElementById('sgPreview');
   const isWeb = currentTpl().arc === 'web';
   const product = allProducts.find(p => p.id === state.productId) || (isWeb ? { name: 'CELL SPACE' } : null);
@@ -436,8 +340,6 @@ async function renderPreview(){
   cont.innerHTML = '<div class="sg-loading"><i class="fas fa-spinner fa-spin"></i> Armando placa...</div>';
   const photo = await loadImage(product.image_url).catch(() => null);
   const ep = effProduct(product);
-
-  if (state.mode === 'animated'){ renderAnimatedPreview(cont, ep, photo); return; }
 
   const slides = state.mode === 'carousel' ? ['hero', 'specs', 'cta'] : ['full'];
   const frag = document.createElement('div');
@@ -520,225 +422,11 @@ function updateStickerUI(){
   else ctl.style.display = 'none';
 }
 
-/* ---------- animación ---------- */
-
-function motionForTemplate(){
-  if (state.opts.motion !== 'auto') return state.opts.motion;
-  const arc = currentTpl().arc;
-  return ({ hero:'kenburns', sale:'flash', minimal:'float', spec:'reveal', card:'burst', service:'slide', editorial:'slide', spotlight:'rays', web:'rays' })[arc] || 'kenburns';
-}
-function easeOut(x){ return 1 - Math.pow(1 - x, 3); }
-
-function renderAnimatedPreview(cont, ep, photo){
-  const s = SIZES[state.size];
-  const base = document.createElement('canvas'); base.width = s.w; base.height = s.h;
-  drawSlide(base, ep, state.size, 'full', photo); // fija el tema/acento actual en C
-  const canvas = document.createElement('canvas'); canvas.width = s.w; canvas.height = s.h; canvas.className = 'sg-canvas';
-  const ctx = canvas.getContext('2d');
-  const box = document.createElement('div'); box.className = 'sg-canvas-box'; box.appendChild(canvas);
-  const tag = document.createElement('span'); tag.className = 'sg-slide-tag';
-  tag.textContent = `Animado · ${state.opts.duration}s · ${motionForTemplate()}`; box.appendChild(tag);
-  const frag = document.createElement('div'); frag.className = 'sg-canvases'; frag.appendChild(box);
-  cont.innerHTML = ''; cont.appendChild(frag);
-  const motion = motionForTemplate(), durMs = state.opts.duration * 1000, start = performance.now();
-  function loop(now){ const t = ((now - start) % durMs) / durMs; drawAnimFrame(ctx, base, t, motion); animLoop = requestAnimationFrame(loop); }
-  animLoop = requestAnimationFrame(loop);
-}
-
-function drawAnimFrame(ctx, base, t, motion){
-  const W = ctx.canvas.width, H = ctx.canvas.height;
-  ctx.save();
-  ctx.fillStyle = '#05070c'; ctx.fillRect(0, 0, W, H);
-  const intro = 0.12, outro = 0.94;
-  const ein = easeOut(Math.min(1, t / intro));
-  const amb = Math.min(1, Math.max(0, (t - intro) / (outro - intro)));
-  let sc = 1, tx = 0, ty = 0, alpha = 1, clipW = W;
-  if (motion === 'kenburns'){ sc = (1.05 - 0.03 * ein) + 0.05 * t; tx = -W * 0.02 * t; ty = -H * 0.01 * t; alpha = ein; }
-  else if (motion === 'punch'){ sc = 1.18 - 0.18 * ein + 0.01 * Math.sin(amb * Math.PI * 4); alpha = ein; }
-  else if (motion === 'float' || motion === 'particles'){ sc = 1.02 + 0.02 * t; ty = Math.sin(t * Math.PI * 4) * H * 0.008; alpha = ein; }
-  else if (motion === 'slide'){ ty = (1 - ein) * H * 0.12; alpha = ein; sc = 1.02; }
-  else if (motion === 'reveal'){ clipW = ein * W; sc = 1.02; }
-  else if (motion === 'burst'){ const eb = easeOut(Math.min(1, t / 0.22)); sc = 0.5 + 0.55 * eb - 0.05 * Math.sin(eb * Math.PI); alpha = Math.min(1, t / 0.1); }
-  else if (motion === 'flash'){ sc = 1.03 + 0.006 * Math.sin(t * Math.PI * 30); ty = Math.sin(t * Math.PI * 26) * H * 0.003; alpha = ein; }
-  else if (motion === 'rays'){ sc = 1.02 + 0.02 * t; alpha = ein; }
-  else { sc = 1.02 + 0.015 * t; alpha = ein; }
-  ctx.globalAlpha = alpha;
-  ctx.save();
-  if (motion === 'reveal'){ ctx.beginPath(); ctx.rect(0, 0, clipW, H); ctx.clip(); }
-  ctx.translate(W / 2 + tx, H / 2 + ty); ctx.scale(sc, sc); ctx.translate(-W / 2, -H / 2);
-  ctx.drawImage(base, 0, 0, W, H);
-  ctx.restore();
-  ctx.globalAlpha = 1;
-  // efectos por preset (dibujados en canvas: aproximan el look de las referencias)
-  if (motion === 'burst') drawShockwave(ctx, W, H, t);
-  if (motion === 'burst' || motion === 'particles') drawSparkles(ctx, W, H, t, motion === 'particles' ? 26 : 12);
-  if (motion === 'rays') drawRays(ctx, W, H, t);
-  if (motion === 'flash') drawStrobe(ctx, W, H, t);
-  // barrido de luz
-  const sweep = (t * 1.4) % 1, sx = sweep * W * 1.6 - W * 0.3;
-  const inten = motion === 'glow' ? 0.14 : 0.06;
-  const lg = ctx.createLinearGradient(sx, 0, sx + W * 0.3, H);
-  lg.addColorStop(0, 'rgba(255,255,255,0)'); lg.addColorStop(0.5, `rgba(255,255,255,${inten})`); lg.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H);
-  if (motion === 'glow'){ const pulse = 0.08 + 0.1 * Math.abs(Math.sin(t * Math.PI * 3));
-    const rg = ctx.createRadialGradient(W / 2, H * 0.4, 0, W / 2, H * 0.4, W * 0.7);
-    rg.addColorStop(0, rgba(C.a, pulse)); rg.addColorStop(1, rgba(C.a, 0)); ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H); }
-  // cierre de marca (logo + web) en el tramo final
-  if (state.opts.outro){
-    const oStart = 0.86;
-    if (t > oStart){ drawOutroCard(ctx, W, H, easeOut(Math.min(1, (t - oStart) / 0.08))); }
-  }
-  ctx.restore();
-}
-
-function drawOutroCard(ctx, W, H, o){
-  ctx.save();
-  ctx.globalAlpha = o;
-  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, C.bg0); g.addColorStop(1, C.bg1);
-  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  radialBlob(ctx, W/2, H*0.42, W*0.7, rgba(C.a, 0.18));
-  const cy = H*0.40;
-  if (logoImg){ const ls = W*0.34, lw = ls*(logoImg.width/logoImg.height); ctx.save(); ctx.shadowColor = rgba(C.a,0.5); ctx.shadowBlur = 30; ctx.drawImage(logoImg, W/2-lw/2, cy-ls/2, lw, ls); ctx.restore(); }
-  ctx.textAlign = 'center';
-  ctx.fillStyle = C.ink; ctx.font = `800 ${Math.round(W*0.06)}px Montserrat, "Arial Black", Arial`;
-  ctx.fillText('CELL SPACE', W/2, cy + W*0.28);
-  ctx.fillStyle = C.a; ctx.font = `700 ${Math.round(W*0.03)}px Montserrat, Arial`;
-  ctx.fillText('ARGENTINA', W/2, cy + W*0.33);
-  ctx.fillStyle = C.muted; ctx.font = `600 ${Math.round(W*0.032)}px Montserrat, Arial`;
-  ctx.fillText('ENCONTRALO EN', W/2, cy + W*0.44);
-  // web en pastilla
-  ctx.font = `800 ${Math.round(W*0.042)}px Montserrat, Arial`;
-  const web = state.opts.web || 'cellspacearg.com.ar';
-  const tw = ctx.measureText(web).width, ph = Math.round(W*0.08), px = Math.round(W*0.05), py = cy + W*0.50;
-  ctx.strokeStyle = C.a; ctx.lineWidth = Math.max(2, W*0.004); ctx.fillStyle = rgba(C.a, 0.1);
-  roundRect(ctx, W/2-tw/2-px, py-ph*0.5, tw+px*2, ph, ph/2); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = C.a; ctx.textBaseline = 'middle'; ctx.fillText(web, W/2, py); ctx.textBaseline = 'alphabetic';
-  // instagram
-  ctx.fillStyle = C.muted; ctx.font = `600 ${Math.round(W*0.03)}px Montserrat, Arial`;
-  ctx.fillText('@' + (state.opts.instagram || 'cellspacearg'), W/2, py + W*0.09);
-  ctx.restore();
-}
-
-/* ---------- efectos de animación (canvas) ---------- */
-function _rnd(i){ const x = Math.sin(i * 12.9898) * 43758.5453; return x - Math.floor(x); }
-
-function drawShockwave(ctx, W, H, t){
-  // una o dos ondas que se expanden en el arranque y se repiten sutil
-  ctx.save();
-  const cx = W / 2, cy = H * 0.42;
-  for (let k = 0; k < 2; k++){
-    const phase = ((t + k * 0.5) % 1);
-    if (phase > 0.5) continue;
-    const p = phase / 0.5;                 // 0..1
-    const r = p * W * 0.7;
-    ctx.globalAlpha = (1 - p) * 0.5;
-    ctx.strokeStyle = C.a; ctx.lineWidth = Math.max(2, W * 0.006 * (1 - p));
-    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
-  }
-  ctx.restore();
-}
-
-function drawSparkles(ctx, W, H, t, n){
-  ctx.save();
-  for (let i = 0; i < n; i++){
-    const bx = _rnd(i) * W;
-    const speed = 0.4 + _rnd(i + 99) * 0.8;
-    const by = H - ((t * speed + _rnd(i + 7)) % 1) * H;      // sube
-    const tw = 0.4 + 0.6 * Math.abs(Math.sin((t * 6 + i) * Math.PI));
-    const r = (0.8 + _rnd(i + 3) * 1.6) * (W * 0.0022);
-    ctx.globalAlpha = tw * 0.8;
-    ctx.fillStyle = i % 3 === 0 ? C.b : C.a2;
-    ctx.beginPath(); ctx.arc(bx, by, r, 0, Math.PI * 2); ctx.fill();
-  }
-  ctx.restore();
-}
-
-function drawRays(ctx, W, H, t){
-  ctx.save();
-  const cx = W / 2, cy = H * 0.4;
-  ctx.translate(cx, cy); ctx.rotate(t * Math.PI * 0.5);
-  ctx.globalCompositeOperation = 'lighter';
-  const n = 12, R = Math.max(W, H);
-  for (let i = 0; i < n; i++){
-    ctx.rotate((Math.PI * 2) / n);
-    const g = ctx.createLinearGradient(0, 0, R, 0);
-    g.addColorStop(0, rgba(i % 2 ? C.b : C.a, 0.10)); g.addColorStop(1, rgba(C.a, 0));
-    ctx.fillStyle = g;
-    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(R, -W * 0.02); ctx.lineTo(R, W * 0.02); ctx.closePath(); ctx.fill();
-  }
-  ctx.restore();
-}
-
-function drawStrobe(ctx, W, H, t){
-  // destellos rítmicos suaves (no epilépticos)
-  const beat = Math.pow(Math.max(0, Math.sin(t * Math.PI * 8)), 8);
-  if (beat > 0.02){ ctx.save(); ctx.globalAlpha = beat * 0.12; ctx.fillStyle = C.a2; ctx.fillRect(0, 0, W, H); ctx.restore(); }
-}
-
-async function exportWebm(ep, photo, btn){
-  const s = SIZES[state.size];
-  const base = document.createElement('canvas'); base.width = s.w; base.height = s.h;
-  drawSlide(base, ep, state.size, 'full', photo);
-  const cap = document.createElement('canvas'); cap.width = s.w; cap.height = s.h;
-  const cctx = cap.getContext('2d');
-  if (typeof cap.captureStream !== 'function' || typeof MediaRecorder === 'undefined'){
-    alert('Tu navegador no soporta exportar video. Probá con Chrome actualizado.'); return;
-  }
-  const motion = motionForTemplate(), durMs = state.opts.duration * 1000;
-  const stream = cap.captureStream(30);
-
-  // mezcla de música (si el usuario eligió una pista)
-  let audioEl = null, audioCtx = null;
-  if (audioFile){
-    try {
-      audioEl = new Audio(URL.createObjectURL(audioFile)); audioEl.loop = true;
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const src = audioCtx.createMediaElementSource(audioEl);
-      const dest = audioCtx.createMediaStreamDestination();
-      src.connect(dest);
-      dest.stream.getAudioTracks().forEach(tr => stream.addTrack(tr));
-      await audioEl.play().catch(() => {});
-    } catch (e) { console.warn('No se pudo mezclar el audio:', e); }
-  }
-
-  const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
-  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 8000000 });
-  const chunks = []; rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
-  const stopped = new Promise(res => rec.onstop = res);
-  rec.start(200);
-  const start = performance.now();
-  await new Promise(res => {
-    function frame(now){
-      const t = Math.min(1, (now - start) / durMs);
-      drawAnimFrame(cctx, base, t, motion);
-      if (btn) btn.querySelector('#sgDlText').textContent = `Grabando ${Math.round(t*100)}%`;
-      if (t < 1) requestAnimationFrame(frame); else res();
-    }
-    requestAnimationFrame(frame);
-  });
-  rec.stop(); await stopped;
-  if (audioEl){ audioEl.pause(); }
-  if (audioCtx){ try { await audioCtx.close(); } catch (e) {} }
-  const blob = new Blob(chunks, { type: 'video/webm' });
-  const url = URL.createObjectURL(blob); const a = document.createElement('a');
-  a.href = url; a.download = slug(ep.name) + '-' + state.size + '-' + state.opts.duration + 's.webm';
-  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
-}
-
 /* ---------- descarga ---------- */
 
 async function downloadAll(){
-  const btn = document.getElementById('sgDownload');
   const product = allProducts.find(p => p.id === state.productId) || (currentTpl().arc === 'web' ? { name: 'cell-space-web' } : null);
   if (!product) return;
-
-  if (state.mode === 'animated'){
-    btn.disabled = true;
-    try { const photo = await loadImage(product.image_url).catch(() => null); await exportWebm(effProduct(product), photo, btn); }
-    catch (e) { alert('No se pudo exportar el video: ' + e.message); }
-    finally { btn.disabled = false; updateDlText(); }
-    return;
-  }
 
   const canvases = document.querySelectorAll('#sgPreview canvas');
   if (!canvases.length) return;
@@ -780,6 +468,28 @@ const THEMES = {
   rosa:    { a:'#ff3b7b', a2:'#ff85ac', b:'#8b5cf6' },
   rojo:    { a:'#ff3b3b', a2:'#ff8080', b:'#ff9d2e' },
   dorado:  { a:'#e8b23a', a2:'#ffd777', b:'#ff8a3d' },
+  turquesa:{ a:'#14b8a6', a2:'#5eead4', b:'#2f7bff' },
+  lima:    { a:'#84cc16', a2:'#bef264', b:'#14b8a6' },
+  esmeralda:{ a:'#059669', a2:'#34d399', b:'#0ea5e9' },
+  indigo:  { a:'#6366f1', a2:'#a5b4fc', b:'#22d3ee' },
+  fucsia:  { a:'#d946ef', a2:'#f0abfc', b:'#38bdf8' },
+  coral:   { a:'#fb7185', a2:'#fda4af', b:'#8b5cf6' },
+  ambar:   { a:'#f59e0b', a2:'#fcd34d', b:'#ff6a00' },
+  teal:    { a:'#0d9488', a2:'#2dd4bf', b:'#3b82f6' },
+  celeste: { a:'#38bdf8', a2:'#7dd3fc', b:'#818cf8' },
+  lavanda: { a:'#a78bfa', a2:'#c4b5fd', b:'#22d3ee' },
+  magenta: { a:'#ec4899', a2:'#f9a8d4', b:'#8b5cf6' },
+  bordo:   { a:'#9f1239', a2:'#e11d48', b:'#f59e0b' },
+  oliva:   { a:'#65a30d', a2:'#a3e635', b:'#14b8a6' },
+  cobre:   { a:'#c2410c', a2:'#fb923c', b:'#f59e0b' },
+  grafito: { a:'#64748b', a2:'#cbd5e1', b:'#38bdf8' },
+  menta:   { a:'#2dd4bf', a2:'#99f6e4', b:'#60a5fa' },
+  durazno: { a:'#fb923c', a2:'#fdba74', b:'#f472b6' },
+  rubi:    { a:'#e11d48', a2:'#fb7185', b:'#ff9d2e' },
+  zafiro:  { a:'#1d4ed8', a2:'#60a5fa', b:'#22d3ee' },
+  purpura: { a:'#7c3aed', a2:'#a78bfa', b:'#ec4899' },
+  acero:   { a:'#0ea5e9', a2:'#7dd3fc', b:'#34d399' },
+  carmin:  { a:'#be123c', a2:'#f43f5e', b:'#fb923c' },
 };
 let C = paletteFor('naranja');
 function paletteFor(name){
