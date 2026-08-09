@@ -1,6 +1,6 @@
-import { supabase } from '../config.js?v=cb10';
-import { store } from '../core/state.js?v=cb10';
-import { layout, mountLayout, toolbar, emptyState } from '../core/layout.js?v=cb10';
+import { supabase } from '../config.js?v=cb11';
+import { store } from '../core/state.js?v=cb11';
+import { layout, mountLayout, toolbar, emptyState } from '../core/layout.js?v=cb11';
 
 let allExpenses = [];
 let currentEditId = null;

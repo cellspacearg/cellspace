@@ -61,8 +61,8 @@ Vistas presentes y aparentemente conectadas a Supabase (a verificar módulo por 
 - `[ ]` **Promociones / cupones** (solo `old_price` en products).
 - `[ ]` **Gastos / egresos** (para el dashboard ingresos vs gastos).
 - `[ ]` **Reportes** (derivables por vistas/consultas).
-- `[ ]` **Notificaciones / alertas** (no existe).
-- `[ ]` **Auditoría** (no existe).
+- `[~]` **Notificaciones / alertas** (tabla `notifications` + triggers en orders/repairs + admin `#/notifications` + badge).
+- `[~]` **Auditoría** (tabla `audit_log` + trigger genérico en 8 tablas sensibles + admin `#/audit` con diff).
 - `[ ]` **Roles y permisos granulares** (hoy `profiles.role` texto + `is_admin_email`).
 - `[ ]` **Central Space CMS** (tablas `cs_*` existen; falta administración completa desde el panel).
 
@@ -184,7 +184,8 @@ Cada fase sigue el loop: analizar → implementar → conectar → probar (CRUD/
 - `[~]` **Gastos** — tabla `expenses` (categorías: alquiler/servicios/sueldos/insumos/impuestos/marketing/mantenimiento/otro). Admin `#/expenses` (alta/edición, filtros, total del mes y total general). RLS products.manage. Falta test logueado.
 - `[~]` **Promociones** — tabla `promotions` (cupones: % o monto fijo, compra mínima, usos máximos, vigencia). Admin `#/promotions` (CRUD, activar/desactivar). RPC público `validate_coupon(code, subtotal)` verificado (BIENVENIDO10 10% → descuento OK). **Pendiente:** integrar el cupón en el checkout (checkout.js aún no lo aplica). Crédito de técnicos: SIN límite (definido por el dueño).
 - `[~]` **Técnicos + crédito** — tabla `technician_credit_movements` (ledger SIN límite: asignación/uso/devolución/ajuste) con trigger de saldo corrido + función `technician_credit_balance()`. Admin `#/technicians` (lista de técnicos con saldo y reparaciones asignadas; modal de crédito con movimientos + registrar). RLS credit.manage + el técnico ve lo suyo. Ledger verificado (asignar 5000, usar 2000 → 3000).
-- `[ ]` Notificaciones · `[ ]` Auditoría
+- `[~]` **Notificaciones** — tabla `notifications` (type/title/body/link/is_read) + triggers `notify_new_order` (AFTER INSERT en orders → `#/orders`) y `notify_new_repair` (AFTER INSERT en repairs → `#/repairs`). Admin `#/notifications`: lista, filtro "sin leer", marcar leída/no leída, marcar todas, eliminar; badge de no leídas en la barra lateral (`refreshNotifBadge`). RLS `is_admin()`. Triggers verificados por CLI. Falta test logueado.
+- `[~]` **Auditoría** — tabla `audit_log` (user/action/entity/entity_id/before/after) + trigger genérico `audit_trigger()` (SECURITY DEFINER) enganchado a 8 tablas sensibles (products, profiles, promotions, expenses, suppliers, repairs, role_permissions, site_settings). Admin `#/audit`: lista con filtros por entidad/acción/búsqueda + modal de detalle con diff de campos (antes/después). RLS solo lectura para `audit.view`. Verificado por CLI (UPDATE en products registró before+after). Falta test logueado.
 
 ### Storage
 - `[✓]` Buckets creados y verificados: `cms-media` (público), `repair-media` (privado), `documents` (privado), además de `product-images` existente. Políticas: lectura pública + escritura admin (cms-media); solo admin (privados).
@@ -209,3 +210,9 @@ Cada fase sigue el loop: analizar → implementar → conectar → probar (CRUD/
 
 ### Cuenta cliente
 - `[~]` Perfil (existe `perfil.html`) · `[ ]` Mis pedidos · `[ ]` Mis reparaciones · `[ ]` Presupuestos/pagos/garantías
+
+**2026-08-08 — Cierre ERP (Notificaciones + Auditoría):**
+- `[✓]` DB: migraciones `audit_log` (trigger genérico en 8 tablas + RLS `audit.view`) y `notifications` (triggers en orders/repairs + RLS `is_admin`). Aplicadas y verificadas por CLI.
+- `[~]` Admin: vistas `#/audit` (lista + diff antes/después) y `#/notifications` (lista, filtro, marcar leída, badge de no leídas). Ambas ruteadas en `main.js` y en el menú (grupo Sistema). Cache-busting `cb11`. Panel bootea sin errores de consola.
+- **Pendiente de prueba (dueño):** entrar logueado y verificar que Auditoría muestre los cambios y que Notificaciones liste los pedidos/reparaciones nuevos.
+- Con esto quedan cubiertos los 18 módulos del ERP. Pendientes fuera de alcance del build: integrar `validate_coupon` en `checkout.js`, config de Google OAuth + template "Confirm signup" en Supabase, y smoke test logueado de todos los módulos.

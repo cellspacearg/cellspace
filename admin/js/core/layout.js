@@ -2,7 +2,7 @@
 // LAYOUT COMPARTIDO DEL PANEL
 // Todas las vistas lo usan: dejan de repetir sidebar/topbar/footer
 // ============================================================
-import { store } from './state.js?v=cb10';
+import { store } from './state.js?v=cb11';
 
 /* Menú en un solo lugar. Agregás un ítem acá y aparece en todo el panel. */
 export const MENU = [
@@ -29,6 +29,8 @@ export const MENU = [
   { group: 'Sistema', items: [
     { path: '#/reports',  icon: 'fas fa-chart-line',    label: 'Reportes' },
     { path: '#/expenses', icon: 'fas fa-money-bill-wave', label: 'Gastos' },
+    { path: '#/notifications', icon: 'fas fa-bell', label: 'Notificaciones', badgeId: 'notifBadge' },
+    { path: '#/audit',    icon: 'fas fa-clock-rotate-left', label: 'Auditoría' },
     { path: '#/media',    icon: 'fas fa-images', label: 'Archivos' },
     { path: '#/settings', icon: 'fas fa-cog',    label: 'Configuración' },
   ]},
@@ -140,6 +142,22 @@ export function mountLayout(){
   const current = (window.location.hash || '#/dashboard').split('?')[0];
   document.querySelectorAll('.nav-item[data-path]').forEach(i =>
     i.classList.toggle('active', i.dataset.path === current));
+
+  refreshNotifBadge();
+}
+
+/** Cuenta notificaciones sin leer y actualiza el badge de la barra lateral. */
+export async function refreshNotifBadge(){
+  const el = document.getElementById('notifBadge');
+  if (!el) return;
+  try {
+    const { supabase } = await import('../config.js?v=cb11');
+    const { count, error } = await supabase
+      .from('notifications').select('id', { count: 'exact', head: true }).eq('is_read', false);
+    if (error) return;
+    if (count && count > 0) { el.textContent = count > 99 ? '99+' : String(count); el.style.display = ''; }
+    else { el.style.display = 'none'; }
+  } catch (_) { /* silencioso */ }
 }
 
 /**
