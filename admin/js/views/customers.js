@@ -1,5 +1,5 @@
-import { supabase } from '../config.js?v=cb16';
-import { layout, mountLayout, toolbar, emptyState } from '../core/layout.js?v=cb16';
+import { supabase } from '../config.js?v=cb22';
+import { layout, mountLayout, toolbar, emptyState } from '../core/layout.js?v=cb22';
 
 let allUsers = [];
 
