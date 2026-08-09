@@ -1,6 +1,6 @@
-import { supabase } from '../config.js?v=cb5';
-import { store } from '../core/state.js?v=cb5';
-import { layout, mountLayout, toolbar, emptyState } from '../core/layout.js?v=cb5';
+import { supabase } from '../config.js?v=cb6';
+import { store } from '../core/state.js?v=cb6';
+import { layout, mountLayout, toolbar, emptyState } from '../core/layout.js?v=cb6';
 
 // Central Space — administración de GUÍAS técnicas.
 // Todas las guías comparten la MISMA estructura: meta + requisitos (lista) + pasos ordenados.

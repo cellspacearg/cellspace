@@ -2,7 +2,7 @@
 // LAYOUT COMPARTIDO DEL PANEL
 // Todas las vistas lo usan: dejan de repetir sidebar/topbar/footer
 // ============================================================
-import { store } from './state.js?v=cb5';
+import { store } from './state.js?v=cb6';
 
 /* Menú en un solo lugar. Agregás un ítem acá y aparece en todo el panel. */
 export const MENU = [
@@ -24,6 +24,7 @@ export const MENU = [
     { path: '#/messages',  icon: 'fas fa-envelope',      label: 'Mensajes' },
   ]},
   { group: 'Sistema', items: [
+    { path: '#/reports',  icon: 'fas fa-chart-line', label: 'Reportes' },
     { path: '#/media',    icon: 'fas fa-images', label: 'Archivos' },
     { path: '#/settings', icon: 'fas fa-cog',    label: 'Configuración' },
   ]},

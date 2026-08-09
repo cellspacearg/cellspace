@@ -1,4 +1,4 @@
-import { login, resetPassword } from '../hooks/useAuth.js?v=cb5';
+import { login, resetPassword } from '../hooks/useAuth.js?v=cb6';
 
 export async function loginView() {
   return `
