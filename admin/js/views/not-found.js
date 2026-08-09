@@ -1,4 +1,4 @@
-import { layout, mountLayout, emptyState } from '../core/layout.js?v=cb4';
+import { layout, mountLayout, emptyState } from '../core/layout.js?v=cb5';
 
 export async function notFoundView(){
   return layout({
