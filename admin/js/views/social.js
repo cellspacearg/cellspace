@@ -1,5 +1,5 @@
-import { supabase } from '../config.js?v=cb16';
-import { layout, mountLayout } from '../core/layout.js?v=cb16';
+import { supabase } from '../config.js?v=cb17';
+import { layout, mountLayout } from '../core/layout.js?v=cb17';
 
 /* ============================================================
    GENERADOR DE REDES — placas de productos para Instagram/Facebook
@@ -31,9 +31,10 @@ const state = {
     // overrides editables (vacío = usa el dato del producto)
     titleOv: '', taglineOv: '', priceOv: '', discountPct: '', ctaOv: '',
     // animación
-    motion: 'auto', duration: 30,
+    motion: 'auto', duration: 30, outro: true,
   },
 };
+let audioFile = null;  // pista de música elegida por el usuario (File)
 
 /* ============================================================
    CATÁLOGO DE PLANTILLAS ESTÁTICAS (31)
@@ -51,6 +52,8 @@ const TEMPLATES = [
   { id:'android',       name:'Android',           group:'Producto', arc:'minimal',   p:{ tag:'ANDROID' } },
   { id:'accesorios',    name:'Accesorios',        group:'Producto', arc:'minimal',   p:{ tag:'ACCESORIO' } },
   { id:'fundas',        name:'Fundas',            group:'Producto', arc:'minimal',   p:{ tag:'FUNDA' } },
+  { id:'cargadores',    name:'Cargadores',        group:'Producto', arc:'minimal',   p:{ tag:'CARGADOR' } },
+  { id:'cables',        name:'Cables',            group:'Producto', arc:'minimal',   p:{ tag:'CABLE' } },
   { id:'smartwatch',    name:'Smartwatch',        group:'Producto', arc:'spotlight', p:{ tag:'SMARTWATCH', circle:true } },
   { id:'notebook',      name:'Notebook / PC',     group:'Producto', arc:'spec',      p:{ wide:true } },
   { id:'consolas',      name:'Consolas',          group:'Producto', arc:'spotlight', p:{ tag:'GAMING' } },
@@ -76,6 +79,7 @@ const TEMPLATES = [
   // Institucional
   { id:'comunicado',    name:'Comunicado',        group:'Institucional', arc:'editorial', p:{ eyebrow:'COMUNICADO' } },
   { id:'central-space', name:'Central Space',     group:'Institucional', arc:'editorial', p:{ eyebrow:'CENTRAL SPACE' } },
+  { id:'promo-web',     name:'Promo Web',         group:'Institucional', arc:'web',       p:{} },
   { id:'ai-custom',     name:'AI Custom',         group:'Institucional', arc:'editorial', p:{ eyebrow:'CELL SPACE' } },
 ];
 function currentTpl(){ return TEMPLATES.find(t => t.id === state.template) || TEMPLATES[0]; }
@@ -172,6 +176,12 @@ export async function socialView(){
                 <button class="sg-mode on" data-dur="30">30s</button>
                 <button class="sg-mode" data-dur="45">45s</button>
               </div>
+              <label class="sg-lbl" style="margin-top:12px;">Música (opcional, libre de copyright)</label>
+              <input type="file" id="sgAudio" accept="audio/*" class="sg-input" style="padding:8px;">
+              <span id="sgAudioName" style="font-size:12px;color:#888;"></span>
+              <label style="display:flex;align-items:center;gap:9px;font-size:13.5px;color:#ddd;cursor:pointer;margin-top:10px;">
+                <input type="checkbox" id="sgOutro" checked style="accent-color:#ff6a00;width:16px;height:16px;"> Cierre con logo + web
+              </label>
             </div>
           </div>
 
@@ -229,6 +239,8 @@ export function socialViewOnMount(){
     updateDlText(); renderPreview();
   }));
   document.getElementById('sgMotion').addEventListener('change', e => { state.opts.motion = e.target.value; renderPreview(); });
+  document.getElementById('sgAudio').addEventListener('change', e => { audioFile = e.target.files[0] || null; document.getElementById('sgAudioName').textContent = audioFile ? '♪ ' + audioFile.name : ''; });
+  document.getElementById('sgOutro').addEventListener('change', e => { state.opts.outro = e.target.checked; renderPreview(); });
   document.querySelectorAll('#sgDur .sg-mode').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('#sgDur .sg-mode').forEach(x => x.classList.remove('on'));
     b.classList.add('on'); state.opts.duration = Number(b.dataset.dur); renderPreview();
@@ -317,7 +329,8 @@ function stopAnim(){ if (animLoop){ cancelAnimationFrame(animLoop); animLoop = n
 async function renderPreview(){
   stopAnim();
   const cont = document.getElementById('sgPreview');
-  const product = allProducts.find(p => p.id === state.productId);
+  const isWeb = currentTpl().arc === 'web';
+  const product = allProducts.find(p => p.id === state.productId) || (isWeb ? { name: 'CELL SPACE' } : null);
   if (!product){ cont.innerHTML = '<div class="sg-empty"><i class="fas fa-arrow-left"></i> Elegí un producto para ver la placa</div>'; return; }
 
   cont.innerHTML = '<div class="sg-loading"><i class="fas fa-spinner fa-spin"></i> Armando placa...</div>';
@@ -406,6 +419,39 @@ function drawAnimFrame(ctx, base, t, motion){
   if (motion === 'glow'){ const pulse = 0.08 + 0.1 * Math.abs(Math.sin(t * Math.PI * 3));
     const rg = ctx.createRadialGradient(W / 2, H * 0.4, 0, W / 2, H * 0.4, W * 0.7);
     rg.addColorStop(0, rgba(C.a, pulse)); rg.addColorStop(1, rgba(C.a, 0)); ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H); }
+  // cierre de marca (logo + web) en el tramo final
+  if (state.opts.outro){
+    const oStart = 0.86;
+    if (t > oStart){ drawOutroCard(ctx, W, H, easeOut(Math.min(1, (t - oStart) / 0.08))); }
+  }
+  ctx.restore();
+}
+
+function drawOutroCard(ctx, W, H, o){
+  ctx.save();
+  ctx.globalAlpha = o;
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, C.bg0); g.addColorStop(1, C.bg1);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  radialBlob(ctx, W/2, H*0.42, W*0.7, rgba(C.a, 0.18));
+  const cy = H*0.40;
+  if (logoImg){ const ls = W*0.34, lw = ls*(logoImg.width/logoImg.height); ctx.save(); ctx.shadowColor = rgba(C.a,0.5); ctx.shadowBlur = 30; ctx.drawImage(logoImg, W/2-lw/2, cy-ls/2, lw, ls); ctx.restore(); }
+  ctx.textAlign = 'center';
+  ctx.fillStyle = C.ink; ctx.font = `800 ${Math.round(W*0.06)}px Montserrat, "Arial Black", Arial`;
+  ctx.fillText('CELL SPACE', W/2, cy + W*0.28);
+  ctx.fillStyle = C.a; ctx.font = `700 ${Math.round(W*0.03)}px Montserrat, Arial`;
+  ctx.fillText('ARGENTINA', W/2, cy + W*0.33);
+  ctx.fillStyle = C.muted; ctx.font = `600 ${Math.round(W*0.032)}px Montserrat, Arial`;
+  ctx.fillText('ENCONTRALO EN', W/2, cy + W*0.44);
+  // web en pastilla
+  ctx.font = `800 ${Math.round(W*0.042)}px Montserrat, Arial`;
+  const web = state.opts.web || 'cellspacearg.com.ar';
+  const tw = ctx.measureText(web).width, ph = Math.round(W*0.08), px = Math.round(W*0.05), py = cy + W*0.50;
+  ctx.strokeStyle = C.a; ctx.lineWidth = Math.max(2, W*0.004); ctx.fillStyle = rgba(C.a, 0.1);
+  roundRect(ctx, W/2-tw/2-px, py-ph*0.5, tw+px*2, ph, ph/2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = C.a; ctx.textBaseline = 'middle'; ctx.fillText(web, W/2, py); ctx.textBaseline = 'alphabetic';
+  // instagram
+  ctx.fillStyle = C.muted; ctx.font = `600 ${Math.round(W*0.03)}px Montserrat, Arial`;
+  ctx.fillText('@' + (state.opts.instagram || 'cellspacearg'), W/2, py + W*0.09);
   ctx.restore();
 }
 
@@ -420,6 +466,21 @@ async function exportWebm(ep, photo, btn){
   }
   const motion = motionForTemplate(), durMs = state.opts.duration * 1000;
   const stream = cap.captureStream(30);
+
+  // mezcla de música (si el usuario eligió una pista)
+  let audioEl = null, audioCtx = null;
+  if (audioFile){
+    try {
+      audioEl = new Audio(URL.createObjectURL(audioFile)); audioEl.loop = true;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const src = audioCtx.createMediaElementSource(audioEl);
+      const dest = audioCtx.createMediaStreamDestination();
+      src.connect(dest);
+      dest.stream.getAudioTracks().forEach(tr => stream.addTrack(tr));
+      await audioEl.play().catch(() => {});
+    } catch (e) { console.warn('No se pudo mezclar el audio:', e); }
+  }
+
   const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
   const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 8000000 });
   const chunks = []; rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
@@ -436,6 +497,8 @@ async function exportWebm(ep, photo, btn){
     requestAnimationFrame(frame);
   });
   rec.stop(); await stopped;
+  if (audioEl){ audioEl.pause(); }
+  if (audioCtx){ try { await audioCtx.close(); } catch (e) {} }
   const blob = new Blob(chunks, { type: 'video/webm' });
   const url = URL.createObjectURL(blob); const a = document.createElement('a');
   a.href = url; a.download = slug(ep.name) + '-' + state.size + '-' + state.opts.duration + 's.webm';
@@ -446,7 +509,7 @@ async function exportWebm(ep, photo, btn){
 
 async function downloadAll(){
   const btn = document.getElementById('sgDownload');
-  const product = allProducts.find(p => p.id === state.productId);
+  const product = allProducts.find(p => p.id === state.productId) || (currentTpl().arc === 'web' ? { name: 'cell-space-web' } : null);
   if (!product) return;
 
   if (state.mode === 'animated'){
@@ -508,6 +571,7 @@ function rgba(hex, a){ const [r,g,b]=hexToRgb(hex); return `rgba(${r},${g},${b},
 const ARCHETYPES = {
   hero: drawPoster, sale: drawArcSale, minimal: drawArcMinimal, spec: drawArcSpec,
   card: drawArcCard, service: drawArcService, editorial: drawArcEditorial, spotlight: drawArcSpotlight,
+  web: drawArcWeb,
 };
 
 function drawSlide(canvas, p, sizeKey, slide, photo){
@@ -949,6 +1013,35 @@ function drawArcEditorial(ctx, W, H, pad, p, sizeKey, photo, tp){
   const cbY = story?H*0.78:H*0.80;
   ctx.fillStyle=C.a; roundRect(ctx, pad, cbY, cw+cpx*2, ch, ch/2); ctx.fill();
   ctx.fillStyle='#150800'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText(cta, pad+cpx, cbY+ch/2); ctx.textBaseline='alphabetic';
+  drawFooter(ctx, W, H, pad);
+}
+
+// ARCHETIPO: WEB — promo del sitio (logo + web + beneficios), sin producto
+function drawArcWeb(ctx, W, H, pad, p, sizeKey, photo, tp){
+  const story = sizeKey === 'story';
+  drawTechBackground(ctx, W, H, sizeKey, 'cyber');
+  ctx.textAlign = 'center';
+  ctx.fillStyle = C.b; ctx.font = `700 ${Math.round(W*0.026)}px "Courier New", monospace`;
+  ctx.fillText('// TIENDA ONLINE', W/2, story ? H*0.14 : H*0.13);
+  // logo grande
+  const cy = story ? H*0.32 : H*0.30;
+  if (logoImg){ const ls = W*0.34, lw = ls*(logoImg.width/logoImg.height); ctx.save(); ctx.shadowColor = rgba(C.a,0.5); ctx.shadowBlur = 30; ctx.drawImage(logoImg, W/2-lw/2, cy-ls/2, lw, ls); ctx.restore(); }
+  let y = cy + W*0.26;
+  ctx.fillStyle = C.ink; ctx.font = `800 ${Math.round(W*0.075)}px Montserrat, "Arial Black", Arial`; ctx.fillText('CELL SPACE', W/2, y);
+  y += Math.round(W*0.05); ctx.fillStyle = C.a; ctx.font = `700 ${Math.round(W*0.035)}px Montserrat, Arial`; ctx.fillText('ARGENTINA', W/2, y);
+  y += Math.round(W*0.06); ctx.fillStyle = C.muted; ctx.font = `600 ${Math.round(W*0.034)}px Montserrat, Arial`;
+  ctx.fillText(p.tagline || 'TU TIENDA DE TECNOLOGÍA', W/2, y);
+  // beneficios
+  const feats = [['truck','ENVÍOS A TODO EL PAÍS'],['card','HASTA 12 CUOTAS'],['shield','GARANTÍA Y SOPORTE']];
+  y += Math.round(W*0.06);
+  feats.forEach(([ic,l])=>{ y += Math.round(W*0.07); drawIcon(ctx, ic, W/2 - W*0.24, y - W*0.012, W*0.035, C.a);
+    ctx.textAlign='left'; ctx.fillStyle=C.ink; ctx.font=`700 ${Math.round(W*0.034)}px Montserrat, Arial`; ctx.fillText(l, W/2 - W*0.18, y); ctx.textAlign='center'; });
+  // web en botón
+  y += Math.round(W*0.1); const web = state.opts.web || 'cellspacearg.com.ar';
+  ctx.font = `800 ${Math.round(W*0.048)}px Montserrat, Arial`; const tw = ctx.measureText(web).width, bh = Math.round(W*0.11), bpx = Math.round(W*0.06);
+  const g = ctx.createLinearGradient(W/2-tw/2,0,W/2+tw/2,0); g.addColorStop(0,C.a); g.addColorStop(1,C.a2);
+  ctx.save(); ctx.shadowColor = rgba(C.a,0.5); ctx.shadowBlur = 24; ctx.fillStyle = g; roundRect(ctx, W/2-tw/2-bpx, y-bh*0.66, tw+bpx*2, bh, bh/2); ctx.fill(); ctx.restore();
+  ctx.fillStyle = '#150800'; ctx.textBaseline='middle'; ctx.fillText(web, W/2, y-bh*0.14); ctx.textBaseline='alphabetic';
   drawFooter(ctx, W, H, pad);
 }
 
