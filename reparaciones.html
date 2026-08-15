@@ -55,6 +55,37 @@
   <script src="js/site-config.js?v=1"></script>
   <script src="js/cs-auth.js?v=1"></script>
 
+  <script>
+const SUPABASE_URL = 'https://omrijasovabxprqqxhpk.supabase.co'; // tu proyecto
+const SUPABASE_ANON_KEY = 'PEGÁ_ACÁ_TU_ANON_KEY';
+
+document.querySelector('form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const codigo = document.querySelector('input[type="text"]').value.trim();
+  if (!codigo) return;
+
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/public_track_order`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY },
+    body: JSON.stringify({ p_tracking_code: codigo }),
+  });
+  const rows = await res.json();
+
+  const resultado = document.getElementById('resultado'); // creá este div
+  if (!rows.length) {
+    resultado.innerHTML = '<p>No encontramos una orden con ese código.</p>';
+    return;
+  }
+  const o = rows[0];
+  resultado.innerHTML = `
+    <p><strong>${o.status}</strong></p>
+    <p>${o.device_brand ?? ''} ${o.device_model ?? ''}</p>
+    ${o.balance != null ? `<p>Saldo: $${o.balance.toLocaleString('es-AR')}</p>` : ''}
+    ${o.delivery_date ? `<p>Entrega estimada: ${o.delivery_date}</p>` : ''}
+  `;
+});
+</script>
+
   <a href="https://wa.me/5493782437674" target="_blank" class="wa-float" aria-label="WhatsApp">
   <i class="fab fa-whatsapp"></i>
 </a>
