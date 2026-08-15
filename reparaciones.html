@@ -37,7 +37,7 @@
       <p class="subtitle">Ingresá el número de orden para ver el estado de tu reparación.</p>
       
       <div class="search-box">
-        <input type="text" id="orderInput" placeholder="Ej: TS-2024-0001" maxlength="15">
+        <input type="text" id="orderInput" placeholder="Ej: B3JKJD53" maxlength="15">
         <button onclick="trackOrder()" class="btn-track">
           <i class="fas fa-search"></i> Buscar
         </button>
@@ -55,10 +55,9 @@
   <script src="js/site-config.js?v=1"></script>
   <script src="js/cs-auth.js?v=1"></script>
 
- <script>
-const SUPABASE_URL = 'https://omrijasovabxprqqxhpk.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_hcN9hqNU0Mb4pQHNN2SuKA_C9_mDWO0'; // Dashboard → Settings → API
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<script>
+const NESPACE_SUPABASE_URL = 'https://omrijasovabxprqqxhpk.supabase.co';
+const NESPACE_ANON_KEY = 'sb_publishable_hcN9hqNU0Mb4pQHNN2SuKA_C9_mDWO0';
 
 async function trackOrder() {
   const codigo = document.getElementById('orderInput').value.trim();
@@ -66,19 +65,28 @@ async function trackOrder() {
   if (!codigo) return;
 
   resultado.innerHTML = '<p>Buscando...</p>';
-  const { data, error } = await sb.rpc('public_track_order', { p_tracking_code: codigo });
-
-  if (error || !data || !data.length) {
-    resultado.innerHTML = '<p>No encontramos una orden con ese código.</p>';
-    return;
+  try {
+    const res = await fetch(`${NESPACE_SUPABASE_URL}/rest/v1/rpc/public_track_order`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: NESPACE_ANON_KEY },
+      body: JSON.stringify({ p_tracking_code: codigo }),
+    });
+    const rows = await res.json();
+    if (!Array.isArray(rows) || !rows.length) {
+      resultado.innerHTML = '<p>No encontramos una orden con ese código.</p>';
+      return;
+    }
+    const o = rows[0];
+    resultado.innerHTML = `
+      <p><strong>${o.status}</strong></p>
+      <p>${o.device_brand ?? ''} ${o.device_model ?? ''}</p>
+      ${o.balance != null ? `<p>Saldo: $${Number(o.balance).toLocaleString('es-AR')}</p>` : ''}
+      ${o.delivery_date ? `<p>Entrega estimada: ${o.delivery_date}</p>` : ''}
+    `;
+  } catch (err) {
+    resultado.innerHTML = '<p>Hubo un error al consultar. Probá de nuevo en un momento.</p>';
+    console.error(err);
   }
-  const o = data[0];
-  resultado.innerHTML = `
-    <p><strong>${o.status}</strong></p>
-    <p>${o.device_brand ?? ''} ${o.device_model ?? ''}</p>
-    ${o.balance != null ? `<p>Saldo: $${Number(o.balance).toLocaleString('es-AR')}</p>` : ''}
-    ${o.delivery_date ? `<p>Entrega estimada: ${o.delivery_date}</p>` : ''}
-  `;
 }
 </script>
 
