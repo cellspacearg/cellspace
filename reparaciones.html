@@ -12,9 +12,18 @@
   <link rel="stylesheet" href="css/cms-public.css?v=1">
   <link rel="stylesheet" href="css/cs-auth.css?v=1">
   <link rel="stylesheet" href="css/responsive.css?v=3">
-  
+
   <!-- Supabase SDK (Reemplaza a Firebase) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.2" integrity="sha384-B2duOBIryCXbX4eDE4BdJwtNkQMRQde3o6IsjfPW28E6aH1CYE96hHeZRG3zY56O" crossorigin="anonymous"></script>
+
+  <style>
+    .track-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(233,123,30,0.25); border-radius: 16px; padding: 22px; margin-top: 20px; }
+    .track-status { display: inline-block; padding: 7px 16px; border-radius: 999px; background: linear-gradient(135deg, #e97b1e, #c9600f); color: #fff; font-weight: 700; font-size: 13px; margin-bottom: 16px; }
+    .track-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 14.5px; color: #eee; }
+    .track-row:last-child { border-bottom: none; }
+    .track-row .label { color: rgba(255,255,255,0.5); }
+    .track-empty { text-align: center; color: #e97b1e; padding: 20px 0; font-size: 14px; }
+  </style>
 </head>
 <body>
   <div class="particles" id="particles"></div>
@@ -35,7 +44,7 @@
     <div class="card">
       <h2><i class="fas fa-search" style="color: var(--orange);"></i> Rastrear mi equipo</h2>
       <p class="subtitle">Ingresá el número de orden para ver el estado de tu reparación.</p>
-      
+
       <div class="search-box">
         <input type="text" id="orderInput" placeholder="Ej: B3JKJD53" maxlength="15">
         <button onclick="trackOrder()" class="btn-track">
@@ -43,7 +52,7 @@
         </button>
       </div>
       <p class="hint">💡 ¿No tenés tu número de orden? Consultalo en tu comprobante o <a href="https://wa.me/5493782437674" target="_blank">escribinos por WhatsApp</a></p>
-      
+
       <div id="trackResult" class="result-container"></div>
     </div>
   </main>
@@ -59,6 +68,12 @@
 const NESPACE_SUPABASE_URL = 'https://omrijasovabxprqqxhpk.supabase.co';
 const NESPACE_ANON_KEY = 'sb_publishable_hcN9hqNU0Mb4pQHNN2SuKA_C9_mDWO0';
 
+const NESPACE_STATUS_LABELS = {
+  recibido: 'Recibido', diagnostico: 'En diagnóstico', presupuestado: 'Presupuestado',
+  aprobado: 'Aprobado', esperando_repuesto: 'Esperando repuesto', reparando: 'En reparación',
+  listo: 'Listo para entregar', entregado: 'Entregado', sin_reparacion: 'Sin reparación',
+};
+
 async function trackOrder() {
   const codigo = document.getElementById('orderInput').value.trim();
   const resultado = document.getElementById('trackResult');
@@ -73,21 +88,33 @@ async function trackOrder() {
     });
     const rows = await res.json();
     if (!Array.isArray(rows) || !rows.length) {
-      resultado.innerHTML = '<p>No encontramos una orden con ese código.</p>';
+      resultado.innerHTML = '<div class="track-empty">No encontramos una orden con ese código.</div>';
       return;
     }
     const o = rows[0];
+    const equipo = [o.device_brand, o.device_model].filter(Boolean).join(' ');
     resultado.innerHTML = `
-      <p><strong>${o.status}</strong></p>
-      <p>${o.device_brand ?? ''} ${o.device_model ?? ''}</p>
-      ${o.balance != null ? `<p>Saldo: $${Number(o.balance).toLocaleString('es-AR')}</p>` : ''}
-      ${o.delivery_date ? `<p>Entrega estimada: ${o.delivery_date}</p>` : ''}
-    `;
+      <div class="track-card">
+        <div class="track-status">${NESPACE_STATUS_LABELS[o.status] || o.status}</div>
+        ${equipo ? `<div class="track-row"><span class="label">Equipo</span><span>${equipo}</span></div>` : ''}
+        ${o.balance != null ? `<div class="track-row"><span class="label">Saldo</span><span>$${Number(o.balance).toLocaleString('es-AR')}</span></div>` : ''}
+        ${o.delivery_date ? `<div class="track-row"><span class="label">Entrega estimada</span><span>${o.delivery_date}</span></div>` : ''}
+      </div>`;
   } catch (err) {
-    resultado.innerHTML = '<p>Hubo un error al consultar. Probá de nuevo en un momento.</p>';
+    resultado.innerHTML = '<div class="track-empty">Hubo un error al consultar. Probá de nuevo en un momento.</div>';
     console.error(err);
   }
 }
+
+// Si llegan desde el QR (ej: reparaciones.html?codigo=B3LUJS5E), autocompletar y buscar solo.
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const codigo = params.get('codigo');
+  if (codigo) {
+    document.getElementById('orderInput').value = codigo;
+    trackOrder();
+  }
+})();
 </script>
 
   <a href="https://wa.me/5493782437674" target="_blank" class="wa-float" aria-label="WhatsApp">
