@@ -1,64 +1,72 @@
 import { supabase } from '../config.js?v=cb22';
 import { store } from '../core/state.js?v=cb22';
+import { layout, mountLayout } from '../core/layout.js?v=cb22';
 
 let allCategories = [];
 let currentEditId = null;
+let currentSectionFilter = '';
+
+const SECTIONS = {
+  tech:    { label: 'Tecnología',       color: '#FF6A00', icon: 'fas fa-mobile-screen' },
+  care:    { label: 'Cuidado Personal', color: '#E8B4B8', icon: 'fas fa-spa' },
+  license: { label: 'Licencias',        color: '#2F7BFF', icon: 'fas fa-key' },
+  gaming:  { label: 'Gaming',           color: '#8b5cf6', icon: 'fas fa-gamepad' },
+  offers:  { label: 'Ofertas',          color: '#ff3b3b', icon: 'fas fa-fire' },
+};
 
 export async function categoriesView() {
-  const state = store.getState();
-  const userName = state.user?.email?.split('@')[0] || 'Admin';
-  const userInitial = userName.charAt(0).toUpperCase();
-
-  return `
-  <div class="admin-layout">
-    <aside class="admin-sidebar" id="adminSidebar">
-      <div class="sidebar-header"><img src="../assets/logo.png" alt="Cell Space" class="sidebar-logo" onerror="this.style.display='none'"><div class="sidebar-brand"><span class="brand-name">CELL SPACE</span><span class="brand-sub">CMS Panel</span></div></div>
-      <nav class="sidebar-nav">
-        <div class="nav-section"><span class="nav-section-title">Principal</span><a href="#/dashboard" class="nav-item"><i class="fas fa-home"></i><span>Dashboard</span></a></div>
-        <div class="nav-section"><span class="nav-section-title">Contenido</span>
-          <a href="#/products" class="nav-item"><i class="fas fa-box"></i><span>Productos</span></a>
-          <a href="#/categories" class="nav-item"><i class="fas fa-tags"></i><span>Categorías</span></a>
-          <a href="#/services" class="nav-item"><i class="fas fa-tools"></i><span>Servicios</span></a>
-          <a href="#/pages" class="nav-item"><i class="fas fa-file-alt"></i><span>Páginas</span></a>
-          <a href="#/central" class="nav-item"><i class="fas fa-screwdriver-wrench"></i><span>Central Space</span></a></div>
-        <div class="nav-section"><span class="nav-section-title">Gestión</span>
-          <a href="#/orders" class="nav-item"><i class="fas fa-shopping-cart"></i><span>Pedidos</span></a>
-          <a href="#/customers" class="nav-item"><i class="fas fa-users"></i><span>Clientes</span></a>
-          <a href="#/messages" class="nav-item"><i class="fas fa-envelope"></i><span>Mensajes</span></a></div>
-        <div class="nav-section"><span class="nav-section-title">Sistema</span>
-          <a href="#/media" class="nav-item"><i class="fas fa-images"></i><span>Archivos</span></a>
-          <a href="#/settings" class="nav-item"><i class="fas fa-cog"></i><span>Configuración</span></a></div>
-      </nav>
-      <div class="sidebar-footer"><a href="../index.html" class="nav-item" target="_blank"><i class="fas fa-external-link-alt"></i><span>Ver sitio público</span></a></div>
-    </aside>
-
-    <div class="admin-main">
-      <header class="admin-topbar">
-        <div class="topbar-left"><button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button><h1 class="page-title">Categorías</h1></div>
-        <div class="topbar-right"><div class="user-menu">
-          <button class="user-btn" id="userMenuBtn"><div class="user-avatar">${userInitial}</div><div class="user-info"><span class="user-name">${userName}</span><span class="user-role">Administrador</span></div><i class="fas fa-chevron-down"></i></button>
-          <div class="user-dropdown" id="userDropdown"><a href="#/dashboard" class="dropdown-item"><i class="fas fa-home"></i><span>Dashboard</span></a><div class="dropdown-divider"></div><a href="#" class="dropdown-item logout" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i><span>Cerrar sesión</span></a></div>
-        </div></div>
-      </header>
-
-      <main class="admin-content"><div class="content-wrapper">
-        <div class="products-toolbar">
-          <p class="field-hint" style="margin:0;">Estas son las categorías que ven tus clientes en la tienda. Las marcadas "Solo técnicos" solo aparecen para usuarios logueados como técnico o admin.</p>
-          <button class="btn-primary" onclick="openCategoryModal()"><i class="fas fa-plus"></i> Nueva Categoría</button>
-        </div>
-        <div class="products-count" id="categoriesCount">Cargando...</div>
-        <div class="admin-products-grid" id="categoriesGrid"></div>
-      </div></main>
-
-      <footer class="admin-footer"><div class="footer-content"><span>&copy; 2026 Cell Space Argentina.</span><span class="footer-version">CMS v1.0.0</span></div></footer>
+  const content = `
+    <div class="products-toolbar">
+      <p class="field-hint" style="margin:0;">
+        Estas son las categorías que ven tus clientes.
+        Las marcadas "Solo técnicos" solo aparecen para usuarios logueados como técnico o admin.
+      </p>
+      <button class="btn-primary" onclick="openCategoryModal()">
+        <i class="fas fa-plus"></i> Nueva Categoría
+      </button>
     </div>
-  </div>
 
+    <div class="section-filters" id="sectionFilters">
+      <button class="section-pill on" data-section="">Todos</button>
+      <button class="section-pill" data-section="tech" style="--cat-color:#FF6A00">
+        <i class="fas fa-mobile-screen"></i> Tecnología
+      </button>
+      <button class="section-pill" data-section="care" style="--cat-color:#E8B4B8">
+        <i class="fas fa-spa"></i> Cuidado Personal
+      </button>
+      <button class="section-pill" data-section="license" style="--cat-color:#2F7BFF">
+        <i class="fas fa-key"></i> Licencias
+      </button>
+      <button class="section-pill" data-section="gaming" style="--cat-color:#8b5cf6">
+        <i class="fas fa-gamepad"></i> Gaming
+      </button>
+      <button class="section-pill" data-section="offers" style="--cat-color:#ff3b3b">
+        <i class="fas fa-fire"></i> Ofertas
+      </button>
+    </div>
+
+    <div class="products-count" id="categoriesCount">Cargando...</div>
+    <div class="admin-products-grid" id="categoriesGrid"></div>`;
+
+  const modal = `
   <div class="modal-overlay" id="categoryModal">
     <div class="modal-box">
       <div class="modal-header"><h2 id="catModalTitle">Nueva Categoría</h2><button class="modal-close" onclick="closeCategoryModal()"><i class="fas fa-times"></i></button></div>
       <form id="categoryForm" class="modal-body">
         <div class="form-row"><div class="form-group full"><label>Nombre *</label><input type="text" id="c_name" required placeholder="Ej: Accesorios"></div></div>
+        <div class="form-row">
+          <div class="form-group full">
+            <label>Rubro *</label>
+            <select id="c_section" required>
+              <option value="tech">📱 Tecnología</option>
+              <option value="care">✨ Cuidado Personal</option>
+              <option value="license">💳 Licencias</option>
+              <option value="gaming">🎮 Gaming</option>
+              <option value="offers">🔥 Ofertas</option>
+            </select>
+            <p class="field-hint">A qué sección de la tienda pertenece esta categoría.</p>
+          </div>
+        </div>
         <div class="form-row">
           <div class="form-group"><label>Ícono (Font Awesome)</label><input type="text" id="c_icon" placeholder="fas fa-headphones"></div>
           <div class="form-group"><label>Orden</label><input type="number" id="c_order" value="0"></div>
@@ -72,25 +80,23 @@ export async function categoriesView() {
         </div>
       </form>
     </div>
-  </div>
+  </div>`;
 
-  <div class="sidebar-overlay" id="sidebarOverlay"></div>`;
+  return layout({ title: 'Categorías', content }) + modal;
 }
 
 export function categoriesViewOnMount() {
-  wireLayout();
+  mountLayout();
   document.getElementById('categoryForm').addEventListener('submit', saveCategory);
+  document.querySelectorAll('.section-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.section-pill').forEach(p => p.classList.remove('on'));
+      pill.classList.add('on');
+      currentSectionFilter = pill.dataset.section;
+      renderCategories();
+    });
+  });
   loadCategories();
-}
-
-function wireLayout() {
-  const t=document.getElementById('sidebarToggle'),s=document.getElementById('adminSidebar'),o=document.getElementById('sidebarOverlay');
-  if(t)t.onclick=()=>{s.classList.toggle('open');o.classList.toggle('active');};
-  if(o)o.onclick=()=>{s.classList.remove('open');o.classList.remove('active');};
-  const ub=document.getElementById('userMenuBtn'),ud=document.getElementById('userDropdown');
-  if(ub)ub.onclick=e=>{e.stopPropagation();ud.classList.toggle('active');};
-  document.addEventListener('click',()=>ud&&ud.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(i=>i.classList.toggle('active',i.getAttribute('href')===(window.location.hash||'').split('?')[0]));
 }
 
 async function loadCategories() {
@@ -107,12 +113,68 @@ async function loadCategories() {
 
 function renderCategories() {
   const grid = document.getElementById('categoriesGrid');
-  if (!allCategories.length) { grid.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="fas fa-tags"></i></div><h2>No hay categorías</h2><p>Creá la primera.</p></div>`; return; }
-  grid.innerHTML = allCategories.map(c => `
-    <div class="admin-product-card">
-      <div class="ap-thumb"><i class="${escAttr(c.icon || 'fas fa-th')}" style="font-size:32px;color:var(--orange,#FF6A00)"></i></div>
+  if (!allCategories.length) {
+    grid.innerHTML = `<div class="empty-state">
+      <div class="empty-icon"><i class="fas fa-tags"></i></div>
+      <h2>No hay categorías</h2>
+      <p>Creá la primera.</p>
+    </div>`;
+    return;
+  }
+
+  // Filtrar si hay filtro activo
+  const filtered = currentSectionFilter
+    ? allCategories.filter(c => (c.section || 'tech') === currentSectionFilter)
+    : allCategories;
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-state">
+      <div class="empty-icon"><i class="fas fa-filter"></i></div>
+      <h2>Sin categorías en este rubro</h2>
+      <p>Probá con otro filtro o creá una nueva categoría.</p>
+    </div>`;
+    return;
+  }
+
+  // Agrupar por section
+  const grouped = {};
+  Object.keys(SECTIONS).forEach(k => grouped[k] = []);
+  filtered.forEach(c => {
+    const s = c.section || 'tech';
+    if (!grouped[s]) grouped[s] = [];
+    grouped[s].push(c);
+  });
+
+  // Renderizar
+  grid.innerHTML = Object.entries(grouped)
+    .filter(([_, cats]) => cats.length > 0)
+    .map(([sectionId, cats]) => {
+      const sec = SECTIONS[sectionId] || { label: sectionId, color: '#888', icon: 'fas fa-tag' };
+      return `
+        <div class="cat-section">
+          <div class="cat-section-head" style="--cat-color: ${sec.color}">
+            <i class="${sec.icon}"></i>
+            <span>${sec.label}</span>
+            <span class="cat-section-count">${cats.length}</span>
+          </div>
+          <div class="cat-section-list">
+            ${cats.map(c => renderCategoryCard(c, sec)).join('')}
+          </div>
+        </div>`;
+    }).join('');
+}
+
+function renderCategoryCard(c, sec) {
+  return `
+    <div class="admin-product-card" style="--cat-color: ${sec.color}">
+      <div class="ap-thumb"><i class="${escAttr(c.icon || 'fas fa-th')}" style="font-size:32px;color:${sec.color}"></i></div>
       <div class="ap-body">
-        <div class="ap-top"><span class="ap-cat">Orden: ${c.sort_order ?? 0}</span>${c.technician_only ? '<span class="ap-state st-draft">Solo técnicos</span>' : '<span class="ap-state st-active">Pública</span>'}</div>
+        <div class="ap-top">
+          <span class="ap-cat">Orden: ${c.sort_order ?? 0}</span>
+          ${c.technician_only
+            ? '<span class="ap-state st-draft">Solo técnicos</span>'
+            : '<span class="ap-state st-active">Pública</span>'}
+        </div>
         <h4 class="ap-name">${escapeHtml(c.name)}</h4>
         <div class="ap-meta">slug: ${escapeHtml(c.slug)}</div>
       </div>
@@ -120,7 +182,7 @@ function renderCategories() {
         <button title="Editar" onclick="editCategory('${c.id}')"><i class="fas fa-pen"></i></button>
         <button title="Eliminar" class="del" onclick="deleteCategory('${c.id}')"><i class="fas fa-trash"></i></button>
       </div>
-    </div>`).join('');
+    </div>`;
 }
 
 window.openCategoryModal = function () {
@@ -135,6 +197,7 @@ window.editCategory = function (id) {
   currentEditId = id;
   document.getElementById('catModalTitle').textContent = 'Editar Categoría';
   document.getElementById('c_name').value = c.name || '';
+  document.getElementById('c_section').value = c.section || 'tech';
   document.getElementById('c_icon').value = c.icon || '';
   document.getElementById('c_order').value = c.sort_order ?? 0;
   document.getElementById('c_tech_only').checked = !!c.technician_only;
@@ -154,7 +217,7 @@ window.deleteCategory = async function (id) {
 
 function slugify(name) {
   return String(name).toLowerCase().trim()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
@@ -168,6 +231,7 @@ async function saveCategory(e) {
     const payload = {
       name,
       slug: slugify(name),
+      section: document.getElementById('c_section').value,
       icon: document.getElementById('c_icon').value.trim() || 'fas fa-th',
       sort_order: parseInt(document.getElementById('c_order').value) || 0,
       technician_only: document.getElementById('c_tech_only').checked,

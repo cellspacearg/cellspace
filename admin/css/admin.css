@@ -789,3 +789,101 @@ select optgroup {
   background-color: #1a1a1a;
   color: #f2f2f2;
 }
+
+/* ========================================
+   RUBROS / SECCIONES (PARTE 2)
+   ======================================== */
+.section-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.section-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  color: #aaa;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.section-pill i {
+  font-size: 13px;
+  color: var(--cat-color, #888);
+  transition: var(--transition);
+}
+
+.section-pill:hover {
+  color: #fff;
+  border-color: var(--cat-color, var(--admin-orange));
+}
+
+.section-pill.on {
+  background: var(--cat-color, var(--admin-orange));
+  color: #fff;
+  border-color: var(--cat-color, var(--admin-orange));
+  box-shadow: 0 4px 14px rgba(255, 106, 0, 0.3);
+}
+
+.section-pill.on i {
+  color: #fff;
+}
+
+.cat-section {
+  margin-bottom: 32px;
+}
+
+.cat-section:last-child {
+  margin-bottom: 0;
+}
+
+.cat-section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--cat-color, var(--admin-border));
+}
+
+.cat-section-head i {
+  font-size: 18px;
+  color: var(--cat-color, var(--admin-orange));
+}
+
+.cat-section-head span:first-of-type {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cat-section-count {
+  margin-left: auto;
+  background: var(--cat-color, var(--admin-orange));
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 8px;
+}
+
+.cat-section-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-product-card[style*="--cat-color"] {
+  border-left: 3px solid var(--cat-color, transparent);
+}
