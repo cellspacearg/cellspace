@@ -1047,3 +1047,15 @@ select optgroup {
 .admin-product-card[style*="--cat-color"] {
   border-left: 3px solid var(--cat-color, transparent);
 }
+
+/* ========================================
+   MEDIOS DE PAGO (PARTE 3)
+   ======================================== */
+.fee-percentage {
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.fee-percentage.fee-surcharge { color: #FFD700; }
+.fee-percentage.fee-discount  { color: #10c46a; }
+.fee-percentage.fee-neutral   { color: var(--admin-text-muted); font-weight: 500; }
