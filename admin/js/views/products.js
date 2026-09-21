@@ -87,7 +87,7 @@ export async function productsView() {
                 <div class="form-group"><label>Modelo</label><input type="text" id="p_model" placeholder="iPhone 15 Pro"></div>
               </div>
               <div class="form-row">
-                <div class="form-group"><label>Precio transferencia *</label><input type="number" id="p_price" step="0.01" min="0" required></div>
+                <div class="form-group"><label>Precio base *</label><input type="number" id="p_price" step="0.01" min="0" required></div>
                 <div class="form-group"><label>Precio anterior</label><input type="number" id="p_old_price" step="0.01" min="0" placeholder="Para mostrar descuento"></div>
               </div>
               <div class="form-row">
@@ -143,7 +143,7 @@ export async function productsView() {
               </div>
               <div class="form-row">
                 <div class="form-group"><label>Precio sin impuestos</label><input type="number" id="p_price_no_tax" step="0.01" min="0"></div>
-                <div class="form-group"><label>Precio por transferencia</label><input type="number" id="p_price_transfer" step="0.01" min="0" placeholder="Con descuento por transferencia"></div>
+                <div class="form-group"><label>Precio con transferencia (descuento)</label><input type="number" id="p_price_transfer" step="0.01" min="0" placeholder="Con descuento por transferencia"></div>
               </div>
               <div class="form-row"><div class="form-group full"><label>Nota de envío</label><input type="text" id="p_shipping_note" placeholder="Envío gratis a todo el país / Llega en 24h..."></div></div>
               <div class="form-row">
