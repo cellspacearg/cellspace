@@ -1,5 +1,5 @@
 import { supabase } from '../config.js?v=cb22';
-import { layout, mountLayout, toolbar, emptyState } from '../core/layout.js?v=cb22';
+import { layout, mountLayout, emptyState } from '../core/layout.js?v=cb22';
 
 let allProducts = [];
 let currentEditId = null;
@@ -8,6 +8,16 @@ let currentStates = [];   // [{label,price,note,recommended}]
 let currentStorages = []; // ['256GB','512GB']
 let currentColors = [];   // [{name,hex,image}]
 let currentSpecs = [];    // [{icon,label,value}]
+
+/* ---------- listado (PARTE 6) ---------- */
+let currentView = 'grid';         // 'grid' | 'table'
+let currentQuickFilter = 'all';   // all|published|draft|nostock|nophoto|pending
+let currentSort = 'recent';
+let selectedIds = new Set();
+let lastFilteredList = [];
+let categorySectionByName = {};
+const SECTION_COLORS = { tech:'#FF6A00', care:'#E8B4B8', license:'#2F7BFF', gaming:'#8b5cf6', offers:'#ff3b3b' };
+function sectionOf(p){ return categorySectionByName[(p.category||'').toLowerCase()] || 'tech'; }
 
 const FALLBACK_CATEGORIES = ['Accesorios','Celulares nuevos','Celulares usados','Notebooks / Computadoras','Repuestos generales','Consolas y gamer','Ofertas / Liquidación','Licencias / Software','FRP por servidor','Archivos','Herramientas','Repuestos al por mayor'];
 const SPEC_ICONS = [
@@ -38,8 +48,11 @@ export async function productsView() {
     const { data, error } = await supabase.from('categories').select('name, section').order('sort_order', { ascending: true });
     if (!error && data && data.length) { categoryRows = data; categoryNames = data.map(c => c.name); }
   } catch (e) { console.warn('No se pudieron cargar categorías, uso lista de respaldo', e); }
+  categorySectionByName = {};
+  (categoryRows || []).forEach(c => { categorySectionByName[c.name.toLowerCase()] = c.section || 'tech'; });
   const catOptionsFlat = flatCategoryOptions(categoryNames);
   const catOptionsModal = categoryRows ? groupedCategoryOptions(categoryRows) : catOptionsFlat;
+  const sectionOptionsFlat = Object.entries(SECTION_LABELS).map(([v,l]) => `<option value="${v}">${escapeHtml(l)}</option>`).join('');
   const specIconOpts = SPEC_ICONS.map(([v,l]) => `<option value="${v}">${l}</option>`).join('');
   window.__SPEC_ICON_OPTS = specIconOpts;
 
@@ -48,18 +61,67 @@ export async function productsView() {
     return `<div class="form-group" style="min-width:150px;"><label>${label}</label><select id="p_rating_${key}"><option value="">Sin calificar</option><option value="5">★★★★★</option><option value="4">★★★★☆</option><option value="3">★★★☆</option><option value="2">★★☆</option><option value="1">★☆</option></select></div>`;
   }).join('');
 
-  const content = `<div class="admin-products-grid" id="productsGrid"></div>`;
+  const content = `
+    <div class="section-filters" id="quickFilters">
+      <button type="button" class="section-pill on" data-quick="all">Todos: <span id="qf_all">0</span></button>
+      <button type="button" class="section-pill" data-quick="published">Publicados: <span id="qf_published">0</span></button>
+      <button type="button" class="section-pill" data-quick="draft">Borradores: <span id="qf_draft">0</span></button>
+      <button type="button" class="section-pill" data-quick="nostock">Sin stock: <span id="qf_nostock">0</span></button>
+      <button type="button" class="section-pill" data-quick="nophoto">Sin foto: <span id="qf_nophoto">0</span></button>
+      <button type="button" class="section-pill" data-quick="pending">Pendientes: <span id="qf_pending">0</span></button>
+    </div>
+    <div class="products-count" id="productsCount">Cargando...</div>
+    <div id="productsListArea"></div>
 
-  const toolbarHtml = toolbar({
-    searchId: 'productSearch',
-    searchPlaceholder: 'Buscar por nombre, SKU o marca...',
-    filters: [
-      { id: 'filterCategory', options: [{ v:'', l:'Todas las categorías' }, ...categoryNames.map(c => ({ v:c, l:c }))] },
-      { id: 'filterStatus', options: [{ v:'', l:'Todos los estados' }, { v:'active', l:'Activos' }, { v:'draft', l:'Borradores' }, { v:'hidden', l:'Ocultos' }] },
-    ],
-    countId: 'productsCount',
-    action: { label: 'Nuevo Producto', icon: 'fas fa-plus', onclick: 'openProductModal()' },
-  });
+    <div class="bulk-bar" id="bulkBar">
+      <span class="bulk-count" id="bulkCount">0 productos seleccionados</span>
+      <button type="button" class="btn-secondary mini" onclick="openBulkCategoryModal()"><i class="fas fa-tags"></i> Cambiar categoría</button>
+      <button type="button" class="btn-secondary mini" onclick="bulkSetHidden(false)"><i class="fas fa-eye"></i> Activar</button>
+      <button type="button" class="btn-secondary mini" onclick="bulkSetHidden(true)"><i class="fas fa-eye-slash"></i> Ocultar</button>
+      <button type="button" class="btn-secondary mini" style="color:#ff6b6b;border-color:rgba(255,107,107,.4);" onclick="bulkDelete()"><i class="fas fa-trash"></i> Eliminar</button>
+      <button type="button" class="btn-secondary mini btn-ghost" onclick="clearSelection()">Cancelar selección</button>
+    </div>`;
+
+  const bulkCategoryModal = `
+  <div class="modal-overlay" id="bulkCategoryModal">
+    <div class="modal-box">
+      <div class="modal-header"><h2>Cambiar categoría</h2><button class="modal-close" onclick="closeBulkCategoryModal()"><i class="fas fa-times"></i></button></div>
+      <div class="modal-body">
+        <div class="form-group full">
+          <label>Nueva categoría para los productos seleccionados</label>
+          <select id="bulkCategorySelect"><option value="">Seleccionar...</option>${catOptionsFlat}</select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeBulkCategoryModal()">Cancelar</button>
+        <button type="button" class="btn-primary" onclick="confirmBulkCategory()"><i class="fas fa-check"></i> Aplicar</button>
+      </div>
+    </div>
+  </div>`;
+
+  const toolbarHtml = `
+    <div class="products-toolbar">
+      <div class="toolbar-filters">
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="productSearch" placeholder="Buscar por nombre, SKU o marca..."></div>
+        <select id="filterCategory" class="filter-select"><option value="">Todas las categorías</option>${catOptionsFlat}</select>
+        <select id="filterSection" class="filter-select"><option value="">Todos los rubros</option>${sectionOptionsFlat}</select>
+        <select id="sortSelect" class="filter-select">
+          <option value="recent">Más recientes</option>
+          <option value="price_asc">Precio: menor a mayor</option>
+          <option value="price_desc">Precio: mayor a menor</option>
+          <option value="stock_asc">Stock: menor a mayor</option>
+          <option value="stock_desc">Stock: mayor a menor</option>
+          <option value="name_asc">Nombre A-Z</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <div class="view-toggle" id="viewToggle">
+          <button type="button" class="on" data-view="grid"><i class="fas fa-grip"></i> Grilla</button>
+          <button type="button" data-view="table"><i class="fas fa-table-list"></i> Tabla</button>
+        </div>
+        <button class="btn-primary" onclick="openProductModal()"><i class="fas fa-plus"></i> Nuevo Producto</button>
+      </div>
+    </div>`;
 
   const modal = `
   <div class="modal-overlay" id="productModal">
@@ -201,14 +263,30 @@ export async function productsView() {
     </div>
   </div>`;
 
-  return layout({ title: 'Productos', toolbar: toolbarHtml, content }) + modal;
+  return layout({ title: 'Productos', toolbar: toolbarHtml, content }) + modal + bulkCategoryModal;
 }
 
 export function productsViewOnMount() {
   mountLayout();
   document.getElementById('productSearch').addEventListener('input', applyFilters);
   document.getElementById('filterCategory').addEventListener('change', applyFilters);
-  document.getElementById('filterStatus').addEventListener('change', applyFilters);
+  document.getElementById('filterSection').addEventListener('change', applyFilters);
+  document.getElementById('sortSelect').addEventListener('change', applyFilters);
+
+  document.querySelectorAll('#viewToggle button').forEach(btn => btn.addEventListener('click', () => {
+    document.querySelectorAll('#viewToggle button').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    currentView = btn.dataset.view;
+    renderProducts(lastFilteredList);
+  }));
+
+  document.querySelectorAll('#quickFilters .section-pill').forEach(pill => pill.addEventListener('click', () => {
+    document.querySelectorAll('#quickFilters .section-pill').forEach(p => p.classList.remove('on'));
+    pill.classList.add('on');
+    currentQuickFilter = pill.dataset.quick;
+    applyFilters();
+  }));
+
   document.getElementById('productForm').addEventListener('submit', e => { e.preventDefault(); doSave(false); });
   document.getElementById('saveAndNewBtn').addEventListener('click', () => doSave(true));
 
@@ -266,33 +344,88 @@ function updatePreview(){
 }
 
 async function loadProducts() {
-  const grid = document.getElementById('productsGrid');
-  grid.innerHTML = '<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Cargando productos...</p>';
+  const area = document.getElementById('productsListArea');
+  area.innerHTML = '<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Cargando productos...</p>';
   try {
     const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
     if (error) throw error;
-    allProducts = data || []; applyFilters();
-  } catch (e) { console.error(e); grid.innerHTML = '<p class="loading-text" style="color:#ff4444">Error al cargar: '+e.message+'</p>'; }
+    allProducts = data || []; selectedIds.clear(); updateBulkBar(); applyFilters();
+  } catch (e) { console.error(e); area.innerHTML = '<p class="loading-text" style="color:#ff4444">Error al cargar: '+e.message+'</p>'; }
+}
+
+/* ---------- filtros rápidos / orden (PARTE 6) ---------- */
+function computeQuickCounts(){
+  const counts = { all: allProducts.length, published:0, draft:0, nostock:0, nophoto:0, pending:0 };
+  allProducts.forEach(p => {
+    if (p.status==='active' && !p.is_hidden) counts.published++;
+    if (p.status==='draft') counts.draft++;
+    if ((p.stock??0) <= 0) counts.nostock++;
+    const hasPhoto = p.image_url || (Array.isArray(p.images) && p.images[0]);
+    if (!hasPhoto) counts.nophoto++;
+    if (p.review_status === 'pending') counts.pending++;
+  });
+  return counts;
+}
+
+function applyQuickFilter(list){
+  switch(currentQuickFilter){
+    case 'published': return list.filter(p => p.status==='active' && !p.is_hidden);
+    case 'draft': return list.filter(p => p.status==='draft');
+    case 'nostock': return list.filter(p => (p.stock??0) <= 0);
+    case 'nophoto': return list.filter(p => !(p.image_url || (Array.isArray(p.images) && p.images[0])));
+    case 'pending': return list.filter(p => p.review_status === 'pending');
+    default: return list;
+  }
+}
+
+function applySort(list){
+  const arr = [...list];
+  switch(currentSort){
+    case 'price_asc': arr.sort((a,b) => (a.price||0) - (b.price||0)); break;
+    case 'price_desc': arr.sort((a,b) => (b.price||0) - (a.price||0)); break;
+    case 'stock_asc': arr.sort((a,b) => (a.stock||0) - (b.stock||0)); break;
+    case 'stock_desc': arr.sort((a,b) => (b.stock||0) - (a.stock||0)); break;
+    case 'name_asc': arr.sort((a,b) => (a.name||'').localeCompare(b.name||'')); break;
+    default: arr.sort((a,b) => new Date(b.created_at||0) - new Date(a.created_at||0));
+  }
+  return arr;
 }
 
 function applyFilters() {
   const q=(document.getElementById('productSearch').value||'').toLowerCase().trim();
   const cat=document.getElementById('filterCategory').value;
-  const st=document.getElementById('filterStatus').value;
-  const list = allProducts.filter(p => {
+  const section=document.getElementById('filterSection').value;
+  currentSort = document.getElementById('sortSelect').value;
+
+  let list = allProducts.filter(p => {
     const mQ=!q||(p.name||'').toLowerCase().includes(q)||(p.sku||'').toLowerCase().includes(q)||(p.brand||'').toLowerCase().includes(q);
     const mC=!cat||p.category===cat;
-    let mS=true; if(st==='active')mS=p.is_active&&!p.is_hidden; if(st==='draft')mS=p.status==='draft'; if(st==='hidden')mS=!!p.is_hidden;
-    return mQ&&mC&&mS;
+    const mSec=!section||sectionOf(p)===section;
+    return mQ&&mC&&mSec;
   });
-  document.getElementById('productsCount').textContent=list.length+' producto(s)';
+  list = applyQuickFilter(list);
+  list = applySort(list);
+  lastFilteredList = list;
+
+  const counts = computeQuickCounts();
+  document.getElementById('qf_all').textContent = counts.all;
+  document.getElementById('qf_published').textContent = counts.published;
+  document.getElementById('qf_draft').textContent = counts.draft;
+  document.getElementById('qf_nostock').textContent = counts.nostock;
+  document.getElementById('qf_nophoto').textContent = counts.nophoto;
+  document.getElementById('qf_pending').textContent = counts.pending;
+
+  const activeInList = list.filter(p => p.status==='active' && !p.is_hidden).length;
+  const noStockInList = list.filter(p => (p.stock??0) <= 0).length;
+  document.getElementById('productsCount').textContent = `${list.length} producto(s) · ${activeInList} activos · ${noStockInList} sin stock`;
+
   renderProducts(list);
 }
 
 function renderProducts(list) {
-  const grid = document.getElementById('productsGrid');
+  const area = document.getElementById('productsListArea');
   if (!list.length) {
-    grid.innerHTML = emptyState({
+    area.innerHTML = emptyState({
       icon: 'fas fa-box-open',
       title: 'No hay productos',
       text: 'Creá tu primer producto.',
@@ -300,7 +433,11 @@ function renderProducts(list) {
     });
     return;
   }
-  grid.innerHTML = list.map(p => {
+  area.innerHTML = currentView === 'table' ? renderTableView(list) : renderGridView(list);
+}
+
+function renderGridView(list){
+  return `<div class="admin-products-grid">${list.map(p => {
     const imgs = Array.isArray(p.images)?p.images:[];
     const thumb = p.image_url || imgs[0];
     const state = p.is_hidden?'Oculto':(p.status==='draft'?'Borrador':'Activo');
@@ -309,7 +446,10 @@ function renderProducts(list) {
     const oldP = p.old_price?'<span class="p-old">$'+Number(p.old_price).toLocaleString('es-AR')+'</span>':'';
     const specsN = Array.isArray(p.specs)?p.specs.length:0;
     const pending = p.review_status === 'pending';
-    return `<div class="admin-product-card">
+    const color = SECTION_COLORS[sectionOf(p)];
+    const checked = selectedIds.has(p.id) ? 'checked' : '';
+    return `<div class="admin-product-card" style="--cat-color:${color}">
+      <input type="checkbox" class="prod-check" ${checked} onchange="toggleSelect('${p.id}', this.checked)">
       <div class="ap-thumb">${thumb?'<img src="'+thumb+'" alt="">':'<i class="fas fa-image"></i>'}</div>
       <div class="ap-body">
         <div class="ap-top"><span class="ap-cat">${p.category||'Sin categoría'}</span><span class="ap-state ${stateClass}">${state}</span>${p.is_featured?'<span class="ap-feat"><i class="fas fa-star"></i></span>':''}</div>
@@ -329,8 +469,117 @@ function renderProducts(list) {
         <button title="Eliminar" class="del" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button>
       </div>
     </div>`;
-  }).join('');
+  }).join('')}</div>`;
 }
+
+function renderTableView(list){
+  const allChecked = list.length>0 && list.every(p => selectedIds.has(p.id));
+  const rows = list.map(p => {
+    const imgs = Array.isArray(p.images)?p.images:[];
+    const thumb = p.image_url || imgs[0];
+    const pending = p.review_status === 'pending';
+    const state = pending ? 'Pendiente' : (p.is_hidden?'Oculto':(p.status==='draft'?'Borrador':'Activo'));
+    const stateClass = pending ? 'tb-pending' : (p.is_hidden?'tb-hidden':(p.status==='draft'?'tb-draft':'tb-active'));
+    const stock = p.stock ?? 0;
+    const stockClass = stock===0 ? 'tb-stock-zero' : (stock<=3 ? 'tb-stock-low' : '');
+    const stockText = stock===0 ? 'Sin stock' : String(stock);
+    const color = SECTION_COLORS[sectionOf(p)];
+    const checked = selectedIds.has(p.id) ? 'checked' : '';
+    return `<tr style="--cat-color:${color}">
+      <td><input type="checkbox" class="prod-check" ${checked} onchange="toggleSelect('${p.id}', this.checked)"></td>
+      <td><div class="prod-cell">
+        <div class="prod-thumb">${thumb?'<img src="'+thumb+'" alt="">':'<i class="fas fa-image"></i>'}</div>
+        <div><div class="prod-name">${escapeHtml(p.name)}</div><div class="prod-meta">${escapeHtml(p.brand||'')}</div></div>
+      </div></td>
+      <td>${escapeHtml(p.category||'Sin categoría')}</td>
+      <td class="num">$${Number(p.price||0).toLocaleString('es-AR')}</td>
+      <td class="${stockClass}">${stockText}</td>
+      <td><span class="tb-state ${stateClass}">${state}</span></td>
+      <td class="actions">
+        <button type="button" title="Editar" onclick="editProduct('${p.id}')"><i class="fas fa-pen"></i></button>
+        <button type="button" title="Duplicar" onclick="duplicateProduct('${p.id}')"><i class="fas fa-copy"></i></button>
+        <button type="button" title="Eliminar" class="del" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+  return `<table class="prod-table">
+    <thead><tr>
+      <th><input type="checkbox" class="prod-check" ${allChecked?'checked':''} onchange="toggleSelectAll(this.checked)"></th>
+      <th>Producto</th><th>Categoría</th><th class="num">Precio</th><th>Stock</th><th>Estado</th><th class="actions">Acciones</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+/* ---------- selección masiva (PARTE 6) ---------- */
+window.toggleSelect = function(id, checked){
+  if (checked) selectedIds.add(id); else selectedIds.delete(id);
+  updateBulkBar();
+};
+window.toggleSelectAll = function(checked){
+  lastFilteredList.forEach(p => { if (checked) selectedIds.add(p.id); else selectedIds.delete(p.id); });
+  renderProducts(lastFilteredList);
+  updateBulkBar();
+};
+window.clearSelection = function(){
+  selectedIds.clear();
+  renderProducts(lastFilteredList);
+  updateBulkBar();
+};
+function updateBulkBar(){
+  const bar = document.getElementById('bulkBar');
+  const n = selectedIds.size;
+  document.getElementById('bulkCount').textContent = n + (n===1 ? ' producto seleccionado' : ' productos seleccionados');
+  bar.classList.toggle('on', n>0);
+}
+
+window.bulkSetHidden = async function(hidden){
+  if (!selectedIds.size) return;
+  const selected = allProducts.filter(p => selectedIds.has(p.id));
+  const activeGroup = selected.filter(p => p.status==='active').map(p => p.id);
+  const otherGroup = selected.filter(p => p.status!=='active').map(p => p.id);
+  try {
+    if (activeGroup.length) {
+      const { error } = await supabase.from('products').update({ is_hidden: hidden, is_active: !hidden }).in('id', activeGroup);
+      if (error) throw error;
+    }
+    if (otherGroup.length) {
+      const { error } = await supabase.from('products').update({ is_hidden: hidden, is_active: false }).in('id', otherGroup);
+      if (error) throw error;
+    }
+    toast(hidden ? 'Productos ocultados' : 'Productos activados', 'ok');
+    loadProducts();
+  } catch (e) { toast('Error: ' + e.message, 'err'); }
+};
+
+window.bulkDelete = async function(){
+  if (!selectedIds.size) return;
+  if (!confirm(`¿Eliminar ${selectedIds.size} producto(s)? Esta acción no se puede deshacer.`)) return;
+  try {
+    const { error } = await supabase.from('products').delete().in('id', [...selectedIds]);
+    if (error) throw error;
+    toast('Productos eliminados', 'ok');
+    loadProducts();
+  } catch (e) { toast('Error: ' + e.message, 'err'); }
+};
+
+window.openBulkCategoryModal = function(){
+  if (!selectedIds.size) return;
+  document.getElementById('bulkCategorySelect').value = '';
+  document.getElementById('bulkCategoryModal').classList.add('open');
+};
+window.closeBulkCategoryModal = function(){ document.getElementById('bulkCategoryModal').classList.remove('open'); };
+window.confirmBulkCategory = async function(){
+  const cat = document.getElementById('bulkCategorySelect').value;
+  if (!cat) { toast('Elegí una categoría', 'err'); return; }
+  try {
+    const { error } = await supabase.from('products').update({ category: cat }).in('id', [...selectedIds]);
+    if (error) throw error;
+    toast('Categoría actualizada', 'ok');
+    closeBulkCategoryModal();
+    loadProducts();
+  } catch (e) { toast('Error: ' + e.message, 'err'); }
+};
 
 window.approveProduct = async function (id) {
   try {
