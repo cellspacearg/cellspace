@@ -44,6 +44,34 @@ export const MENU = [
   ]},
 ];
 
+/* Color de la cajita del ícono por rubro/ítem del menú. */
+const ICON_COLORS = {
+  '#/dashboard':     '#FF6A00',
+  '#/products':      '#FF6A00',
+  '#/categories':    '#FF6A00',
+  '#/services':      '#FF6A00',
+  '#/pages':         '#2F7BFF',
+  '#/central':       '#FF6A00',
+  '#/promotions':    '#E8B4B8',
+  '#/social':        '#8b5cf6',
+  '#/gaming':        '#8b5cf6',
+  '#/shipping':      '#2F7BFF',
+  '#/payment-fees':  '#10c46a',
+  '#/orders':        '#2F7BFF',
+  '#/repairs':       '#FF6A00',
+  '#/inventory':     '#10c46a',
+  '#/suppliers':     '#2F7BFF',
+  '#/technicians':   '#FF6A00',
+  '#/customers':     '#8b5cf6',
+  '#/messages':      '#E8B4B8',
+  '#/reports':       '#10c46a',
+  '#/expenses':      '#ff3b3b',
+  '#/notifications': '#FF6A00',
+  '#/audit':         '#FFD700',
+  '#/media':         '#2F7BFF',
+  '#/settings':      '#FF6A00',
+};
+
 function esc(s){
   return String(s ?? '').replace(/[&<>"']/g, c =>
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -54,8 +82,9 @@ function menuHtml(){
     <div class="nav-section">
       <span class="nav-section-title">${esc(sec.group)}</span>
       ${sec.items.map(it => `
-        <a href="${it.path}" class="nav-item" data-path="${it.path}">
-          <i class="${it.icon}"></i><span>${esc(it.label)}</span>
+        <a href="${it.path}" class="nav-item" data-path="${it.path}" style="--ic:${ICON_COLORS[it.path] || '#FF6A00'}">
+          <span class="nav-box"><i class="${it.icon}"></i></span>
+          <span class="nav-label">${esc(it.label)}</span>
           ${it.badgeId ? `<span class="nav-badge" id="${it.badgeId}" style="display:none"></span>` : ''}
         </a>`).join('')}
     </div>`).join('');
@@ -82,9 +111,14 @@ export function layout({ title, content, toolbar = '' }){
       </div>
       <nav class="sidebar-nav">${menuHtml()}</nav>
       <div class="sidebar-footer">
-        <a href="../index.html" class="nav-item" target="_blank">
-          <i class="fas fa-external-link-alt"></i><span>Ver sitio público</span>
+        <a href="../index.html" class="nav-item" target="_blank" style="--ic:#FF6A00">
+          <span class="nav-box"><i class="fas fa-external-link-alt"></i></span>
+          <span class="nav-label">Ver sitio público</span>
         </a>
+        <button class="nav-item" onclick="handleLogout()" style="--ic:#ff6b6b">
+          <span class="nav-box"><i class="fas fa-sign-out-alt"></i></span>
+          <span class="nav-label">Cerrar sesión</span>
+        </button>
       </div>
     </aside>
 
