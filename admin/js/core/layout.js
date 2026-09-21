@@ -3,6 +3,8 @@
 // Todas las vistas lo usan: dejan de repetir sidebar/topbar/footer
 // ============================================================
 import { store } from './state.js?v=cb22';
+import { supabase } from '../config.js?v=cb22';
+import { logout as authLogout } from '../hooks/useAuth.js?v=cb24';
 
 /* Menú en un solo lugar. Agregás un ítem acá y aparece en todo el panel. */
 export const MENU = [
@@ -15,25 +17,30 @@ export const MENU = [
     { path: '#/services',   icon: 'fas fa-tools',      label: 'Servicios' },
     { path: '#/pages',      icon: 'fas fa-file-alt',   label: 'Páginas' },
     { path: '#/central',    icon: 'fas fa-screwdriver-wrench', label: 'Central Space' },
-    { path: '#/promotions', icon: 'fas fa-percent',     label: 'Promociones' },
-    { path: '#/social',     icon: 'fas fa-share-nodes',  label: 'Generador redes' },
+    { path: '#/promotions', icon: 'fas fa-percent',    label: 'Promociones' },
+    { path: '#/social',     icon: 'fas fa-share-nodes', label: 'Generador redes' },
+  ]},
+  { group: 'Tienda', items: [
+    { path: '#/gaming',       icon: 'fas fa-gamepad',     label: 'Gaming' },
+    { path: '#/shipping',     icon: 'fas fa-truck-fast',  label: 'Envíos' },
+    { path: '#/payment-fees', icon: 'fas fa-credit-card', label: 'Medios de pago' },
   ]},
   { group: 'Gestión', items: [
-    { path: '#/orders',    icon: 'fas fa-shopping-cart', label: 'Pedidos', badgeId: 'ordersBadge' },
-    { path: '#/repairs',   icon: 'fas fa-wrench',        label: 'Reparaciones' },
-    { path: '#/inventory', icon: 'fas fa-boxes-stacked', label: 'Inventario' },
-    { path: '#/suppliers', icon: 'fas fa-truck',         label: 'Proveedores' },
-    { path: '#/technicians', icon: 'fas fa-user-gear',   label: 'Técnicos' },
-    { path: '#/customers', icon: 'fas fa-users',         label: 'Clientes' },
-    { path: '#/messages',  icon: 'fas fa-envelope',      label: 'Mensajes' },
+    { path: '#/orders',      icon: 'fas fa-shopping-cart', label: 'Pedidos', badgeId: 'ordersBadge' },
+    { path: '#/repairs',     icon: 'fas fa-wrench',        label: 'Reparaciones' },
+    { path: '#/inventory',   icon: 'fas fa-boxes-stacked', label: 'Inventario' },
+    { path: '#/suppliers',   icon: 'fas fa-truck',         label: 'Proveedores' },
+    { path: '#/technicians', icon: 'fas fa-user-gear',     label: 'Técnicos' },
+    { path: '#/customers',   icon: 'fas fa-users',         label: 'Clientes' },
+    { path: '#/messages',    icon: 'fas fa-envelope',      label: 'Mensajes' },
   ]},
   { group: 'Sistema', items: [
-    { path: '#/reports',  icon: 'fas fa-chart-line',    label: 'Reportes' },
-    { path: '#/expenses', icon: 'fas fa-money-bill-wave', label: 'Gastos' },
-    { path: '#/notifications', icon: 'fas fa-bell', label: 'Notificaciones', badgeId: 'notifBadge' },
-    { path: '#/audit',    icon: 'fas fa-clock-rotate-left', label: 'Auditoría' },
-    { path: '#/media',    icon: 'fas fa-images', label: 'Archivos' },
-    { path: '#/settings', icon: 'fas fa-cog',    label: 'Configuración' },
+    { path: '#/reports',       icon: 'fas fa-chart-line',   label: 'Reportes' },
+    { path: '#/expenses',      icon: 'fas fa-money-bill-wave', label: 'Gastos' },
+    { path: '#/notifications', icon: 'fas fa-bell',         label: 'Notificaciones', badgeId: 'notifBadge' },
+    { path: '#/audit',         icon: 'fas fa-clock-rotate-left', label: 'Auditoría' },
+    { path: '#/media',         icon: 'fas fa-images',       label: 'Archivos' },
+    { path: '#/settings',      icon: 'fas fa-cog',          label: 'Configuración' },
   ]},
 ];
 
@@ -152,7 +159,6 @@ export async function refreshNotifBadge(){
   const el = document.getElementById('notifBadge');
   if (!el) return;
   try {
-    const { supabase } = await import('../config.js?v=cb22');
     const { count, error } = await supabase
       .from('notifications').select('id', { count: 'exact', head: true }).eq('is_read', false);
     if (error) return;
@@ -208,9 +214,8 @@ export function emptyState({ icon, title, text, action }){
       </button></div>` : ''}
   </div>`;
 }
+
 window.handleLogout = async () => {
-  if (confirm('¿Cerrar sesión?')) {
-    const { logout } = await import('../hooks/useAuth.js');
-    await logout();
-  }
+  if (!confirm('¿Cerrar sesión?')) return;
+  await authLogout();
 };
