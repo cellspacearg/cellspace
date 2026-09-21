@@ -1059,3 +1059,37 @@ select optgroup {
 .fee-percentage.fee-surcharge { color: #FFD700; }
 .fee-percentage.fee-discount  { color: #10c46a; }
 .fee-percentage.fee-neutral   { color: var(--admin-text-muted); font-weight: 500; }
+
+/* ENVÍOS — PARTE 4 */
+.info-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(47, 123, 255, 0.08);
+  border: 1px solid rgba(47, 123, 255, 0.25);
+  color: var(--admin-text-secondary);
+  font-size: 13px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+}
+.info-banner i { color: #2F7BFF; font-size: 15px; }
+
+.ship-price { font-size: 15px; font-weight: 800; margin-top: 4px; }
+.ship-price.ship-free  { color: #10c46a; }
+.ship-price.ship-quote { color: #2F7BFF; }
+.ship-price.ship-fixed { color: var(--admin-text); }
+
+.ship-free-from { font-size: 12px; color: #10c46a; font-weight: 600; margin-top: 2px; }
+
+.ship-provider-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--admin-text-secondary);
+  text-transform: uppercase;
+}

@@ -23,6 +23,7 @@ import { auditView, auditViewOnMount } from './views/audit.js?v=cb22';
 import { notificationsView, notificationsViewOnMount } from './views/notifications.js?v=cb22';
 import { socialView, socialViewOnMount } from './views/social.js?v=cb22';
 import { paymentFeesView, paymentFeesViewOnMount } from './views/payment-fees.js?v=cb24';
+import { shippingView, shippingViewOnMount } from './views/shipping.js?v=cb24';
 import { notFoundView, notFoundViewOnMount } from './views/not-found.js?v=cb22';
 
 function showError(msg){
@@ -71,6 +72,7 @@ try {
     '/notifications':{ component: notificationsView, onMount: notificationsViewOnMount, beforeEnter: auth },
     '/social':     { component: socialView,     onMount: socialViewOnMount,     beforeEnter: auth },
     '/payment-fees': { component: paymentFeesView, onMount: paymentFeesViewOnMount, beforeEnter: auth },
+    '/shipping':   { component: shippingView,   onMount: shippingViewOnMount,   beforeEnter: auth },
     '/404':        { component: notFoundView,   onMount: notFoundViewOnMount,   beforeEnter: auth },
   };
 
