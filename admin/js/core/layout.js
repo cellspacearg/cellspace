@@ -2,7 +2,9 @@
 // LAYOUT COMPARTIDO DEL PANEL
 // Todas las vistas lo usan: dejan de repetir sidebar/topbar/footer
 // ============================================================
-import { store } from './state.js?v=cb16';
+import { store } from './state.js?v=cb22';
+import { supabase } from '../config.js?v=cb22';
+import { logout as authLogout } from '../hooks/useAuth.js?v=cb24';
 
 /* Menú en un solo lugar. Agregás un ítem acá y aparece en todo el panel. */
 export const MENU = [
@@ -15,27 +17,58 @@ export const MENU = [
     { path: '#/services',   icon: 'fas fa-tools',      label: 'Servicios' },
     { path: '#/pages',      icon: 'fas fa-file-alt',   label: 'Páginas' },
     { path: '#/central',    icon: 'fas fa-screwdriver-wrench', label: 'Central Space' },
-    { path: '#/promotions', icon: 'fas fa-percent',     label: 'Promociones' },
-    { path: '#/social',     icon: 'fas fa-share-nodes',  label: 'Generador redes' },
+    { path: '#/promotions', icon: 'fas fa-percent',    label: 'Promociones' },
+    { path: '#/social',     icon: 'fas fa-share-nodes', label: 'Generador redes' },
+  ]},
+  { group: 'Tienda', items: [
+    { path: '#/gaming',       icon: 'fas fa-gamepad',     label: 'Gaming' },
+    { path: '#/shipping',     icon: 'fas fa-truck-fast',  label: 'Envíos' },
+    { path: '#/payment-fees', icon: 'fas fa-credit-card', label: 'Medios de pago' },
   ]},
   { group: 'Gestión', items: [
-    { path: '#/orders',    icon: 'fas fa-shopping-cart', label: 'Pedidos', badgeId: 'ordersBadge' },
-    { path: '#/repairs',   icon: 'fas fa-wrench',        label: 'Reparaciones' },
-    { path: '#/inventory', icon: 'fas fa-boxes-stacked', label: 'Inventario' },
-    { path: '#/suppliers', icon: 'fas fa-truck',         label: 'Proveedores' },
-    { path: '#/technicians', icon: 'fas fa-user-gear',   label: 'Técnicos' },
-    { path: '#/customers', icon: 'fas fa-users',         label: 'Clientes' },
-    { path: '#/messages',  icon: 'fas fa-envelope',      label: 'Mensajes' },
+    { path: '#/orders',      icon: 'fas fa-shopping-cart', label: 'Pedidos', badgeId: 'ordersBadge' },
+    { path: '#/repairs',     icon: 'fas fa-wrench',        label: 'Reparaciones' },
+    { path: '#/inventory',   icon: 'fas fa-boxes-stacked', label: 'Inventario' },
+    { path: '#/suppliers',   icon: 'fas fa-truck',         label: 'Proveedores' },
+    { path: '#/technicians', icon: 'fas fa-user-gear',     label: 'Técnicos' },
+    { path: '#/customers',   icon: 'fas fa-users',         label: 'Clientes' },
   ]},
   { group: 'Sistema', items: [
-    { path: '#/reports',  icon: 'fas fa-chart-line',    label: 'Reportes' },
-    { path: '#/expenses', icon: 'fas fa-money-bill-wave', label: 'Gastos' },
-    { path: '#/notifications', icon: 'fas fa-bell', label: 'Notificaciones', badgeId: 'notifBadge' },
-    { path: '#/audit',    icon: 'fas fa-clock-rotate-left', label: 'Auditoría' },
-    { path: '#/media',    icon: 'fas fa-images', label: 'Archivos' },
-    { path: '#/settings', icon: 'fas fa-cog',    label: 'Configuración' },
+    { path: '#/reports',       icon: 'fas fa-chart-line',   label: 'Reportes' },
+    { path: '#/expenses',      icon: 'fas fa-money-bill-wave', label: 'Gastos' },
+    { path: '#/notifications', icon: 'fas fa-bell',         label: 'Notificaciones', badgeId: 'notifBadge' },
+    { path: '#/audit',         icon: 'fas fa-clock-rotate-left', label: 'Auditoría' },
+    { path: '#/media',         icon: 'fas fa-images',       label: 'Archivos' },
+    { path: '#/settings',      icon: 'fas fa-cog',          label: 'Configuración' },
   ]},
 ];
+
+/* Color de la cajita del ícono por rubro/ítem del menú. */
+const ICON_COLORS = {
+  '#/dashboard':     '#FF6A00',
+  '#/products':      '#FF6A00',
+  '#/categories':    '#FF6A00',
+  '#/services':      '#FF6A00',
+  '#/pages':         '#2F7BFF',
+  '#/central':       '#FF6A00',
+  '#/promotions':    '#E8B4B8',
+  '#/social':        '#8b5cf6',
+  '#/gaming':        '#8b5cf6',
+  '#/shipping':      '#2F7BFF',
+  '#/payment-fees':  '#10c46a',
+  '#/orders':        '#2F7BFF',
+  '#/repairs':       '#FF6A00',
+  '#/inventory':     '#10c46a',
+  '#/suppliers':     '#2F7BFF',
+  '#/technicians':   '#FF6A00',
+  '#/customers':     '#8b5cf6',
+  '#/reports':       '#10c46a',
+  '#/expenses':      '#ff3b3b',
+  '#/notifications': '#FF6A00',
+  '#/audit':         '#FFD700',
+  '#/media':         '#2F7BFF',
+  '#/settings':      '#FF6A00',
+};
 
 function esc(s){
   return String(s ?? '').replace(/[&<>"']/g, c =>
@@ -47,8 +80,9 @@ function menuHtml(){
     <div class="nav-section">
       <span class="nav-section-title">${esc(sec.group)}</span>
       ${sec.items.map(it => `
-        <a href="${it.path}" class="nav-item" data-path="${it.path}">
-          <i class="${it.icon}"></i><span>${esc(it.label)}</span>
+        <a href="${it.path}" class="nav-item" data-path="${it.path}" style="--ic:${ICON_COLORS[it.path] || '#FF6A00'}">
+          <span class="nav-box"><i class="${it.icon}"></i></span>
+          <span class="nav-label">${esc(it.label)}</span>
           ${it.badgeId ? `<span class="nav-badge" id="${it.badgeId}" style="display:none"></span>` : ''}
         </a>`).join('')}
     </div>`).join('');
@@ -75,9 +109,14 @@ export function layout({ title, content, toolbar = '' }){
       </div>
       <nav class="sidebar-nav">${menuHtml()}</nav>
       <div class="sidebar-footer">
-        <a href="../index.html" class="nav-item" target="_blank">
-          <i class="fas fa-external-link-alt"></i><span>Ver sitio público</span>
+        <a href="../index.html" class="nav-item" target="_blank" style="--ic:#FF6A00">
+          <span class="nav-box"><i class="fas fa-external-link-alt"></i></span>
+          <span class="nav-label">Ver sitio público</span>
         </a>
+        <button class="nav-item" onclick="handleLogout()" style="--ic:#ff6b6b">
+          <span class="nav-box"><i class="fas fa-sign-out-alt"></i></span>
+          <span class="nav-label">Cerrar sesión</span>
+        </button>
       </div>
     </aside>
 
@@ -152,7 +191,6 @@ export async function refreshNotifBadge(){
   const el = document.getElementById('notifBadge');
   if (!el) return;
   try {
-    const { supabase } = await import('../config.js?v=cb16');
     const { count, error } = await supabase
       .from('notifications').select('id', { count: 'exact', head: true }).eq('is_read', false);
     if (error) return;
@@ -208,9 +246,8 @@ export function emptyState({ icon, title, text, action }){
       </button></div>` : ''}
   </div>`;
 }
+
 window.handleLogout = async () => {
-  if (confirm('¿Cerrar sesión?')) {
-    const { logout } = await import('../hooks/useAuth.js');
-    await logout();
-  }
+  if (!confirm('¿Cerrar sesión?')) return;
+  await authLogout();
 };

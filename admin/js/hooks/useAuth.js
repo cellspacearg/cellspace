@@ -1,5 +1,6 @@
-import { supabase, ADMIN_EMAIL } from '../config.js?v=cb16';
-import { store } from '../core/state.js?v=cb16';
+import { supabase, ADMIN_EMAIL } from '../config.js?v=cb22';
+import { store } from '../core/state.js?v=cb22';
+import { loadPermissions, can } from './usePermissions.js?v=cb24';
 
 // Listener de sesión persistente (se ejecuta una sola vez al cargar)
 export function initAuthListener() {
@@ -41,7 +42,6 @@ export async function login(email, password) {
     }
 
     // Otros usuarios: requieren el permiso panel.access (RBAC).
-    const { loadPermissions, can } = await import('./usePermissions.js');
     await loadPermissions(true);
     if (can('panel.access')) {
       store.setState({ user: data.user });
@@ -115,7 +115,6 @@ export async function checkSession() {
 
   // Otros: válidos solo si tienen panel.access.
   try {
-    const { loadPermissions, can } = await import('./usePermissions.js');
     await loadPermissions(true);
     if (can('panel.access')) {
       store.setState({ user: session.user });

@@ -1,28 +1,31 @@
-import Router from './core/router.js?v=cb16';
-import { checkSession } from './hooks/useAuth.js?v=cb16';
-import { loginView, loginViewOnMount } from './views/login.js?v=cb16';
-import { dashboardView, dashboardViewOnMount } from './views/dashboard.js?v=cb16';
-import { productsView, productsViewOnMount } from './views/products.js?v=cb16';
-import { categoriesView, categoriesViewOnMount } from './views/categories.js?v=cb16';
-import { servicesView, servicesViewOnMount } from './views/services.js?v=cb16';
-import { pagesView, pagesViewOnMount } from './views/pages.js?v=cb16';
-import { builderView, builderViewOnMount } from './views/builder.js?v=cb16';
-import { mediaView, mediaViewOnMount } from './views/media.js?v=cb16';
-import { settingsView, settingsViewOnMount } from './views/settings.js?v=cb16';
-import { customersView, customersViewOnMount } from './views/customers.js?v=cb16';
-import { ordersView, ordersViewOnMount } from './views/orders.js?v=cb16';
-import { centralView, centralViewOnMount } from './views/central.js?v=cb16';
-import { repairsView, repairsViewOnMount } from './views/repairs.js?v=cb16';
-import { inventoryView, inventoryViewOnMount } from './views/inventory.js?v=cb16';
-import { reportsView, reportsViewOnMount } from './views/reports.js?v=cb16';
-import { suppliersView, suppliersViewOnMount } from './views/suppliers.js?v=cb16';
-import { expensesView, expensesViewOnMount } from './views/expenses.js?v=cb16';
-import { promotionsView, promotionsViewOnMount } from './views/promotions.js?v=cb16';
-import { techniciansView, techniciansViewOnMount } from './views/technicians.js?v=cb16';
-import { auditView, auditViewOnMount } from './views/audit.js?v=cb16';
-import { notificationsView, notificationsViewOnMount } from './views/notifications.js?v=cb16';
-import { socialView, socialViewOnMount } from './views/social.js?v=cb16';
-import { notFoundView, notFoundViewOnMount } from './views/not-found.js?v=cb16';
+import Router from './core/router.js?v=cb22';
+import { checkSession } from './hooks/useAuth.js?v=cb22';
+import { loginView, loginViewOnMount } from './views/login.js?v=cb22';
+import { dashboardView, dashboardViewOnMount } from './views/dashboard.js?v=cb22';
+import { productsView, productsViewOnMount } from './views/products.js?v=cb22';
+import { categoriesView, categoriesViewOnMount } from './views/categories.js?v=cb22';
+import { servicesView, servicesViewOnMount } from './views/services.js?v=cb22';
+import { pagesView, pagesViewOnMount } from './views/pages.js?v=cb22';
+import { builderView, builderViewOnMount } from './views/builder.js?v=cb22';
+import { mediaView, mediaViewOnMount } from './views/media.js?v=cb22';
+import { settingsView, settingsViewOnMount } from './views/settings.js?v=cb22';
+import { customersView, customersViewOnMount } from './views/customers.js?v=cb22';
+import { ordersView, ordersViewOnMount } from './views/orders.js?v=cb22';
+import { centralView, centralViewOnMount } from './views/central.js?v=cb22';
+import { repairsView, repairsViewOnMount } from './views/repairs.js?v=cb22';
+import { inventoryView, inventoryViewOnMount } from './views/inventory.js?v=cb22';
+import { reportsView, reportsViewOnMount } from './views/reports.js?v=cb22';
+import { suppliersView, suppliersViewOnMount } from './views/suppliers.js?v=cb22';
+import { expensesView, expensesViewOnMount } from './views/expenses.js?v=cb22';
+import { promotionsView, promotionsViewOnMount } from './views/promotions.js?v=cb22';
+import { techniciansView, techniciansViewOnMount } from './views/technicians.js?v=cb22';
+import { auditView, auditViewOnMount } from './views/audit.js?v=cb22';
+import { notificationsView, notificationsViewOnMount } from './views/notifications.js?v=cb22';
+import { socialView, socialViewOnMount } from './views/social.js?v=cb22';
+import { paymentFeesView, paymentFeesViewOnMount } from './views/payment-fees.js?v=cb24';
+import { shippingView, shippingViewOnMount } from './views/shipping.js?v=cb24';
+import { gamingView, gamingViewOnMount } from './views/gaming.js?v=cb24';
+import { notFoundView, notFoundViewOnMount } from './views/not-found.js?v=cb22';
 
 function showError(msg){
   const app = document.getElementById('app');
@@ -69,6 +72,9 @@ try {
     '/audit':      { component: auditView,      onMount: auditViewOnMount,      beforeEnter: auth },
     '/notifications':{ component: notificationsView, onMount: notificationsViewOnMount, beforeEnter: auth },
     '/social':     { component: socialView,     onMount: socialViewOnMount,     beforeEnter: auth },
+    '/payment-fees': { component: paymentFeesView, onMount: paymentFeesViewOnMount, beforeEnter: auth },
+    '/shipping':   { component: shippingView,   onMount: shippingViewOnMount,   beforeEnter: auth },
+    '/gaming':     { component: gamingView,     onMount: gamingViewOnMount,     beforeEnter: auth },
     '/404':        { component: notFoundView,   onMount: notFoundViewOnMount,   beforeEnter: auth },
   };
 

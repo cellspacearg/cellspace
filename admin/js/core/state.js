@@ -1,8 +1,28 @@
 // Simula un Contexto Global de React
+const STORAGE_KEY = 'cs_admin_user';
+
+// Recupera el user persistido de una recarga previa (se borra al cerrar la pestaña).
+function recuperarUserGuardado() {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+// Guarda (o borra) el user en sessionStorage.
+function guardarUser(user) {
+  try {
+    if (user) sessionStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+    else sessionStorage.removeItem(STORAGE_KEY);
+  } catch (_) { /* sessionStorage no disponible (modo privado, storage lleno, etc.) */ }
+}
+
 class GlobalState {
   constructor() {
     this.state = {
-      user: null,
+      user: recuperarUserGuardado(),
       isLoading: true,
       theme: 'dark'
     };
@@ -12,6 +32,7 @@ class GlobalState {
   // Simula useState / useContext
   setState(newState) {
     this.state = { ...this.state, ...newState };
+    if ('user' in newState) guardarUser(this.state.user);
     this.notify();
   }
 

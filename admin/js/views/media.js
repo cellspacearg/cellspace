@@ -1,5 +1,5 @@
-import { supabase } from '../config.js?v=cb16';
-import { store } from '../core/state.js?v=cb16';
+import { supabase } from '../config.js?v=cb22';
+import { layout, mountLayout } from '../core/layout.js?v=cb22';
 
 const BUCKET = 'product-images';
 const IMG_EXT = ['png','jpg','jpeg','gif','webp','svg','avif'];
@@ -11,72 +11,31 @@ const knownFolders = new Set(['products','services','pages','media']);
 
 // ---------- VISTA ----------
 export async function mediaView() {
-  const state = store.getState();
-  const userName = state.user?.email?.split('@')[0] || 'Admin';
-  const userInitial = userName.charAt(0).toUpperCase();
+  const toolbarHtml = `
+    <div class="products-toolbar">
+      <div class="toolbar-filters">
+        <div class="breadcrumb" id="mediaBreadcrumb"></div>
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="mediaSearch" placeholder="Filtrar por nombre..."></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn-secondary" id="newFolderBtn" onclick="newFolder()"><i class="fas fa-folder-plus"></i> Nueva carpeta</button>
+        <button class="btn-primary" onclick="document.getElementById('mediaFileInput').click()"><i class="fas fa-upload"></i> Subir archivos</button>
+        <input type="file" id="mediaFileInput" accept="image/*" multiple style="display:none">
+      </div>
+    </div>`;
 
-  return `
-  <div class="admin-layout">
-    <aside class="admin-sidebar" id="adminSidebar">
-      <div class="sidebar-header"><img src="../assets/logo.png" alt="Cell Space" class="sidebar-logo" onerror="this.style.display='none'"><div class="sidebar-brand"><span class="brand-name">CELL SPACE</span><span class="brand-sub">CMS Panel</span></div></div>
-      <nav class="sidebar-nav">
-        <div class="nav-section"><span class="nav-section-title">Principal</span><a href="#/dashboard" class="nav-item"><i class="fas fa-home"></i><span>Dashboard</span></a></div>
-        <div class="nav-section"><span class="nav-section-title">Contenido</span>
-          <a href="#/products" class="nav-item"><i class="fas fa-box"></i><span>Productos</span></a>
-          <a href="#/categories" class="nav-item"><i class="fas fa-tags"></i><span>Categorías</span></a>
-          <a href="#/services" class="nav-item"><i class="fas fa-tools"></i><span>Servicios</span></a>
-          <a href="#/pages" class="nav-item"><i class="fas fa-file-alt"></i><span>Páginas</span></a>
-          <a href="#/central" class="nav-item"><i class="fas fa-screwdriver-wrench"></i><span>Central Space</span></a></div>
-        <div class="nav-section"><span class="nav-section-title">Gestión</span>
-          <a href="#/orders" class="nav-item"><i class="fas fa-shopping-cart"></i><span>Pedidos</span></a>
-          <a href="#/customers" class="nav-item"><i class="fas fa-users"></i><span>Clientes</span></a>
-          <a href="#/messages" class="nav-item"><i class="fas fa-envelope"></i><span>Mensajes</span></a></div>
-        <div class="nav-section"><span class="nav-section-title">Sistema</span>
-          <a href="#/media" class="nav-item"><i class="fas fa-images"></i><span>Archivos</span></a>
-          <a href="#/settings" class="nav-item"><i class="fas fa-cog"></i><span>Configuración</span></a></div>
-      </nav>
-      <div class="sidebar-footer"><a href="../index.html" class="nav-item" target="_blank"><i class="fas fa-external-link-alt"></i><span>Ver sitio público</span></a></div>
-    </aside>
-
-    <div class="admin-main">
-      <header class="admin-topbar">
-        <div class="topbar-left"><button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button><h1 class="page-title">Gestor de Archivos</h1></div>
-        <div class="topbar-right"><div class="user-menu">
-          <button class="user-btn" id="userMenuBtn"><div class="user-avatar">${userInitial}</div><div class="user-info"><span class="user-name">${userName}</span><span class="user-role">Administrador</span></div><i class="fas fa-chevron-down"></i></button>
-          <div class="user-dropdown" id="userDropdown"><a href="#/dashboard" class="dropdown-item"><i class="fas fa-home"></i><span>Dashboard</span></a><div class="dropdown-divider"></div><a href="#" class="dropdown-item logout" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i><span>Cerrar sesión</span></a></div>
-        </div></div>
-      </header>
-
-      <main class="admin-content"><div class="content-wrapper">
-        <!-- Toolbar -->
-        <div class="products-toolbar">
-          <div class="toolbar-filters">
-            <div class="breadcrumb" id="mediaBreadcrumb"></div>
-            <div class="search-box"><i class="fas fa-search"></i><input type="text" id="mediaSearch" placeholder="Filtrar por nombre..."></div>
-          </div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <button class="btn-secondary" id="newFolderBtn" onclick="newFolder()"><i class="fas fa-folder-plus"></i> Nueva carpeta</button>
-            <button class="btn-primary" onclick="document.getElementById('mediaFileInput').click()"><i class="fas fa-upload"></i> Subir archivos</button>
-            <input type="file" id="mediaFileInput" accept="image/*" multiple style="display:none">
-          </div>
-        </div>
-
-        <!-- Upload zone -->
-        <div class="upload-zone media-upload" id="mediaUploadZone">
-          <input type="file" id="mediaFileInput2" accept="image/*" multiple style="display:none">
-          <i class="fas fa-cloud-upload-alt"></i>
-          <p>Arrastrá imágenes acá o hacé clic</p>
-          <span id="mediaUploadTarget">Se guardan en: / (raíz)</span>
-        </div>
-
-        <div class="products-count" id="mediaCount">Cargando...</div>
-        <div class="media-grid" id="mediaGrid"></div>
-      </div></main>
-
-      <footer class="admin-footer"><div class="footer-content"><span>&copy; 2026 Cell Space Argentina.</span><span class="footer-version">CMS v1.0.0</span></div></footer>
+  const content = `
+    <div class="upload-zone media-upload" id="mediaUploadZone">
+      <input type="file" id="mediaFileInput2" accept="image/*" multiple style="display:none">
+      <i class="fas fa-cloud-upload-alt"></i>
+      <p>Arrastrá imágenes acá o hacé clic</p>
+      <span id="mediaUploadTarget">Se guardan en: / (raíz)</span>
     </div>
-  </div>
 
+    <div class="products-count" id="mediaCount">Cargando...</div>
+    <div class="media-grid" id="mediaGrid"></div>`;
+
+  const modal = `
   <!-- LIGHTBOX -->
   <div class="modal-overlay" id="mediaLightbox">
     <div class="lightbox">
@@ -93,14 +52,14 @@ export async function mediaView() {
         </div>
       </div>
     </div>
-  </div>
+  </div>`;
 
-  <div class="sidebar-overlay" id="sidebarOverlay"></div>`;
+  return layout({ title: 'Gestor de Archivos', toolbar: toolbarHtml, content }) + modal;
 }
 
 // ---------- MOUNT ----------
 export function mediaViewOnMount() {
-  wireLayout();
+  mountLayout();
 
   const zone = document.getElementById('mediaUploadZone');
   const input2 = document.getElementById('mediaFileInput2');
@@ -119,16 +78,6 @@ export function mediaViewOnMount() {
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
   loadFolder('');
-}
-
-function wireLayout() {
-  const t=document.getElementById('sidebarToggle'),s=document.getElementById('adminSidebar'),o=document.getElementById('sidebarOverlay');
-  if(t)t.onclick=()=>{s.classList.toggle('open');o.classList.toggle('active');};
-  if(o)o.onclick=()=>{s.classList.remove('open');o.classList.remove('active');};
-  const ub=document.getElementById('userMenuBtn'),ud=document.getElementById('userDropdown');
-  if(ub)ub.onclick=e=>{e.stopPropagation();ud.classList.toggle('active');};
-  document.addEventListener('click',()=>ud&&ud.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(i=>i.classList.toggle('active',i.getAttribute('href')===(window.location.hash||'').split('?')[0]));
 }
 
 // ---------- LISTAR ----------
@@ -321,4 +270,3 @@ function slugFile(s){ return String(s||'').replace(/[^a-zA-Z0-9._-]/g,'_').slice
 function escJs(s){ return String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function toast(msg,type){ const t=document.createElement('div'); t.className='admin-toast '+(type==='err'?'toast-err':'toast-ok'); t.innerHTML='<i class="fas '+(type==='err'?'fa-circle-exclamation':'fa-circle-check')+'"></i> '+msg; document.body.appendChild(t); setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300);},2800); }
-window.handleLogout = async () => { if(confirm('¿Cerrar sesión?')){ const { logout } = await import('../hooks/useAuth.js'); await logout(); } };

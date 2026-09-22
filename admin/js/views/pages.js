@@ -1,5 +1,5 @@
-import { supabase } from '../config.js?v=cb16';
-import { store } from '../core/state.js?v=cb16';
+import { supabase } from '../config.js?v=cb22';
+import { layout, mountLayout, emptyState } from '../core/layout.js?v=cb22';
 
 let allPages = [];
 let currentEditId = null;
@@ -14,60 +14,23 @@ const SEED = [
 ];
 
 export async function pagesView() {
-  const state = store.getState();
-  const userName = state.user?.email?.split('@')[0] || 'Admin';
-  const userInitial = userName.charAt(0).toUpperCase();
-  return `
-  <div class="admin-layout">
-    <aside class="admin-sidebar" id="adminSidebar">
-      <div class="sidebar-header"><img src="../assets/logo.png" alt="Cell Space" class="sidebar-logo" onerror="this.style.display='none'"><div class="sidebar-brand"><span class="brand-name">CELL SPACE</span><span class="brand-sub">CMS Panel</span></div></div>
-      <nav class="sidebar-nav">
-        <div class="nav-section"><span class="nav-section-title">Principal</span><a href="#/dashboard" class="nav-item"><i class="fas fa-home"></i><span>Dashboard</span></a></div>
-        <div class="nav-section"><span class="nav-section-title">Contenido</span>
-          <a href="#/products" class="nav-item"><i class="fas fa-box"></i><span>Productos</span></a>
-          <a href="#/categories" class="nav-item"><i class="fas fa-tags"></i><span>Categorías</span></a>
-          <a href="#/services" class="nav-item"><i class="fas fa-tools"></i><span>Servicios</span></a>
-          <a href="#/pages" class="nav-item"><i class="fas fa-file-alt"></i><span>Páginas</span></a>
-          <a href="#/central" class="nav-item"><i class="fas fa-screwdriver-wrench"></i><span>Central Space</span></a></div>
-        <div class="nav-section"><span class="nav-section-title">Gestión</span>
-          <a href="#/orders" class="nav-item"><i class="fas fa-shopping-cart"></i><span>Pedidos</span></a>
-          <a href="#/customers" class="nav-item"><i class="fas fa-users"></i><span>Clientes</span></a>
-          <a href="#/messages" class="nav-item"><i class="fas fa-envelope"></i><span>Mensajes</span></a></div>
-        <div class="nav-section"><span class="nav-section-title">Sistema</span>
-          <a href="#/media" class="nav-item"><i class="fas fa-images"></i><span>Archivos</span></a>
-          <a href="#/settings" class="nav-item"><i class="fas fa-cog"></i><span>Configuración</span></a></div>
-      </nav>
-      <div class="sidebar-footer"><a href="../index.html" class="nav-item" target="_blank"><i class="fas fa-external-link-alt"></i><span>Ver sitio público</span></a></div>
-    </aside>
+  const toolbarHtml = `
+    <div class="products-toolbar">
+      <div class="toolbar-filters">
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="pageSearch" placeholder="Buscar por título o slug..."></div>
+        <select id="filterPageStatus" class="filter-select"><option value="">Todos los estados</option><option value="published">Publicadas</option><option value="draft">Borradores</option></select>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn-secondary" onclick="seedPages()"><i class="fas fa-wand-magic-sparkles"></i> Páginas predeterminadas</button>
+        <button class="btn-primary" onclick="openPageModal()"><i class="fas fa-plus"></i> Nueva Página</button>
+      </div>
+    </div>`;
 
-    <div class="admin-main">
-      <header class="admin-topbar">
-        <div class="topbar-left"><button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button><h1 class="page-title">Páginas</h1></div>
-        <div class="topbar-right"><div class="user-menu">
-          <button class="user-btn" id="userMenuBtn"><div class="user-avatar">${userInitial}</div><div class="user-info"><span class="user-name">${userName}</span><span class="user-role">Administrador</span></div><i class="fas fa-chevron-down"></i></button>
-          <div class="user-dropdown" id="userDropdown"><a href="#/dashboard" class="dropdown-item"><i class="fas fa-home"></i><span>Dashboard</span></a><div class="dropdown-divider"></div><a href="#" class="dropdown-item logout" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i><span>Cerrar sesión</span></a></div>
-        </div></div>
-      </header>
+  const content = `
+    <div class="products-count" id="pagesCount">Cargando...</div>
+    <div class="admin-products-grid" id="pagesGrid"></div>`;
 
-      <main class="admin-content"><div class="content-wrapper">
-        <div class="products-toolbar">
-          <div class="toolbar-filters">
-            <div class="search-box"><i class="fas fa-search"></i><input type="text" id="pageSearch" placeholder="Buscar por título o slug..."></div>
-            <select id="filterPageStatus" class="filter-select"><option value="">Todos los estados</option><option value="published">Publicadas</option><option value="draft">Borradores</option></select>
-          </div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <button class="btn-secondary" onclick="seedPages()"><i class="fas fa-wand-magic-sparkles"></i> Páginas predeterminadas</button>
-            <button class="btn-primary" onclick="openPageModal()"><i class="fas fa-plus"></i> Nueva Página</button>
-          </div>
-        </div>
-        <div class="products-count" id="pagesCount">Cargando...</div>
-        <div class="admin-products-grid" id="pagesGrid"></div>
-      </div></main>
-
-      <footer class="admin-footer"><div class="footer-content"><span>&copy; 2026 Cell Space Argentina.</span><span class="footer-version">CMS v1.0.0</span></div></footer>
-    </div>
-  </div>
-
+  const modal = `
   <!-- MODAL = SOLO METADATOS -->
   <div class="modal-overlay" id="pageModal">
     <div class="modal-box">
@@ -96,29 +59,19 @@ export async function pagesView() {
         </div>
       </form>
     </div>
-  </div>
+  </div>`;
 
-  <div class="sidebar-overlay" id="sidebarOverlay"></div>`;
+  return layout({ title: 'Páginas', toolbar: toolbarHtml, content }) + modal;
 }
 
 export function pagesViewOnMount() {
-  wireLayout();
+  mountLayout();
   document.getElementById('pageSearch').addEventListener('input', applyFilters);
   document.getElementById('filterPageStatus').addEventListener('change', applyFilters);
   document.getElementById('pageForm').addEventListener('submit', savePage);
   document.getElementById('pg_title').addEventListener('input', e => { const s=document.getElementById('pg_slug'); if(!s.dataset.touched) s.value=slugify(e.target.value); });
   document.getElementById('pg_slug').addEventListener('input', e => { e.target.dataset.touched='1'; });
   loadPages();
-}
-
-function wireLayout() {
-  const t=document.getElementById('sidebarToggle'),s=document.getElementById('adminSidebar'),o=document.getElementById('sidebarOverlay');
-  if(t)t.onclick=()=>{s.classList.toggle('open');o.classList.toggle('active');};
-  if(o)o.onclick=()=>{s.classList.remove('open');o.classList.remove('active');};
-  const ub=document.getElementById('userMenuBtn'),ud=document.getElementById('userDropdown');
-  if(ub)ub.onclick=e=>{e.stopPropagation();ud.classList.toggle('active');};
-  document.addEventListener('click',()=>ud&&ud.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(i=>i.classList.toggle('active',i.getAttribute('href')===(window.location.hash||'')));
 }
 
 async function loadPages() {
@@ -141,7 +94,15 @@ function applyFilters() {
 
 function renderPages(list) {
   const grid=document.getElementById('pagesGrid');
-  if(!list.length){ grid.innerHTML=`<div class="empty-state"><div class="empty-icon"><i class="fas fa-file-circle-plus"></i></div><h2>No hay páginas</h2><p>Creá una página nueva o generá las predeterminadas.</p><div class="empty-actions"><button class="btn-secondary" onclick="seedPages()"><i class="fas fa-wand-magic-sparkles"></i> Páginas predeterminadas</button><button class="btn-primary" onclick="openPageModal()"><i class="fas fa-plus"></i> Nueva Página</button></div></div>`; return; }
+  if(!list.length){
+    grid.innerHTML = emptyState({
+      icon: 'fas fa-file-circle-plus',
+      title: 'No hay páginas',
+      text: 'Creá una página nueva o generá las predeterminadas.',
+      action: { label: 'Nueva Página', icon: 'fas fa-plus', onclick: 'openPageModal()' },
+    });
+    return;
+  }
   grid.innerHTML=list.map(p=>{
     const blocks=Array.isArray(p.blocks)?p.blocks:[];
     const state=p.status==='published'?'Publicada':'Borrador';
@@ -250,4 +211,3 @@ function set(id,v){ const el=document.getElementById(id); if(el) el.value=(v ?? 
 function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function slugify(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-').replace(/-+/g,'-'); }
 function toast(msg,type){ const t=document.createElement('div'); t.className='admin-toast '+(type==='err'?'toast-err':'toast-ok'); t.innerHTML='<i class="fas '+(type==='err'?'fa-circle-exclamation':'fa-circle-check')+'"></i> '+msg; document.body.appendChild(t); setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300);},2800); }
-window.handleLogout = async () => { if(confirm('¿Cerrar sesión?')){ const { logout } = await import('../hooks/useAuth.js'); await logout(); } };
