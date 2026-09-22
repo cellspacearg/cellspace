@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Cell Space Argentina: gift cards, recargas, suscripciones y USB con juegos para PS2. Entrega digital inmediata por WhatsApp.">
+  <title>Gaming | Cell Space Argentina</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous"></noscript>
+
+  <link rel="stylesheet" href="css/styles.css?v=18">
+  <link rel="stylesheet" href="css/cs-auth.css?v=1">
+  <link rel="stylesheet" href="css/responsive.css?v=3">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.2" integrity="sha384-B2duOBIryCXbX4eDE4BdJwtNkQMRQde3o6IsjfPW28E6aH1CYE96hHeZRG3zY56O" crossorigin="anonymous"></script>
+  <script src="js/ui-toast.js"></script>
+</head>
+<body>
+  <div class="particles" id="particles"></div>
+
+  <!-- Header unificado -> js/site-header.js -->
+  <div id="site-header" data-active="gaming" data-search-placeholder="Buscar productos, herramientas, servicios..." data-search-action="performSearch"></div>
+  <script src="js/site-header.js"></script>
+
+  <!-- ========================================
+       CONTENIDO
+       ======================================== -->
+  <main class="shop-main">
+    <div class="container">
+
+      <section class="gaming-hero">
+        <span class="gaming-hero-badge"><i class="fas fa-bolt"></i> ZONA GAMER</span>
+        <h1 class="gaming-hero-title">GIFT CARDS, RECARGAS Y MÁS</h1>
+        <p class="gaming-hero-subtitle">Gift cards, recargas y suscripciones con entrega digital inmediata, además de USB con juegos para PS2 con envío a todo el país.</p>
+        <div class="gaming-hero-buttons">
+          <a href="#gamingGrid" class="btn-gaming-primary"><i class="fas fa-gamepad"></i> Ver productos</a>
+          <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="btn-gaming-secondary"><i class="fab fa-whatsapp"></i> Consultar por WhatsApp</a>
+        </div>
+      </section>
+
+      <section class="home-section">
+        <h2 class="section-title"><i class="fas fa-shapes"></i> EXPLORÁ POR TIPO</h2>
+        <div class="gaming-cats">
+          <div class="gaming-cat-card" data-tipo="todos">
+            <div class="gaming-cat-icon"><i class="fas fa-border-all"></i></div>
+            <span class="gaming-cat-label">Todos</span>
+            <span class="gaming-cat-desc">Ver todo el catálogo</span>
+          </div>
+          <div class="gaming-cat-card" data-tipo="usb">
+            <div class="gaming-cat-icon"><i class="fas fa-compact-disc"></i></div>
+            <span class="gaming-cat-label">USB PS2</span>
+            <span class="gaming-cat-desc">Con juegos cargados</span>
+          </div>
+          <div class="gaming-cat-card" data-tipo="giftcard">
+            <div class="gaming-cat-icon"><i class="fas fa-gift"></i></div>
+            <span class="gaming-cat-label">Gift Cards</span>
+            <span class="gaming-cat-desc">Steam, Xbox, PS Plus...</span>
+          </div>
+          <div class="gaming-cat-card" data-tipo="topup">
+            <div class="gaming-cat-icon"><i class="fas fa-coins"></i></div>
+            <span class="gaming-cat-label">Recargas</span>
+            <span class="gaming-cat-desc">Robux, UC, diamantes...</span>
+          </div>
+          <div class="gaming-cat-card" data-tipo="suscripcion">
+            <div class="gaming-cat-icon"><i class="fas fa-crown"></i></div>
+            <span class="gaming-cat-label">Suscripciones</span>
+            <span class="gaming-cat-desc">PS Plus, Game Pass...</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="home-section" id="featuredSection">
+        <h2 class="section-title"><i class="fas fa-gamepad"></i> PRODUCTOS GAMING</h2>
+        <div class="gaming-platform-pills" id="gamingPlatformPills"></div>
+        <div class="products-count" id="gamingCount">Cargando...</div>
+        <div class="products-grid" id="gamingGrid"></div>
+      </section>
+
+      <div class="gaming-wa-banner">
+        <div>
+          <h3><i class="fab fa-whatsapp"></i> ¿No encontrás lo que buscás?</h3>
+          <p>Escribinos y te ayudamos a conseguir tu gift card, recarga o suscripción favorita.</p>
+        </div>
+        <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="btn-wa-banner">
+          <i class="fab fa-whatsapp"></i> Escribir por WhatsApp
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ========================================
+       FOOTER
+       ======================================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+
+        <div class="footer-brand">
+          <img src="assets/logo.png" alt="Cell Space Argentina" class="footer-logo" loading="lazy">
+          <p>Tu espacio de confianza en tecnología. Reparación, venta y soluciones profesionales.</p>
+          <div class="social-links">
+            <a href="https://www.instagram.com/cellspacearg/" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="https://www.facebook.com/cellspacearg" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+            <a href="https://www.youtube.com/@CELLSPACEARG" target="_blank" rel="noopener" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            <a href="https://www.tiktok.com/@cell.space.arg" target="_blank" rel="noopener" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>INFORMACIÓN</h4>
+          <ul>
+            <li><a href="#">Sobre nosotros</a></li>
+            <li><a href="terminos.html">Términos y condiciones</a></li>
+            <li><a href="privacidad.html">Política de privacidad</a></li>
+            <li><a href="arrepentimiento.html">Botón de arrepentimiento</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>CATEGORÍAS</h4>
+          <ul>
+            <li><a href="tienda.html">Celulares</a></li>
+            <li><a href="tienda.html">Accesorios</a></li>
+            <li><a href="tienda.html">Herramientas</a></li>
+            <li><a href="gaming.html">Gaming</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>CONTACTO</h4>
+          <ul class="contact-info">
+            <li><i class="fab fa-whatsapp"></i> +54 9 3782 437674</li>
+            <li><i class="fas fa-envelope"></i> cellspacearg@gmail.com</li>
+            <li><i class="fas fa-map-marker-alt"></i> Saladas, Corrientes</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2026 Cell Space Argentina. Todos los derechos reservados.</p>
+        <a href="arrepentimiento.html" class="btn-arrepentimiento">
+          <i class="fas fa-rotate-left"></i> BOTÓN DE ARREPENTIMIENTO
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- CARRITO MODAL -->
+  <div class="cart-modal-overlay" id="cartModal">
+    <div class="cart-modal">
+      <div class="cart-modal-header">
+        <h2><i class="fas fa-shopping-cart"></i> Tu Carrito</h2>
+        <button onclick="toggleCart()" class="close-btn" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="cart-modal-body" id="cartItems"></div>
+      <div class="cart-modal-footer">
+        <div class="cart-total">
+          <span>Total:</span>
+          <span class="total-price" id="cartTotal">$0</span>
+        </div>
+        <button class="btn-checkout" onclick="checkout()">Finalizar Compra</button>
+      </div>
+    </div>
+  </div>
+
+  <a href="https://wa.me/5493782437674" target="_blank" rel="noopener" class="wa-float" aria-label="WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+  <script src="js/config.js?v=2"></script>
+  <script src="js/auth-middleware.js"></script>
+  <script src="js/cs-auth.js?v=1"></script>
+  <script src="js/site-config.js?v=2"></script>
+  <script src="js/gaming.js?v=1"></script>
+</body>
+</html>
