@@ -104,7 +104,7 @@ export function layout({ title, content, toolbar = '' }){
         <img src="../assets/logo.png" alt="Cell Space" class="sidebar-logo" onerror="this.style.display='none'">
         <div class="sidebar-brand">
           <span class="brand-name">CELL SPACE</span>
-          <span class="brand-sub">CMS Panel</span>
+          <span class="brand-sub">CMS PANEL</span>
         </div>
       </div>
       <nav class="sidebar-nav">${menuHtml()}</nav>
