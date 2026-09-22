@@ -347,7 +347,7 @@ async function loadProducts() {
   const area = document.getElementById('productsListArea');
   area.innerHTML = '<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Cargando productos...</p>';
   try {
-    const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabase.from('products').select('*').is('gaming_type', null).order('created_at', { ascending: false });
     if (error) throw error;
     allProducts = data || []; selectedIds.clear(); updateBulkBar(); applyFilters();
   } catch (e) { console.error(e); area.innerHTML = '<p class="loading-text" style="color:#ff4444">Error al cargar: '+e.message+'</p>'; }

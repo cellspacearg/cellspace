@@ -32,7 +32,6 @@ export const MENU = [
     { path: '#/suppliers',   icon: 'fas fa-truck',         label: 'Proveedores' },
     { path: '#/technicians', icon: 'fas fa-user-gear',     label: 'Técnicos' },
     { path: '#/customers',   icon: 'fas fa-users',         label: 'Clientes' },
-    { path: '#/messages',    icon: 'fas fa-envelope',      label: 'Mensajes' },
   ]},
   { group: 'Sistema', items: [
     { path: '#/reports',       icon: 'fas fa-chart-line',   label: 'Reportes' },
@@ -63,7 +62,6 @@ const ICON_COLORS = {
   '#/suppliers':     '#2F7BFF',
   '#/technicians':   '#FF6A00',
   '#/customers':     '#8b5cf6',
-  '#/messages':      '#E8B4B8',
   '#/reports':       '#10c46a',
   '#/expenses':      '#ff3b3b',
   '#/notifications': '#FF6A00',
