@@ -24,6 +24,7 @@ import { notificationsView, notificationsViewOnMount } from './views/notificatio
 import { socialView, socialViewOnMount } from './views/social.js?v=cb22';
 import { paymentFeesView, paymentFeesViewOnMount } from './views/payment-fees.js?v=cb24';
 import { shippingView, shippingViewOnMount } from './views/shipping.js?v=cb24';
+import { gamingView, gamingViewOnMount } from './views/gaming.js?v=cb24';
 import { notFoundView, notFoundViewOnMount } from './views/not-found.js?v=cb22';
 
 function showError(msg){
@@ -73,6 +74,7 @@ try {
     '/social':     { component: socialView,     onMount: socialViewOnMount,     beforeEnter: auth },
     '/payment-fees': { component: paymentFeesView, onMount: paymentFeesViewOnMount, beforeEnter: auth },
     '/shipping':   { component: shippingView,   onMount: shippingViewOnMount,   beforeEnter: auth },
+    '/gaming':     { component: gamingView,     onMount: gamingViewOnMount,     beforeEnter: auth },
     '/404':        { component: notFoundView,   onMount: notFoundViewOnMount,   beforeEnter: auth },
   };
 
