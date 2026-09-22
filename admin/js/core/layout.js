@@ -22,6 +22,7 @@ export const MENU = [
   ]},
   { group: 'Tienda', items: [
     { path: '#/gaming',       icon: 'fas fa-gamepad',     label: 'Gaming' },
+    { path: '#/fazercards',   icon: 'fas fa-coins',       label: 'FazerCards' },
     { path: '#/shipping',     icon: 'fas fa-truck-fast',  label: 'Envíos' },
     { path: '#/payment-fees', icon: 'fas fa-credit-card', label: 'Medios de pago' },
   ]},
@@ -54,6 +55,7 @@ const ICON_COLORS = {
   '#/promotions':    '#E8B4B8',
   '#/social':        '#8b5cf6',
   '#/gaming':        '#8b5cf6',
+  '#/fazercards':    '#FFD700',
   '#/shipping':      '#2F7BFF',
   '#/payment-fees':  '#10c46a',
   '#/orders':        '#2F7BFF',

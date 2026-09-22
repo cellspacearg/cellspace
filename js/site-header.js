@@ -4,7 +4,7 @@
 //
 // Uso: colocar al inicio del <body>
 //   <div id="site-header"
-//        data-active="index|tienda|servicios|central"
+//        data-active="index|tienda|servicios|central|gaming"
 //        data-search-placeholder="..."
 //        data-search-action="performSearch|performHeaderSearch"
 //        data-cart-href="#"                    (opcional, default "#")
@@ -105,6 +105,7 @@
             '<li><a href="tienda.html" class="nav-link' + act('tienda') + '">TIENDA</a></li>' +
             '<li><a href="servicios.html" class="nav-link' + act('servicios') + '">SERVICIO TÉCNICO</a></li>' +
             '<li><a href="central-space.html" class="nav-link' + act('central') + '">CENTRAL SPACE</a></li>' +
+            '<li><a href="gaming.html" class="nav-link' + act('gaming') + '">GAMING <span class="nav-badge-new">NUEVO</span></a></li>' +
             '<li><a href="index.html#contacto" class="nav-link">CONTACTO</a></li>' +
           '</ul>' +
         '</div>' +

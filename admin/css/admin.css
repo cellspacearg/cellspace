@@ -1911,3 +1911,21 @@ select optgroup {
   font-weight: 700;
   color: var(--admin-orange);
 }
+
+/* ============================================================
+   FAZERCARDS (PARTE 2) — tipo de cambio, margenes, promociones, catalogo
+   ============================================================ */
+.fc-section { margin-bottom: 24px; }
+.fc-card {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-top: 10px;
+}
+.fc-margins-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
