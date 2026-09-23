@@ -1929,3 +1929,15 @@ select optgroup {
   gap: 14px;
   margin-top: 12px;
 }
+.fc-region-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+.fc-region-badge.compat { background: rgba(16,196,106,0.15); color: #10c46a; }
+.fc-region-badge.other { background: rgba(255,215,0,0.15); color: #FFD700; }

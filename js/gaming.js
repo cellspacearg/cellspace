@@ -17,25 +17,59 @@
   'use strict';
 
   var allProducts = [];
-  var activeTipo = 'todos';       // todos | usb | giftcard | topup | suscripcion
+  var activeTipo = 'todos';       // todos | usb | giftcard | topup | suscripcion | gamekey
   var activePlatform = 'todas';
+  var activeRegionMode = 'compatible'; // 'compatible' | 'all' — solo aplica a productos de FazerCards
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function money(n) { n = Number(n) || 0; return n % 1 === 0 ? n.toLocaleString('es-AR') : n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
   function waNumber() { return (window.CMS_CONFIG && window.CMS_CONFIG.whatsapp ? String(window.CMS_CONFIG.whatsapp).replace(/[^0-9]/g, '') : '5493782437674'); }
 
-  var TIPO_LABELS = { usb: 'USB / Pendrive', giftcard: 'Gift Cards', topup: 'Recargas', suscripcion: 'Suscripciones' };
+  var COMPATIBLE_REGIONS = ['AR', 'LATAM', 'GLOBAL'];
+  function isCompatibleRegion(region) { return !region || COMPATIBLE_REGIONS.indexOf(String(region).toUpperCase()) !== -1; }
 
   /* ---------- carga de productos ---------- */
+  // Une el catalogo manual (products/gaming_products_public, Parte 12) con el
+  // catalogo sincronizado de FazerCards (fazercards_products, solo activos).
+  function normalizeFazercards(p) {
+    return {
+      id: 'fzc_' + p.id,
+      name: p.name,
+      price: Number(p.price_ars) || 0,
+      old_price: null,
+      platform: p.platform || p.subcategory || null,
+      gaming_type: p.category, // 'giftcard' | 'topup' | 'gamekey'
+      is_digital: true,
+      image_url: p.image_url,
+      games_list: null,
+      duration: null,
+      stock: null,
+      region: String(p.fazercards_region || p.region || 'GLOBAL').toUpperCase(),
+      _fzc: true,
+    };
+  }
+
   function loadProducts() {
     if (typeof supabase === 'undefined' || !supabase) return Promise.resolve([]);
-    return supabase.from('gaming_products_public').select('*')
+    var manual = supabase.from('gaming_products_public').select('*')
       .order('created_at', { ascending: false })
       .then(function (res) {
         if (res.error) { console.error(res.error); return []; }
         return res.data || [];
       })
       .catch(function (e) { console.error(e); return []; });
+
+    var fromFazercards = supabase.from('fazercards_products').select('*').eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .then(function (res) {
+        if (res.error) { console.error(res.error); return []; }
+        return (res.data || []).map(normalizeFazercards);
+      })
+      .catch(function (e) { console.error(e); return []; });
+
+    return Promise.all([manual, fromFazercards]).then(function (results) {
+      return results[0].concat(results[1]);
+    });
   }
 
   /* ---------- filtros ---------- */
@@ -49,9 +83,32 @@
     return allProducts.filter(function (p) {
       if (activeTipo !== 'todos' && p.gaming_type !== activeTipo) return false;
       if (activePlatform !== 'todas' && p.platform !== activePlatform) return false;
+      if (p._fzc && activeRegionMode === 'compatible' && !isCompatibleRegion(p.region)) return false;
       return true;
     });
   }
+
+  function updateRegionBar() {
+    var bar = document.querySelector('.gaming-region-bar');
+    var label = document.getElementById('gamingRegionLabel');
+    var btn = document.getElementById('gamingRegionToggle');
+    if (!bar || !label || !btn) return;
+    if (activeRegionMode === 'compatible') {
+      bar.classList.remove('showing-all');
+      label.innerHTML = '<i class="fas fa-circle-check"></i> Mostrando: Compatibles con Argentina';
+      btn.textContent = 'Ver todas las regiones';
+    } else {
+      bar.classList.add('showing-all');
+      label.innerHTML = '<i class="fas fa-globe"></i> Mostrando: Todas las regiones';
+      btn.textContent = 'Ver solo compatibles con Argentina';
+    }
+  }
+
+  window.__toggleRegionFilter = function () {
+    activeRegionMode = activeRegionMode === 'compatible' ? 'all' : 'compatible';
+    updateRegionBar();
+    renderGrid();
+  };
 
   function renderPlatformPills() {
     var box = document.getElementById('gamingPlatformPills');
@@ -113,6 +170,16 @@
 
       var durationHtml = p.duration ? '<p style="color:#888;font-size:12px;margin-bottom:10px;"><i class="fas fa-clock"></i> ' + esc(p.duration) + '</p>' : '';
 
+      var regionHtml = '';
+      if (p._fzc) {
+        var compat = isCompatibleRegion(p.region);
+        regionHtml =
+          '<span class="gaming-region-badge ' + (compat ? 'compat' : 'other') + '"><i class="fas ' + (compat ? 'fa-circle-check' : 'fa-triangle-exclamation') + '"></i> ' + esc(p.region) + '</span>' +
+          '<p class="gaming-region-note ' + (compat ? 'compat' : 'other') + '">' +
+            (compat ? '✅ Compatible con Argentina' : '⚠️ Solo funciona en la región ' + esc(p.region) + '. Verificá antes de comprar') +
+          '</p>';
+      }
+
       var stockHtml = !isDigital
         ? (sinStock
             ? '<div style="color:#FF4444;font-size:12px;font-weight:700;margin-bottom:10px;">SIN STOCK</div>'
@@ -130,7 +197,7 @@
           platBadge + tipoBadge + imageHtml +
           '<div class="product-info">' +
             '<h3 class="product-title">' + esc(p.name) + '</h3>' +
-            gamesListHtml + durationHtml +
+            regionHtml + gamesListHtml + durationHtml +
             '<div class="product-price"><span class="price-current">$' + money(p.price) + '</span>' + oldPriceHtml + '</div>' +
             stockHtml +
             '<div class="product-actions">' + actionBtn + '</div>' +
@@ -264,6 +331,7 @@
 
   function boot() {
     updateCartCount();
+    updateRegionBar();
     loadProducts().then(function (list) {
       allProducts = list;
       renderPlatformPills();

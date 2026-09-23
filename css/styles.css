@@ -3413,3 +3413,67 @@ select optgroup {
   transition: all 0.3s;
 }
 .btn-wa-banner:hover { background: #1ebe5a; transform: translateY(-2px); }
+
+/* --- aviso de regiones (gaming.html) --- */
+.gaming-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  background: rgba(255,215,0,0.1);
+  border: 1px solid rgba(255,215,0,0.35);
+  border-radius: 12px;
+  color: #FFD700;
+}
+.gaming-warning i { font-size: 20px; margin-top: 2px; flex-shrink: 0; }
+.gaming-warning strong { display: block; color: #fff; font-size: 14px; margin-bottom: 4px; }
+.gaming-warning p { margin: 0; color: #ccc; font-size: 13px; line-height: 1.5; }
+
+.gaming-region-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 10px 16px;
+  background: rgba(16,196,106,0.08);
+  border: 1px solid rgba(16,196,106,0.3);
+  border-radius: 10px;
+  font-size: 13px;
+  color: #10c46a;
+  font-weight: 600;
+}
+.gaming-region-bar.showing-all { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); color: #ccc; }
+.gaming-region-bar button {
+  background: none;
+  border: 1px solid currentColor;
+  color: inherit;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  transition: all 0.2s;
+}
+.gaming-region-bar button:hover { background: currentColor; color: #0a0a0a; }
+
+/* --- badge de region en la card del producto (gaming.html) --- */
+.gaming-region-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  margin-bottom: 8px;
+}
+.gaming-region-badge.compat { background: rgba(16,196,106,0.15); color: #10c46a; }
+.gaming-region-badge.other { background: rgba(255,215,0,0.15); color: #FFD700; }
+.gaming-region-note { font-size: 11px; margin: 4px 0 10px; line-height: 1.4; }
+.gaming-region-note.compat { color: #10c46a; }
+.gaming-region-note.other { color: #FFD700; }

@@ -438,10 +438,16 @@ function effectiveMargin(p) {
   return Number(settings.default_margin) || 0;
 }
 
+const COMPATIBLE_REGIONS = ['AR', 'LATAM', 'GLOBAL'];
+function isCompatibleRegion(region) { return COMPATIBLE_REGIONS.includes(String(region || '').toUpperCase()); }
+
 function filteredProducts() {
   return products.filter(p => {
     if (activeCategoryFilter !== 'all' && p.category !== activeCategoryFilter) return false;
-    if (activeRegionFilter !== 'all' && String(p.fazercards_region || p.region || '').toUpperCase() !== activeRegionFilter) return false;
+    const region = String(p.fazercards_region || p.region || 'GLOBAL').toUpperCase();
+    if (activeRegionFilter === 'compatible' && !isCompatibleRegion(region)) return false;
+    else if (activeRegionFilter === 'other' && isCompatibleRegion(region)) return false;
+    else if (!['all', 'compatible', 'other'].includes(activeRegionFilter) && region !== activeRegionFilter) return false;
     if (searchTerm && !(`${p.name} ${p.subcategory || ''}`.toLowerCase().includes(searchTerm.toLowerCase()))) return false;
     return true;
   });
@@ -465,10 +471,12 @@ function renderCatalogSection() {
           <button type="button" class="section-pill ${activeCategoryFilter === 'topup' ? 'on' : ''}" data-cat="topup">Recargas</button>
           <button type="button" class="section-pill ${activeCategoryFilter === 'gamekey' ? 'on' : ''}" data-cat="gamekey">Game Keys</button>
           <select id="fcRegionFilter" class="filter-select">
-            <option value="all" ${activeRegionFilter === 'all' ? 'selected' : ''}>Todas las regiones</option>
-            <option value="AR" ${activeRegionFilter === 'AR' ? 'selected' : ''}>Solo Argentina</option>
+            <option value="all" ${activeRegionFilter === 'all' ? 'selected' : ''}>Todos</option>
+            <option value="compatible" ${activeRegionFilter === 'compatible' ? 'selected' : ''}>Compatibles con Argentina</option>
             <option value="LATAM" ${activeRegionFilter === 'LATAM' ? 'selected' : ''}>Solo LATAM</option>
-            <option value="GLOBAL" ${activeRegionFilter === 'GLOBAL' ? 'selected' : ''}>Global</option>
+            <option value="GLOBAL" ${activeRegionFilter === 'GLOBAL' ? 'selected' : ''}>Solo Global</option>
+            <option value="AR" ${activeRegionFilter === 'AR' ? 'selected' : ''}>Solo Argentina</option>
+            <option value="other" ${activeRegionFilter === 'other' ? 'selected' : ''}>Otras regiones (CEI, MENA, RU, etc.)</option>
           </select>
         </div>
       </div>
@@ -502,16 +510,19 @@ function renderProductCard(p) {
   const priceArs = Number(p.price_ars) || 0;
   const costArs = Number(p.price_usd) * Number(settings.exchange_rate || 0);
   const profit = priceArs - costArs;
-  const region = p.fazercards_region || p.region;
+  const region = String(p.fazercards_region || p.region || 'GLOBAL').toUpperCase();
+  const compatible = isCompatibleRegion(region);
+  const regionBadge = `<span class="fc-region-badge ${compatible ? 'compat' : 'other'}"><i class="fas ${compatible ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i> ${escapeHtml(region)}</span>`;
 
   return `
     <div class="admin-product-card" style="--cat-color:#8b5cf6">
       <div class="ap-thumb">${p.image_url ? `<img src="${escAttr(p.image_url)}" alt="" style="width:100%;height:100%;object-fit:cover;">` : '<i class="fas fa-gamepad" style="font-size:28px;color:#8b5cf6;"></i>'}</div>
       <div class="ap-body">
         <div class="ap-top">
-          <span class="ap-cat">${escapeHtml(CATEGORY_LABELS[p.category] || p.category)}${p.subcategory ? ' · ' + escapeHtml(p.subcategory) : ''}${region ? ' · ' + escapeHtml(region) : ''}</span>
+          <span class="ap-cat">${escapeHtml(CATEGORY_LABELS[p.category] || p.category)}${p.subcategory ? ' · ' + escapeHtml(p.subcategory) : ''}</span>
           ${p.is_active ? '<span class="ap-state st-active">Activado</span>' : '<span class="ap-state st-hidden">Desactivado</span>'}
         </div>
+        <div class="ap-top" style="margin-top:-6px;">${regionBadge}</div>
         <h4 class="ap-name">${escapeHtml(p.name)}</h4>
         <div class="ap-meta" style="color:#777;font-size:11px;">Costo mayorista (referencia interna): USD ${money(p.price_usd)} · Margen (${marginSource}): +${margin}%${p.promo_discount ? ' · Promo: ' + p.promo_discount + '%' : ''}</div>
         <div class="ap-meta" style="color:var(--admin-orange);font-weight:800;font-size:18px;">$${money(priceArs)} ARS</div>
