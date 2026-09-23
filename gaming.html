@@ -16,7 +16,7 @@
   <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous"></noscript>
 
-  <link rel="stylesheet" href="css/styles.css?v=19">
+  <link rel="stylesheet" href="css/styles.css?v=20">
   <link rel="stylesheet" href="css/cs-auth.css?v=1">
   <link rel="stylesheet" href="css/responsive.css?v=3">
 
@@ -86,14 +86,20 @@
       </section>
 
       <section class="home-section" id="featuredSection">
-        <h2 class="section-title"><i class="fas fa-gamepad"></i> PRODUCTOS GAMING</h2>
+        <h2 class="section-title"><i class="fas fa-gamepad"></i> USB Y PRODUCTOS PROPIOS</h2>
         <div class="gaming-platform-pills" id="gamingPlatformPills"></div>
-        <div class="gaming-region-bar">
+        <div class="products-count" id="gamingCount">Cargando...</div>
+        <div class="products-grid" id="gamingGrid"></div>
+      </section>
+
+      <section class="home-section" id="fazercardsSection">
+        <h2 class="section-title"><i class="fas fa-layer-group"></i> CATÁLOGO GAMING</h2>
+        <div class="gaming-region-bar" id="gamingRegionBar">
           <span id="gamingRegionLabel"><i class="fas fa-circle-check"></i> Mostrando: Compatibles con Argentina</span>
           <button type="button" id="gamingRegionToggle" onclick="window.__toggleRegionFilter()">Ver todas las regiones</button>
         </div>
-        <div class="products-count" id="gamingCount">Cargando...</div>
-        <div class="products-grid" id="gamingGrid"></div>
+        <div class="gc3-breadcrumb" id="gc3Breadcrumb"></div>
+        <div id="gc3Content"></div>
       </section>
 
       <div class="gaming-wa-banner">
@@ -193,6 +199,6 @@
   <script src="js/auth-middleware.js"></script>
   <script src="js/cs-auth.js?v=1"></script>
   <script src="js/site-config.js?v=2"></script>
-  <script src="js/gaming.js?v=2"></script>
+  <script src="js/gaming.js?v=3"></script>
 </body>
 </html>
