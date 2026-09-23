@@ -1941,3 +1941,124 @@ select optgroup {
 }
 .fc-region-badge.compat { background: rgba(16,196,106,0.15); color: #10c46a; }
 .fc-region-badge.other { background: rgba(255,215,0,0.15); color: #FFD700; }
+
+/* ============================================================
+   Catalogo FazerCards de 3 niveles (Categorias > Juegos > Productos).
+   Tokens calcados de la demo aprobada por el usuario.
+   ============================================================ */
+.fc3 {
+  --fc3-violet: #8b5cf6;
+  --fc3-violet-2: #6366f1;
+  --fc3-green: #10c46a;
+  --fc3-yellow: #FFD700;
+  --fc3-blue: #2F7BFF;
+  --fc3-orange: #FF6A00;
+  --fc3-border: rgba(255,255,255,0.07);
+  --fc3-border-2: rgba(255,255,255,0.12);
+  --fc3-text-2: #b0b0bb;
+  --fc3-text-3: #888;
+  --fc3-text-4: #666;
+  --fc3-radius: 12px;
+  --fc3-radius-lg: 16px;
+}
+
+.fc3-breadcrumb {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-size: 14px; color: var(--fc3-text-3); margin-bottom: 18px;
+}
+.fc3-breadcrumb a { color: var(--fc3-violet); text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.fc3-breadcrumb a:hover { text-decoration: underline; }
+.fc3-breadcrumb .fc3-sep { color: var(--fc3-text-4); }
+.fc3-breadcrumb .fc3-current { color: #fff; font-weight: 600; }
+
+.fc3-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+
+.fc3-card {
+  background: #16161a;
+  border: 1px solid var(--fc3-border);
+  border-radius: var(--fc3-radius-lg);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex; flex-direction: column; gap: 12px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.fc3-card:hover { transform: translateY(-4px); border-color: rgba(139,92,246,0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+.fc3-card-icon {
+  width: 64px; height: 64px; border-radius: 16px;
+  background: rgba(139,92,246,0.15); color: var(--fc3-violet);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; margin: 0 auto;
+}
+.fc3-card-name { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.3; }
+.fc3-card-meta { font-size: 11px; color: var(--fc3-text-3); }
+.fc3-card-price { font-size: 12px; color: var(--fc3-orange); font-weight: 700; margin-top: auto; }
+
+.fc3-card-image { padding: 0; text-align: left; }
+.fc3-card-img {
+  aspect-ratio: 1; background: #0a0a0a;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px; color: var(--fc3-violet);
+  border-radius: var(--fc3-radius-lg) var(--fc3-radius-lg) 0 0;
+  position: relative; overflow: hidden;
+}
+.fc3-card-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.8)); }
+.fc3-card-img img { width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 1; }
+.fc3-card-body { padding: 14px; display: flex; flex-direction: column; gap: 6px; }
+.fc3-card-body .fc3-card-name { font-size: 13.5px; text-align: left; }
+.fc3-card-body .fc3-card-price { font-size: 14px; color: var(--fc3-orange); margin-top: 0; }
+
+.fc3-region-badge {
+  position: absolute; top: 10px; right: 10px; z-index: 2;
+  font-size: 10px; font-weight: 800;
+  padding: 4px 9px; border-radius: 6px;
+  backdrop-filter: blur(6px);
+}
+.fc3-region-badge.latam { background: rgba(16,196,106,0.9); color: #fff; }
+.fc3-region-badge.global { background: rgba(47,123,255,0.9); color: #fff; }
+.fc3-region-badge.ar { background: rgba(255,106,0,0.9); color: #fff; }
+.fc3-region-badge.other { background: rgba(255,215,0,0.9); color: #1a1a1a; }
+
+.fc3-detail { display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start; }
+@media (max-width: 900px) { .fc3-detail { grid-template-columns: 1fr; } }
+
+.fc3-gameinfo { background: #16161a; border: 1px solid var(--fc3-border); border-radius: var(--fc3-radius-lg); padding: 20px; position: sticky; top: 20px; }
+.fc3-gameimg {
+  aspect-ratio: 1; background: #fafafa; border-radius: var(--fc3-radius);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 60px; color: var(--fc3-violet); margin-bottom: 16px; overflow: hidden;
+}
+.fc3-gameimg img { width: 100%; height: 100%; object-fit: cover; }
+.fc3-gameinfo h2 { font-size: 20px; font-weight: 800; margin-bottom: 8px; color: #fff; }
+.fc3-gameregion { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--fc3-violet); margin-bottom: 14px; }
+.fc3-gameregion.latam { color: var(--fc3-green); }
+.fc3-gameregion.global { color: var(--fc3-blue); }
+.fc3-gameregion.ar { color: var(--fc3-orange); }
+.fc3-gameregion.other { color: var(--fc3-yellow); }
+.fc3-gamenote { padding: 14px; background: rgba(255,215,0,0.06); border: 1px solid rgba(255,215,0,0.2); border-radius: 10px; font-size: 12px; color: var(--fc3-text-2); line-height: 1.5; }
+.fc3-gamenote strong { color: var(--fc3-yellow); display: block; margin-bottom: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.fc3-prod-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 0 16px; border-bottom: 1px solid var(--fc3-border); margin-bottom: 16px; }
+.fc3-prod-header h3 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--fc3-violet); }
+.fc3-prod-header .fc3-prod-count { font-size: 13px; color: var(--fc3-text-3); }
+
+.fc3-prod-list { display: flex; flex-direction: column; gap: 8px; }
+.fc3-prod-item { background: #16161a; border: 1px solid var(--fc3-border); border-radius: var(--fc3-radius); padding: 16px 20px; display: flex; align-items: center; gap: 16px; transition: all 0.25s ease; }
+.fc3-prod-item:hover { border-color: rgba(139,92,246,0.3); }
+.fc3-prod-name { flex: 1; font-size: 14px; font-weight: 600; color: #fff; }
+.fc3-prod-usd { font-size: 12px; color: var(--fc3-text-3); min-width: 60px; text-align: right; }
+.fc3-prod-ars { font-size: 16px; font-weight: 800; color: var(--fc3-orange); min-width: 110px; text-align: right; }
+.fc3-prod-actions { display: flex; gap: 8px; }
+.fc3-toggle {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: rgba(255,255,255,0.05); border: none; color: var(--fc3-text-3);
+  cursor: pointer; transition: all 0.25s ease;
+  display: flex; align-items: center; justify-content: center;
+}
+.fc3-toggle:hover { background: var(--fc3-violet); color: #fff; }
+.fc3-toggle.on { background: rgba(16,196,106,0.2); color: var(--fc3-green); }
+.fc3-toggle.on:hover { background: var(--fc3-green); color: #fff; }
+
+.fc3-actions { display: flex; gap: 12px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--fc3-border); }

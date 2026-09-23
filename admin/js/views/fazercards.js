@@ -440,122 +440,241 @@ function effectiveMargin(p) {
 
 const COMPATIBLE_REGIONS = ['AR', 'LATAM', 'GLOBAL'];
 function isCompatibleRegion(region) { return COMPATIBLE_REGIONS.includes(String(region || '').toUpperCase()); }
-
-function filteredProducts() {
-  return products.filter(p => {
-    if (activeCategoryFilter !== 'all' && p.category !== activeCategoryFilter) return false;
-    const region = String(p.fazercards_region || p.region || 'GLOBAL').toUpperCase();
-    if (activeRegionFilter === 'compatible' && !isCompatibleRegion(region)) return false;
-    else if (activeRegionFilter === 'other' && isCompatibleRegion(region)) return false;
-    else if (!['all', 'compatible', 'other'].includes(activeRegionFilter) && region !== activeRegionFilter) return false;
-    if (searchTerm && !(`${p.name} ${p.subcategory || ''}`.toLowerCase().includes(searchTerm.toLowerCase()))) return false;
-    return true;
-  });
+function regionClass(region) {
+  region = String(region || '').toUpperCase();
+  if (region === 'LATAM') return 'latam';
+  if (region === 'GLOBAL') return 'global';
+  if (region === 'AR') return 'ar';
+  return 'other';
+}
+function regionLabel(region) {
+  region = String(region || '').toUpperCase();
+  if (region === 'LATAM') return '🇦🇷 LATAM';
+  if (region === 'GLOBAL') return '🌎 GLOBAL';
+  if (region === 'AR') return '🇦🇷 AR';
+  return '⚠️ ' + region;
 }
 
-// El shell (buscador + pills + select de region) se arma UNA sola vez; escribir en el
-// buscador solo vuelve a pintar #fcCatalogGrid. Si se reconstruye el <input> en cada
-// tecla, el cursor salta al principio y el texto queda desordenado.
+// Solo estas 3 categorias existen realmente via la API de FazerCards que tenemos
+// documentada (giftcards/topups/gamekeys). La demo aprobada mostraba mas rubros
+// (Steam, Telegram, servicios manuales) que no tienen endpoint conocido todavia.
+const CATEGORY_META = {
+  giftcard: { label: 'Tarjetas de regalo', icon: 'fa-credit-card' },
+  topup: { label: 'Recarga de servicio', icon: 'fa-bolt' },
+  gamekey: { label: 'Claves de juego', icon: 'fa-key' },
+};
+
+let catalogLevel = 1;      // 1 = categorias, 2 = juegos de una categoria, 3 = productos de un juego
+let catalogCategory = null;
+let catalogSubcategory = null;
+
+/* ---------- catálogo: agrupado en memoria (3 niveles) ---------- */
+function catalogLevel1Groups() {
+  const map = {};
+  products.forEach(p => {
+    if (!map[p.category]) map[p.category] = { category: p.category, count: 0, subcats: new Set(), minPrice: Infinity };
+    const g = map[p.category];
+    g.count++;
+    if (p.subcategory) g.subcats.add(p.subcategory);
+    const price = Number(p.price_ars) || 0;
+    if (price > 0 && price < g.minPrice) g.minPrice = price;
+  });
+  return Object.values(map);
+}
+
+function catalogLevel2Groups(category) {
+  const map = {};
+  products.filter(p => p.category === category).forEach(p => {
+    const key = p.subcategory || '—';
+    if (!map[key]) map[key] = { subcategory: key, region: p.fazercards_region || p.region || 'GLOBAL', count: 0, minPrice: Infinity, image: null };
+    const g = map[key];
+    g.count++;
+    const price = Number(p.price_ars) || 0;
+    if (price > 0 && price < g.minPrice) g.minPrice = price;
+    if (!g.image && p.image_url) g.image = p.image_url;
+  });
+  return Object.values(map).sort((a, b) => a.subcategory.localeCompare(b.subcategory));
+}
+
+function catalogLevel3Products(category, subcategory) {
+  return products.filter(p => p.category === category && p.subcategory === subcategory)
+    .sort((a, b) => Number(a.price_usd) - Number(b.price_usd));
+}
+
+/* ---------- catálogo: render (3 niveles, calcado a la demo aprobada) ---------- */
 function renderCatalogSection() {
   const box = document.getElementById('fcCatalogSection');
   box.innerHTML = `
     <div class="cat-section-head" style="--cat-color:var(--admin-orange);"><i class="fas fa-box-open"></i><span>Catálogo FazerCards</span>
-      <button class="btn-primary" style="margin-left:auto;" id="fcSyncBtn" onclick="window.__syncCatalog()"><i class="fas fa-rotate"></i> Sincronizar catálogo</button>
+      <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn-secondary" id="fcSyncGiftcards" onclick="window.__syncCatalog('giftcards')"><i class="fas fa-rotate"></i> Sincronizar Gift Cards</button>
+        <button class="btn-secondary" id="fcSyncTopups" onclick="window.__syncCatalog('topups')"><i class="fas fa-rotate"></i> Sincronizar Top-Ups</button>
+        <button class="btn-secondary" id="fcSyncGamekeys" onclick="window.__syncCatalog('gamekeys')"><i class="fas fa-rotate"></i> Sincronizar Game Keys</button>
+      </div>
     </div>
-    <div class="fc-card">
-      <div class="products-toolbar">
-        <div class="toolbar-filters">
-          <div class="search-box"><i class="fas fa-search"></i><input type="text" id="fcSearch" placeholder="Buscar producto..." value="${escAttr(searchTerm)}"></div>
-          <button type="button" class="section-pill ${activeCategoryFilter === 'all' ? 'on' : ''}" data-cat="all">Todos</button>
-          <button type="button" class="section-pill ${activeCategoryFilter === 'giftcard' ? 'on' : ''}" data-cat="giftcard">Gift Cards</button>
-          <button type="button" class="section-pill ${activeCategoryFilter === 'topup' ? 'on' : ''}" data-cat="topup">Recargas</button>
-          <button type="button" class="section-pill ${activeCategoryFilter === 'gamekey' ? 'on' : ''}" data-cat="gamekey">Game Keys</button>
-          <select id="fcRegionFilter" class="filter-select">
-            <option value="all" ${activeRegionFilter === 'all' ? 'selected' : ''}>Todos</option>
-            <option value="compatible" ${activeRegionFilter === 'compatible' ? 'selected' : ''}>Compatibles con Argentina</option>
-            <option value="LATAM" ${activeRegionFilter === 'LATAM' ? 'selected' : ''}>Solo LATAM</option>
-            <option value="GLOBAL" ${activeRegionFilter === 'GLOBAL' ? 'selected' : ''}>Solo Global</option>
-            <option value="AR" ${activeRegionFilter === 'AR' ? 'selected' : ''}>Solo Argentina</option>
-            <option value="other" ${activeRegionFilter === 'other' ? 'selected' : ''}>Otras regiones (CEI, MENA, RU, etc.)</option>
-          </select>
-        </div>
-      </div>
-      <div class="products-count" id="fcCatalogCount"></div>
-      <div class="admin-products-grid" id="fcCatalogGrid"></div>
+    <div class="fc-card fc3">
+      <div class="fc3-breadcrumb" id="fc3Breadcrumb"></div>
+      <div id="fc3Content"></div>
     </div>`;
-
-  document.getElementById('fcSearch').addEventListener('input', (e) => { searchTerm = e.target.value; renderCatalogGrid(); });
-  document.getElementById('fcRegionFilter').addEventListener('change', (e) => { activeRegionFilter = e.target.value; renderCatalogGrid(); });
-  document.querySelectorAll('#fcCatalogSection .section-pill').forEach(btn => {
-    btn.addEventListener('click', () => {
-      activeCategoryFilter = btn.dataset.cat;
-      document.querySelectorAll('#fcCatalogSection .section-pill').forEach(b => b.classList.toggle('on', b === btn));
-      renderCatalogGrid();
-    });
-  });
-
-  renderCatalogGrid();
+  renderCatalogBreadcrumb();
+  renderCatalogContent();
 }
 
-function renderCatalogGrid() {
-  const grid = document.getElementById('fcCatalogGrid');
-  const list = filteredProducts();
-  document.getElementById('fcCatalogCount').textContent = list.length + ' producto(s)';
-  grid.innerHTML = list.length ? list.map(renderProductCard).join('') : emptyState({ icon: 'fas fa-box-open', title: 'Sin productos', text: 'Corré "Sincronizar catálogo" para traer productos de FazerCards.' });
+function renderCatalogBreadcrumb() {
+  const el = document.getElementById('fc3Breadcrumb');
+  if (!el) return;
+  let html = '<a onclick="window.__catalogGoLevel1()"><i class="fas fa-home"></i> Catálogo</a>';
+  if (catalogLevel >= 2) {
+    const meta = CATEGORY_META[catalogCategory] || { label: catalogCategory };
+    html += ' <span class="fc3-sep">/</span> ';
+    html += catalogLevel === 2
+      ? `<span class="fc3-current">${escapeHtml(meta.label)}</span>`
+      : `<a onclick="window.__catalogGoLevel2('${escAttr(catalogCategory)}')">${escapeHtml(meta.label)}</a>`;
+  }
+  if (catalogLevel === 3) {
+    html += ' <span class="fc3-sep">/</span> ' + `<span class="fc3-current">${escapeHtml(catalogSubcategory)}</span>`;
+  }
+  el.innerHTML = html;
 }
 
-function renderProductCard(p) {
-  const margin = effectiveMargin(p);
-  const marginSource = p.custom_margin != null ? 'propio' : ((settings.category_margins || {})[p.subcategory] != null || (settings.category_margins || {})[p.category] != null ? 'categoría' : 'defecto');
-  const priceArs = Number(p.price_ars) || 0;
-  const costArs = Number(p.price_usd) * Number(settings.exchange_rate || 0);
-  const profit = priceArs - costArs;
-  const region = String(p.fazercards_region || p.region || 'GLOBAL').toUpperCase();
+function renderCatalogContent() {
+  const el = document.getElementById('fc3Content');
+  if (!el) return;
+  if (catalogLevel === 1) el.innerHTML = renderLevel1Html();
+  else if (catalogLevel === 2) el.innerHTML = renderLevel2Html(catalogCategory);
+  else el.innerHTML = renderLevel3Html(catalogCategory, catalogSubcategory);
+}
+
+function renderLevel1Html() {
+  const groups = catalogLevel1Groups();
+  if (!groups.length) return emptyState({ icon: 'fas fa-box-open', title: 'Sin productos', text: 'Corré alguna de las sincronizaciones para traer el catálogo de FazerCards.' });
+  return '<div class="fc3-grid">' + groups.map(g => {
+    const meta = CATEGORY_META[g.category] || { label: g.category, icon: 'fa-box' };
+    const min = g.minPrice === Infinity ? null : g.minPrice;
+    return `
+      <div class="fc3-card" onclick="window.__catalogGoLevel2('${escAttr(g.category)}')">
+        <div class="fc3-card-icon"><i class="fas ${meta.icon}"></i></div>
+        <div class="fc3-card-name">${escapeHtml(meta.label)}</div>
+        <div class="fc3-card-meta">${g.subcats.size} juego${g.subcats.size === 1 ? '' : 's'} · ${g.count} producto${g.count === 1 ? '' : 's'}</div>
+        ${min != null ? `<div class="fc3-card-price">Desde $${money(min)} ARS</div>` : ''}
+      </div>`;
+  }).join('') + '</div>';
+}
+
+function renderLevel2Html(category) {
+  const groups = catalogLevel2Groups(category);
+  if (!groups.length) return emptyState({ icon: 'fas fa-box-open', title: 'Sin juegos', text: 'No hay productos sincronizados en esta categoría.' });
+  return '<div class="fc3-grid">' + groups.map(g => {
+    const region = String(g.region || 'GLOBAL').toUpperCase();
+    const min = g.minPrice === Infinity ? null : g.minPrice;
+    return `
+      <div class="fc3-card fc3-card-image" onclick="window.__catalogGoLevel3('${escAttr(category)}','${escAttr(g.subcategory)}')">
+        <div class="fc3-card-img">
+          <span class="fc3-region-badge ${regionClass(region)}">${regionLabel(region)}</span>
+          ${g.image ? `<img src="${escAttr(g.image)}" alt="">` : '<i class="fas fa-gamepad"></i>'}
+        </div>
+        <div class="fc3-card-body">
+          <div class="fc3-card-name">${escapeHtml(g.subcategory)}</div>
+          <div class="fc3-card-price">${g.count} producto${g.count === 1 ? '' : 's'}${min != null ? ' · Desde $' + money(min) + ' ARS' : ''}</div>
+        </div>
+      </div>`;
+  }).join('') + '</div>';
+}
+
+function renderLevel3Html(category, subcategory) {
+  const list = catalogLevel3Products(category, subcategory);
+  const first = list[0] || {};
+  const region = String(first.fazercards_region || first.region || 'GLOBAL').toUpperCase();
   const compatible = isCompatibleRegion(region);
-  const regionBadge = `<span class="fc-region-badge ${compatible ? 'compat' : 'other'}"><i class="fas ${compatible ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i> ${escapeHtml(region)}</span>`;
-
+  const meta = CATEGORY_META[category] || { label: category };
   return `
-    <div class="admin-product-card" style="--cat-color:#8b5cf6">
-      <div class="ap-thumb">${p.image_url ? `<img src="${escAttr(p.image_url)}" alt="" style="width:100%;height:100%;object-fit:cover;">` : '<i class="fas fa-gamepad" style="font-size:28px;color:#8b5cf6;"></i>'}</div>
-      <div class="ap-body">
-        <div class="ap-top">
-          <span class="ap-cat">${escapeHtml(CATEGORY_LABELS[p.category] || p.category)}${p.subcategory ? ' · ' + escapeHtml(p.subcategory) : ''}</span>
-          ${p.is_active ? '<span class="ap-state st-active">Activado</span>' : '<span class="ap-state st-hidden">Desactivado</span>'}
+    <div class="fc3-detail">
+      <div class="fc3-gameinfo">
+        <div class="fc3-gameimg">${first.image_url ? `<img src="${escAttr(first.image_url)}" alt="">` : '<i class="fas fa-gamepad"></i>'}</div>
+        <h2>${escapeHtml(subcategory)}</h2>
+        <div class="fc3-gameregion ${regionClass(region)}">${regionLabel(region)} · ${compatible ? 'Compatible con Argentina' : 'Verificá antes de comprar'}</div>
+        <div class="fc3-gamenote">
+          <strong><i class="fas fa-info-circle"></i> Nota</strong>
+          ${compatible ? 'Región compatible con Argentina.' : 'Esta región puede no funcionar en cuentas argentinas.'} Categoría: ${escapeHtml(meta.label)}.
         </div>
-        <div class="ap-top" style="margin-top:-6px;">${regionBadge}</div>
-        <h4 class="ap-name">${escapeHtml(p.name)}</h4>
-        <div class="ap-meta" style="color:#777;font-size:11px;">Costo mayorista (referencia interna): USD ${money(p.price_usd)} · Margen (${marginSource}): +${margin}%${p.promo_discount ? ' · Promo: ' + p.promo_discount + '%' : ''}</div>
-        <div class="ap-meta" style="color:var(--admin-orange);font-weight:800;font-size:18px;">$${money(priceArs)} ARS</div>
-        <div class="ap-meta" style="color:#10c46a;">Ganancia estimada: $${money(profit)} ARS</div>
       </div>
-      <div class="ap-actions">
-        <button title="${p.is_active ? 'Desactivar' : 'Activar'}" onclick="window.__toggleProductActive('${p.id}')"><i class="fas ${p.is_active ? 'fa-toggle-on' : 'fa-toggle-off'}"></i></button>
-        <button title="Destacar" onclick="window.__toggleProductFeatured('${p.id}')"><i class="fas fa-star" style="color:${p.is_featured ? '#FFD700' : '#555'}"></i></button>
-        <button title="Editar" onclick="openFcProductModal('${p.id}')"><i class="fas fa-pen"></i></button>
+      <div>
+        <div class="fc3-prod-header">
+          <h3>Productos</h3>
+          <span class="fc3-prod-count">${list.length} producto${list.length === 1 ? '' : 's'}</span>
+        </div>
+        <div class="fc3-prod-list">${list.map(renderCatalogProductRow).join('')}</div>
+        <div class="fc3-actions">
+          <button class="btn-primary" onclick="window.__catalogActivateAll('${escAttr(category)}','${escAttr(subcategory)}', true)"><i class="fas fa-check"></i> Activar todos</button>
+          <button class="btn-secondary" onclick="window.__catalogActivateAll('${escAttr(category)}','${escAttr(subcategory)}', false)"><i class="fas fa-times"></i> Desactivar todos</button>
+        </div>
       </div>
     </div>`;
 }
 
-window.__syncCatalog = async function () {
-  const btn = document.getElementById('fcSyncBtn');
-  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sincronizando...';
-  try {
-    const { data, error } = await supabase.functions.invoke('fazercards-sync');
-    if (error) throw error;
-    toast(`Sincronizado: ${data.totals.upserted} producto(s) (AR + LATAM + Global). Precios recalculados: ${data.recalculated ?? '—'}`, 'ok');
-    if (data.totals.errors) toast(`${data.totals.errors} categoría(s) tuvieron error al sincronizar — revisá la consola`, 'err');
-    console.log('fazercards-sync resultado completo:', data);
-    await loadAll();
-  } catch (e) { toast('Error al sincronizar: ' + e.message, 'err'); }
-  finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-rotate"></i> Sincronizar catálogo'; }
+function renderCatalogProductRow(p) {
+  const priceArs = Number(p.price_ars) || 0;
+  return `
+    <div class="fc3-prod-item">
+      <span class="fc3-prod-name">${escapeHtml(p.name)}</span>
+      <span class="fc3-prod-usd">USD ${money(p.price_usd)}</span>
+      <span class="fc3-prod-ars">$${money(priceArs)} ARS</span>
+      <div class="fc3-prod-actions">
+        <button class="fc3-toggle ${p.is_active ? 'on' : ''}" title="${p.is_active ? 'Desactivar' : 'Activar'}" onclick="window.__toggleProductActive('${p.id}')"><i class="fas ${p.is_active ? 'fa-check' : 'fa-eye-slash'}"></i></button>
+        <button class="fc3-toggle" title="Editar margen/promo" onclick="openFcProductModal('${p.id}')"><i class="fas fa-pen"></i></button>
+      </div>
+    </div>`;
+}
+
+window.__catalogGoLevel1 = function () {
+  catalogLevel = 1; catalogCategory = null; catalogSubcategory = null;
+  renderCatalogBreadcrumb(); renderCatalogContent();
+};
+window.__catalogGoLevel2 = function (category) {
+  catalogLevel = 2; catalogCategory = category; catalogSubcategory = null;
+  renderCatalogBreadcrumb(); renderCatalogContent();
+};
+window.__catalogGoLevel3 = function (category, subcategory) {
+  catalogLevel = 3; catalogCategory = category; catalogSubcategory = subcategory;
+  renderCatalogBreadcrumb(); renderCatalogContent();
 };
 
+window.__catalogActivateAll = async function (category, subcategory, active) {
+  try {
+    const { error } = await supabase.from('fazercards_products')
+      .update({ is_active: active, updated_at: new Date().toISOString() })
+      .eq('category', category).eq('subcategory', subcategory);
+    if (error) throw error;
+    toast(active ? 'Productos activados' : 'Productos desactivados', 'ok');
+    await loadProducts();
+    renderCatalogContent();
+  } catch (e) { toast('Error: ' + e.message, 'err'); }
+};
+
+window.__syncCatalog = async function (source) {
+  const btnId = source === 'giftcards' ? 'fcSyncGiftcards' : source === 'topups' ? 'fcSyncTopups' : 'fcSyncGamekeys';
+  const btn = document.getElementById(btnId);
+  const original = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sincronizando...'; }
+  try {
+    const { data, error } = await supabase.functions.invoke('fazercards-sync', { body: { source } });
+    if (error) throw error;
+    toast(`Sincronizado (${source}): ${data.totals.upserted} producto(s). Precios recalculados: ${data.recalculated ?? '—'}`, 'ok');
+    if (data.totals.errors) toast(`${data.totals.errors} categoría(s) tuvieron error — revisá la consola`, 'err');
+    console.log('fazercards-sync (' + source + ') resultado completo:', data);
+    await loadAll();
+  } catch (e) { toast('Error al sincronizar: ' + e.message, 'err'); }
+  finally { if (btn) { btn.disabled = false; btn.innerHTML = original; } }
+};
+
+// Ojo: usan renderCatalogContent(), no renderCatalogSection() — este ultimo
+// reconstruye el shell entero y te tira de vuelta al Nivel 1 del catalogo.
 window.__toggleProductActive = async function (id) {
   const p = products.find(x => x.id === id); if (!p) return;
   try {
     const { error } = await supabase.from('fazercards_products').update({ is_active: !p.is_active, updated_at: new Date().toISOString() }).eq('id', id);
     if (error) throw error;
-    await loadProducts(); renderCatalogSection();
+    await loadProducts(); renderCatalogContent();
   } catch (e) { toast('Error: ' + e.message, 'err'); }
 };
 
@@ -564,7 +683,7 @@ window.__toggleProductFeatured = async function (id) {
   try {
     const { error } = await supabase.from('fazercards_products').update({ is_featured: !p.is_featured, updated_at: new Date().toISOString() }).eq('id', id);
     if (error) throw error;
-    await loadProducts(); renderCatalogSection();
+    await loadProducts(); renderCatalogContent();
   } catch (e) { toast('Error: ' + e.message, 'err'); }
 };
 
@@ -600,7 +719,7 @@ async function saveProductAdjustment(e) {
     await recalcPrices();
     closeFcProductModal();
     await loadProducts();
-    renderCatalogSection();
+    renderCatalogContent();
   } catch (err) { toast('Error: ' + err.message, 'err'); }
   finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Guardar'; }
 }

@@ -1,78 +1,35 @@
 // ========================================
-// PÁGINA GAMING (pública) — PARTE 12
-// Vende: USB PS2 (físico), Gift Cards / Top-Ups / Suscripciones (digital).
-// Los productos ya existen en la tabla `products` (gaming_type IS NOT NULL).
-//
-// Nota sobre precios: a diferencia de tienda.html, acá NO se oculta el precio
-// a visitantes sin sesión. `anon` no tiene SELECT sobre `products` (los
-// invitados leen `products_public`, que no trae columnas de gaming ni precio),
-// así que se agregó la vista `gaming_products_public` con permiso de lectura
-// para anon/authenticated, y se consulta esa vista para todos por igual.
-//
-// Nota sobre digital: por ahora la entrega es manual por WhatsApp. El campo
-// `delivery_code` ya existe en la tabla para cuando se sumen APIs de
-// distribuidores (FazerCards, etc.) que entreguen códigos automáticamente.
+// PÁGINA GAMING (pública) — PARTE 12 + catálogo FazerCards de 3 niveles
+// Sección "USB y productos propios": products/gaming_products_public (Parte 12).
+// Sección "Catálogo Gaming": fazercards_products (solo is_active=true),
+// navegación Categoría > Juego > Producto, calcada a la demo aprobada del
+// panel admin. Entrega digital: por ahora manual por WhatsApp (Fase 4).
 // ========================================
 (function () {
   'use strict';
 
+  /* =========================================================
+     PRODUCTOS PROPIOS (USB PS2, etc.) — grilla plana sin cambios
+     ========================================================= */
   var allProducts = [];
-  var activeTipo = 'todos';       // todos | usb | giftcard | topup | suscripcion | gamekey
+  var activeTipo = 'todos';
   var activePlatform = 'todas';
-  var activeRegionMode = 'compatible'; // 'compatible' | 'all' — solo aplica a productos de FazerCards
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function money(n) { n = Number(n) || 0; return n % 1 === 0 ? n.toLocaleString('es-AR') : n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
   function waNumber() { return (window.CMS_CONFIG && window.CMS_CONFIG.whatsapp ? String(window.CMS_CONFIG.whatsapp).replace(/[^0-9]/g, '') : '5493782437674'); }
 
-  var COMPATIBLE_REGIONS = ['AR', 'LATAM', 'GLOBAL'];
-  function isCompatibleRegion(region) { return !region || COMPATIBLE_REGIONS.indexOf(String(region).toUpperCase()) !== -1; }
-
-  /* ---------- carga de productos ---------- */
-  // Une el catalogo manual (products/gaming_products_public, Parte 12) con el
-  // catalogo sincronizado de FazerCards (fazercards_products, solo activos).
-  function normalizeFazercards(p) {
-    return {
-      id: 'fzc_' + p.id,
-      name: p.name,
-      price: Number(p.price_ars) || 0,
-      old_price: null,
-      platform: p.platform || p.subcategory || null,
-      gaming_type: p.category, // 'giftcard' | 'topup' | 'gamekey'
-      is_digital: true,
-      image_url: p.image_url,
-      games_list: null,
-      duration: null,
-      stock: null,
-      region: String(p.fazercards_region || p.region || 'GLOBAL').toUpperCase(),
-      _fzc: true,
-    };
-  }
-
   function loadProducts() {
     if (typeof supabase === 'undefined' || !supabase) return Promise.resolve([]);
-    var manual = supabase.from('gaming_products_public').select('*')
+    return supabase.from('gaming_products_public').select('*')
       .order('created_at', { ascending: false })
       .then(function (res) {
         if (res.error) { console.error(res.error); return []; }
         return res.data || [];
       })
       .catch(function (e) { console.error(e); return []; });
-
-    var fromFazercards = supabase.from('fazercards_products').select('*').eq('is_active', true)
-      .order('created_at', { ascending: false })
-      .then(function (res) {
-        if (res.error) { console.error(res.error); return []; }
-        return (res.data || []).map(normalizeFazercards);
-      })
-      .catch(function (e) { console.error(e); return []; });
-
-    return Promise.all([manual, fromFazercards]).then(function (results) {
-      return results[0].concat(results[1]);
-    });
   }
 
-  /* ---------- filtros ---------- */
   function platformsAvailable() {
     var set = {};
     allProducts.forEach(function (p) { if (p.platform) set[p.platform] = true; });
@@ -83,32 +40,9 @@
     return allProducts.filter(function (p) {
       if (activeTipo !== 'todos' && p.gaming_type !== activeTipo) return false;
       if (activePlatform !== 'todas' && p.platform !== activePlatform) return false;
-      if (p._fzc && activeRegionMode === 'compatible' && !isCompatibleRegion(p.region)) return false;
       return true;
     });
   }
-
-  function updateRegionBar() {
-    var bar = document.querySelector('.gaming-region-bar');
-    var label = document.getElementById('gamingRegionLabel');
-    var btn = document.getElementById('gamingRegionToggle');
-    if (!bar || !label || !btn) return;
-    if (activeRegionMode === 'compatible') {
-      bar.classList.remove('showing-all');
-      label.innerHTML = '<i class="fas fa-circle-check"></i> Mostrando: Compatibles con Argentina';
-      btn.textContent = 'Ver todas las regiones';
-    } else {
-      bar.classList.add('showing-all');
-      label.innerHTML = '<i class="fas fa-globe"></i> Mostrando: Todas las regiones';
-      btn.textContent = 'Ver solo compatibles con Argentina';
-    }
-  }
-
-  window.__toggleRegionFilter = function () {
-    activeRegionMode = activeRegionMode === 'compatible' ? 'all' : 'compatible';
-    updateRegionBar();
-    renderGrid();
-  };
 
   function renderPlatformPills() {
     var box = document.getElementById('gamingPlatformPills');
@@ -128,7 +62,6 @@
     });
   }
 
-  /* ---------- render de la grilla ---------- */
   function renderGrid() {
     var grid = document.getElementById('gamingGrid');
     if (!grid) return;
@@ -170,16 +103,6 @@
 
       var durationHtml = p.duration ? '<p style="color:#888;font-size:12px;margin-bottom:10px;"><i class="fas fa-clock"></i> ' + esc(p.duration) + '</p>' : '';
 
-      var regionHtml = '';
-      if (p._fzc) {
-        var compat = isCompatibleRegion(p.region);
-        regionHtml =
-          '<span class="gaming-region-badge ' + (compat ? 'compat' : 'other') + '"><i class="fas ' + (compat ? 'fa-circle-check' : 'fa-triangle-exclamation') + '"></i> ' + esc(p.region) + '</span>' +
-          '<p class="gaming-region-note ' + (compat ? 'compat' : 'other') + '">' +
-            (compat ? '✅ Compatible con Argentina' : '⚠️ Solo funciona en la región ' + esc(p.region) + '. Verificá antes de comprar') +
-          '</p>';
-      }
-
       var stockHtml = !isDigital
         ? (sinStock
             ? '<div style="color:#FF4444;font-size:12px;font-weight:700;margin-bottom:10px;">SIN STOCK</div>'
@@ -197,7 +120,7 @@
           platBadge + tipoBadge + imageHtml +
           '<div class="product-info">' +
             '<h3 class="product-title">' + esc(p.name) + '</h3>' +
-            regionHtml + gamesListHtml + durationHtml +
+            gamesListHtml + durationHtml +
             '<div class="product-price"><span class="price-current">$' + money(p.price) + '</span>' + oldPriceHtml + '</div>' +
             stockHtml +
             '<div class="product-actions">' + actionBtn + '</div>' +
@@ -213,7 +136,6 @@
     if (el) el.textContent = n + (n === 1 ? ' producto encontrado' : ' productos encontrados');
   }
 
-  /* ---------- acciones de compra ---------- */
   window.gamingBuyWhatsapp = function (id) {
     var p = allProducts.find(function (x) { return String(x.id) === String(id); });
     if (!p) return;
@@ -295,11 +217,240 @@
     window.location.href = 'checkout.html';
   };
 
-  /* ---------- búsqueda del header (fallback a tienda.html) ---------- */
   window.performSearch = function () {
     var input = document.getElementById('headerSearchInput');
     var q = input ? input.value.trim() : '';
     window.location.href = 'tienda.html' + (q ? '?q=' + encodeURIComponent(q) : '');
+  };
+
+  /* =========================================================
+     CATÁLOGO FAZERCARDS — navegación de 3 niveles
+     Categoría > Juego > Producto (calcado a la demo aprobada).
+     Solo productos con is_active=true (activados desde el panel admin).
+     ========================================================= */
+  var fzcProducts = [];
+  var catalogLevel = 1;
+  var catalogCategory = null;
+  var catalogSubcategory = null;
+  var regionMode = 'compatible'; // 'compatible' | 'all'
+
+  var COMPATIBLE_REGIONS = ['AR', 'LATAM', 'GLOBAL'];
+  function isCompatibleRegion(region) { return !region || COMPATIBLE_REGIONS.indexOf(String(region).toUpperCase()) !== -1; }
+  function regionClass(region) {
+    region = String(region || '').toUpperCase();
+    if (region === 'LATAM') return 'latam';
+    if (region === 'GLOBAL') return 'global';
+    if (region === 'AR') return 'ar';
+    return 'other';
+  }
+  function regionLabel(region) {
+    region = String(region || '').toUpperCase();
+    if (region === 'LATAM') return '🇦🇷 LATAM';
+    if (region === 'GLOBAL') return '🌎 GLOBAL';
+    if (region === 'AR') return '🇦🇷 AR';
+    return '⚠️ ' + region;
+  }
+
+  var CATEGORY_META = {
+    giftcard: { label: 'Tarjetas de regalo', icon: 'fa-credit-card' },
+    topup: { label: 'Recarga de servicio', icon: 'fa-bolt' },
+    gamekey: { label: 'Claves de juego', icon: 'fa-key' },
+  };
+
+  function loadFazercardsProducts() {
+    if (typeof supabase === 'undefined' || !supabase) return Promise.resolve([]);
+    return supabase.from('fazercards_products').select('*').eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .then(function (res) {
+        if (res.error) { console.error(res.error); return []; }
+        return res.data || [];
+      })
+      .catch(function (e) { console.error(e); return []; });
+  }
+
+  function fzcVisible() {
+    if (regionMode === 'all') return fzcProducts;
+    return fzcProducts.filter(function (p) { return isCompatibleRegion(p.fazercards_region || p.region); });
+  }
+
+  function catalogLevel1Groups() {
+    var map = {};
+    fzcVisible().forEach(function (p) {
+      if (!map[p.category]) map[p.category] = { category: p.category, count: 0, subcats: {}, minPrice: Infinity };
+      var g = map[p.category];
+      g.count++;
+      if (p.subcategory) g.subcats[p.subcategory] = true;
+      var price = Number(p.price_ars) || 0;
+      if (price > 0 && price < g.minPrice) g.minPrice = price;
+    });
+    return Object.keys(map).map(function (k) { return map[k]; });
+  }
+
+  function catalogLevel2Groups(category) {
+    var map = {};
+    fzcVisible().filter(function (p) { return p.category === category; }).forEach(function (p) {
+      var key = p.subcategory || '—';
+      if (!map[key]) map[key] = { subcategory: key, region: p.fazercards_region || p.region || 'GLOBAL', count: 0, minPrice: Infinity, image: null };
+      var g = map[key];
+      g.count++;
+      var price = Number(p.price_ars) || 0;
+      if (price > 0 && price < g.minPrice) g.minPrice = price;
+      if (!g.image && p.image_url) g.image = p.image_url;
+    });
+    return Object.keys(map).map(function (k) { return map[k]; }).sort(function (a, b) { return a.subcategory.localeCompare(b.subcategory); });
+  }
+
+  function catalogLevel3Products(category, subcategory) {
+    return fzcProducts.filter(function (p) { return p.category === category && p.subcategory === subcategory; })
+      .sort(function (a, b) { return Number(a.price_usd) - Number(b.price_usd); });
+  }
+
+  function renderRegionBar() {
+    var label = document.getElementById('gamingRegionLabel');
+    var btn = document.getElementById('gamingRegionToggle');
+    if (!label || !btn) return;
+    if (regionMode === 'compatible') {
+      label.innerHTML = '<i class="fas fa-circle-check"></i> Mostrando: Compatibles con Argentina';
+      btn.textContent = 'Ver todas las regiones';
+    } else {
+      label.innerHTML = '<i class="fas fa-globe"></i> Mostrando: Todas las regiones';
+      btn.textContent = 'Ver solo compatibles con Argentina';
+    }
+  }
+
+  window.__toggleRegionFilter = function () {
+    regionMode = regionMode === 'compatible' ? 'all' : 'compatible';
+    renderRegionBar();
+    window.__catalogGoLevel1();
+  };
+
+  function renderCatalogBreadcrumb() {
+    var el = document.getElementById('gc3Breadcrumb');
+    if (!el) return;
+    var html = '<a onclick="window.__catalogGoLevel1()"><i class="fas fa-home"></i> Catálogo</a>';
+    if (catalogLevel >= 2) {
+      var meta = CATEGORY_META[catalogCategory] || { label: catalogCategory };
+      html += ' <span class="gc3-sep">/</span> ';
+      html += catalogLevel === 2
+        ? '<span class="gc3-current">' + esc(meta.label) + '</span>'
+        : '<a onclick="window.__catalogGoLevel2(\'' + esc(catalogCategory) + '\')">' + esc(meta.label) + '</a>';
+    }
+    if (catalogLevel === 3) html += ' <span class="gc3-sep">/</span> <span class="gc3-current">' + esc(catalogSubcategory) + '</span>';
+    el.innerHTML = html;
+  }
+
+  function renderCatalogContent() {
+    var el = document.getElementById('gc3Content');
+    if (!el) return;
+    if (catalogLevel === 1) el.innerHTML = renderLevel1Html();
+    else if (catalogLevel === 2) el.innerHTML = renderLevel2Html(catalogCategory);
+    else el.innerHTML = renderLevel3Html(catalogCategory, catalogSubcategory);
+  }
+
+  function renderLevel1Html() {
+    var groups = catalogLevel1Groups();
+    if (!groups.length) return '<p style="text-align:center;padding:40px;color:#888;">Todavía no hay productos activados en esta sección.</p>';
+    return '<div class="gc3-grid">' + groups.map(function (g) {
+      var meta = CATEGORY_META[g.category] || { label: g.category, icon: 'fa-box' };
+      var min = g.minPrice === Infinity ? null : g.minPrice;
+      var subcount = Object.keys(g.subcats).length;
+      return '' +
+        '<div class="gc3-card" onclick="window.__catalogGoLevel2(\'' + esc(g.category) + '\')">' +
+          '<div class="gc3-card-icon"><i class="fas ' + meta.icon + '"></i></div>' +
+          '<div class="gc3-card-name">' + esc(meta.label) + '</div>' +
+          '<div class="gc3-card-meta">' + subcount + (subcount === 1 ? ' juego' : ' juegos') + ' · ' + g.count + (g.count === 1 ? ' producto' : ' productos') + '</div>' +
+          (min != null ? '<div class="gc3-card-price">Desde $' + money(min) + ' ARS</div>' : '') +
+        '</div>';
+    }).join('') + '</div>';
+  }
+
+  function renderLevel2Html(category) {
+    var groups = catalogLevel2Groups(category);
+    if (!groups.length) return '<p style="text-align:center;padding:40px;color:#888;">No hay juegos activados en esta categoría todavía.</p>';
+    return '<div class="gc3-grid">' + groups.map(function (g) {
+      var region = String(g.region || 'GLOBAL').toUpperCase();
+      var min = g.minPrice === Infinity ? null : g.minPrice;
+      return '' +
+        '<div class="gc3-card gc3-card-image" onclick="window.__catalogGoLevel3(\'' + esc(category) + '\',\'' + esc(g.subcategory) + '\')">' +
+          '<div class="gc3-card-img">' +
+            '<span class="gc3-region-badge ' + regionClass(region) + '">' + regionLabel(region) + '</span>' +
+            (g.image ? '<img src="' + esc(g.image) + '" alt="">' : '<i class="fas fa-gamepad"></i>') +
+          '</div>' +
+          '<div class="gc3-card-body">' +
+            '<div class="gc3-card-name">' + esc(g.subcategory) + '</div>' +
+            '<div class="gc3-card-price">' + g.count + (g.count === 1 ? ' producto' : ' productos') + (min != null ? ' · Desde $' + money(min) + ' ARS' : '') + '</div>' +
+          '</div>' +
+        '</div>';
+    }).join('') + '</div>';
+  }
+
+  function renderLevel3Html(category, subcategory) {
+    var list = catalogLevel3Products(category, subcategory);
+    var first = list[0] || {};
+    var region = String(first.fazercards_region || first.region || 'GLOBAL').toUpperCase();
+    var compatible = isCompatibleRegion(region);
+    var meta = CATEGORY_META[category] || { label: category };
+    return '' +
+      '<div class="gc3-detail">' +
+        '<div class="gc3-gameinfo">' +
+          '<div class="gc3-gameimg">' + (first.image_url ? '<img src="' + esc(first.image_url) + '" alt="">' : '<i class="fas fa-gamepad"></i>') + '</div>' +
+          '<h2>' + esc(subcategory) + '</h2>' +
+          '<div class="gc3-gameregion ' + regionClass(region) + '">' + regionLabel(region) + ' · ' + (compatible ? 'Compatible con Argentina' : 'Verificá antes de comprar') + '</div>' +
+          '<div class="gc3-gamenote">' +
+            '<strong><i class="fas fa-info-circle"></i> Nota</strong>' +
+            (compatible ? 'Región compatible con Argentina.' : '⚠️ Esta región puede no funcionar en cuentas argentinas.') + ' Categoría: ' + esc(meta.label) + '.' +
+          '</div>' +
+        '</div>' +
+        '<div>' +
+          '<div class="gc3-prod-header"><h3>Productos</h3><span class="gc3-prod-count">' + list.length + (list.length === 1 ? ' producto' : ' productos') + '</span></div>' +
+          '<div class="gc3-prod-list">' + list.map(renderCatalogProductRow).join('') + '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderCatalogProductRow(p) {
+    var priceArs = Number(p.price_ars) || 0;
+    return '' +
+      '<div class="gc3-prod-item">' +
+        '<span class="gc3-prod-name">' + esc(p.name) + '</span>' +
+        '<span class="gc3-prod-usd">USD ' + money(p.price_usd) + '</span>' +
+        '<span class="gc3-prod-ars">$' + money(priceArs) + ' ARS</span>' +
+        '<button class="gc3-prod-wa" onclick="window.__fzcBuyWhatsapp(\'' + esc(p.id) + '\')"><i class="fab fa-whatsapp"></i> Consultar por WhatsApp</button>' +
+      '</div>';
+  }
+
+  window.__catalogGoLevel1 = function () {
+    catalogLevel = 1; catalogCategory = null; catalogSubcategory = null;
+    renderCatalogBreadcrumb(); renderCatalogContent();
+  };
+  window.__catalogGoLevel2 = function (category) {
+    catalogLevel = 2; catalogCategory = category; catalogSubcategory = null;
+    renderCatalogBreadcrumb(); renderCatalogContent();
+  };
+  window.__catalogGoLevel3 = function (category, subcategory) {
+    catalogLevel = 3; catalogCategory = category; catalogSubcategory = subcategory;
+    renderCatalogBreadcrumb(); renderCatalogContent();
+  };
+
+  // Mensaje pre-armado tal cual lo pidio el negocio, incluyendo Player ID a
+  // completar si el producto lo requiere (recargas de juegos moviles).
+  window.__fzcBuyWhatsapp = function (id) {
+    var p = fzcProducts.find(function (x) { return String(x.id) === String(id); });
+    if (!p) return;
+    var region = String(p.fazercards_region || p.region || 'GLOBAL').toUpperCase();
+    var priceArs = Number(p.price_ars) || 0;
+    var lines = [
+      'Hola Cell Space! Quiero comprar:',
+      '',
+      '📦 Juego: ' + p.subcategory,
+      '🎮 Producto: ' + p.name,
+      '💰 Precio: $' + money(priceArs) + ' ARS',
+      '🌎 Región: ' + region,
+    ];
+    if (p.requires_player_id) lines.push('🎮 Player ID: [COMPLETAR ACÁ]');
+    lines.push('', 'Por favor confirmame disponibilidad y forma de pago.');
+    var msg = lines.join('\n');
+    window.open('https://wa.me/' + waNumber() + '?text=' + encodeURIComponent(msg), '_blank');
   };
 
   /* ---------- wiring ---------- */
@@ -331,12 +482,19 @@
 
   function boot() {
     updateCartCount();
-    updateRegionBar();
+    renderRegionBar();
+
     loadProducts().then(function (list) {
       allProducts = list;
       renderPlatformPills();
       renderGrid();
       wire();
+    });
+
+    loadFazercardsProducts().then(function (list) {
+      fzcProducts = list;
+      renderCatalogBreadcrumb();
+      renderCatalogContent();
     });
   }
 

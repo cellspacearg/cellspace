@@ -3477,3 +3477,104 @@ select optgroup {
 .gaming-region-note { font-size: 11px; margin: 4px 0 10px; line-height: 1.4; }
 .gaming-region-note.compat { color: #10c46a; }
 .gaming-region-note.other { color: #FFD700; }
+
+/* ============================================================
+   Catalogo FazerCards de 3 niveles en gaming.html (Categorias > Juegos > Productos).
+   Tokens calcados de la demo aprobada (misma paleta que el panel admin).
+   ============================================================ */
+.gc3-breadcrumb {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-size: 14px; color: #888; margin: 16px 0;
+}
+.gc3-breadcrumb a { color: #8b5cf6; text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.gc3-breadcrumb a:hover { text-decoration: underline; }
+.gc3-breadcrumb .gc3-sep { color: #555; }
+.gc3-breadcrumb .gc3-current { color: #fff; font-weight: 600; }
+
+.gc3-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+
+.gc3-card {
+  background: rgba(21,21,21,0.9);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex; flex-direction: column; gap: 12px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.gc3-card:hover { transform: translateY(-4px); border-color: rgba(139,92,246,0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+.gc3-card-icon {
+  width: 64px; height: 64px; border-radius: 16px;
+  background: rgba(139,92,246,0.15); color: #8b5cf6;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; margin: 0 auto;
+}
+.gc3-card-name { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.3; }
+.gc3-card-meta { font-size: 11px; color: #888; }
+.gc3-card-price { font-size: 12px; color: var(--orange); font-weight: 700; margin-top: auto; }
+
+.gc3-card-image { padding: 0; text-align: left; }
+.gc3-card-img {
+  aspect-ratio: 1; background: #0a0a0a;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px; color: #8b5cf6;
+  border-radius: 16px 16px 0 0;
+  position: relative; overflow: hidden;
+}
+.gc3-card-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.8)); }
+.gc3-card-img img { width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 1; }
+.gc3-card-body { padding: 14px; display: flex; flex-direction: column; gap: 6px; }
+.gc3-card-body .gc3-card-name { font-size: 13.5px; text-align: left; }
+.gc3-card-body .gc3-card-price { font-size: 14px; color: var(--orange); margin-top: 0; }
+
+.gc3-region-badge {
+  position: absolute; top: 10px; right: 10px; z-index: 2;
+  font-size: 10px; font-weight: 800;
+  padding: 4px 9px; border-radius: 6px;
+  backdrop-filter: blur(6px);
+}
+.gc3-region-badge.latam { background: rgba(16,196,106,0.9); color: #fff; }
+.gc3-region-badge.global { background: rgba(47,123,255,0.9); color: #fff; }
+.gc3-region-badge.ar { background: rgba(255,106,0,0.9); color: #fff; }
+.gc3-region-badge.other { background: rgba(255,215,0,0.9); color: #1a1a1a; }
+
+.gc3-detail { display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start; }
+@media (max-width: 900px) { .gc3-detail { grid-template-columns: 1fr; } }
+
+.gc3-gameinfo { background: rgba(21,21,21,0.9); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; position: sticky; top: 20px; }
+.gc3-gameimg {
+  aspect-ratio: 1; background: #fafafa; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 60px; color: #8b5cf6; margin-bottom: 16px; overflow: hidden;
+}
+.gc3-gameimg img { width: 100%; height: 100%; object-fit: cover; }
+.gc3-gameinfo h2 { font-size: 20px; font-weight: 800; margin-bottom: 8px; color: #fff; }
+.gc3-gameregion { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+.gc3-gameregion.latam { color: #10c46a; }
+.gc3-gameregion.global { color: #2F7BFF; }
+.gc3-gameregion.ar { color: var(--orange); }
+.gc3-gameregion.other { color: #FFD700; }
+.gc3-gamenote { padding: 14px; background: rgba(255,215,0,0.06); border: 1px solid rgba(255,215,0,0.2); border-radius: 10px; font-size: 12px; color: #b0b0bb; line-height: 1.5; }
+.gc3-gamenote strong { color: #FFD700; display: block; margin-bottom: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.gc3-prod-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 0 16px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 16px; }
+.gc3-prod-header h3 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #8b5cf6; }
+.gc3-prod-header .gc3-prod-count { font-size: 13px; color: #888; }
+
+.gc3-prod-list { display: flex; flex-direction: column; gap: 8px; }
+.gc3-prod-item { background: rgba(21,21,21,0.9); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; transition: all 0.25s ease; }
+.gc3-prod-item:hover { border-color: rgba(139,92,246,0.3); }
+.gc3-prod-name { flex: 1; min-width: 140px; font-size: 14px; font-weight: 600; color: #fff; }
+.gc3-prod-usd { font-size: 12px; color: #888; min-width: 60px; text-align: right; }
+.gc3-prod-ars { font-size: 16px; font-weight: 800; color: var(--orange); min-width: 110px; text-align: right; }
+.gc3-prod-wa {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 8px;
+  background: #25D366; color: #fff; border: none;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  font-family: 'Montserrat', sans-serif; transition: all 0.2s;
+}
+.gc3-prod-wa:hover { background: #1ebe5a; }
