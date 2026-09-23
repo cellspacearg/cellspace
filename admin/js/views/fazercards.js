@@ -12,6 +12,7 @@ let products = [];
 let currentPromoEditId = null;
 let currentProductEditId = null;
 let activeCategoryFilter = 'all';
+let activeRegionFilter = 'all';
 let searchTerm = '';
 
 const CATEGORY_LABELS = { giftcard: 'Gift Cards', topup: 'Recargas', gamekey: 'Game Keys' };
@@ -440,14 +441,17 @@ function effectiveMargin(p) {
 function filteredProducts() {
   return products.filter(p => {
     if (activeCategoryFilter !== 'all' && p.category !== activeCategoryFilter) return false;
+    if (activeRegionFilter !== 'all' && String(p.fazercards_region || p.region || '').toUpperCase() !== activeRegionFilter) return false;
     if (searchTerm && !(`${p.name} ${p.subcategory || ''}`.toLowerCase().includes(searchTerm.toLowerCase()))) return false;
     return true;
   });
 }
 
+// El shell (buscador + pills + select de region) se arma UNA sola vez; escribir en el
+// buscador solo vuelve a pintar #fcCatalogGrid. Si se reconstruye el <input> en cada
+// tecla, el cursor salta al principio y el texto queda desordenado.
 function renderCatalogSection() {
   const box = document.getElementById('fcCatalogSection');
-  const list = filteredProducts();
   box.innerHTML = `
     <div class="cat-section-head" style="--cat-color:var(--admin-orange);"><i class="fas fa-box-open"></i><span>Catálogo FazerCards</span>
       <button class="btn-primary" style="margin-left:auto;" id="fcSyncBtn" onclick="window.__syncCatalog()"><i class="fas fa-rotate"></i> Sincronizar catálogo</button>
@@ -460,40 +464,58 @@ function renderCatalogSection() {
           <button type="button" class="section-pill ${activeCategoryFilter === 'giftcard' ? 'on' : ''}" data-cat="giftcard">Gift Cards</button>
           <button type="button" class="section-pill ${activeCategoryFilter === 'topup' ? 'on' : ''}" data-cat="topup">Recargas</button>
           <button type="button" class="section-pill ${activeCategoryFilter === 'gamekey' ? 'on' : ''}" data-cat="gamekey">Game Keys</button>
+          <select id="fcRegionFilter" class="filter-select">
+            <option value="all" ${activeRegionFilter === 'all' ? 'selected' : ''}>Todas las regiones</option>
+            <option value="AR" ${activeRegionFilter === 'AR' ? 'selected' : ''}>Solo Argentina</option>
+            <option value="LATAM" ${activeRegionFilter === 'LATAM' ? 'selected' : ''}>Solo LATAM</option>
+            <option value="GLOBAL" ${activeRegionFilter === 'GLOBAL' ? 'selected' : ''}>Global</option>
+          </select>
         </div>
       </div>
-      <div class="products-count">${list.length} producto(s)</div>
-      <div class="admin-products-grid" id="fcCatalogGrid">
-        ${list.length ? list.map(renderProductCard).join('') : emptyState({ icon: 'fas fa-box-open', title: 'Sin productos', text: 'Corré "Sincronizar catálogo" para traer productos de FazerCards.' })}
-      </div>
+      <div class="products-count" id="fcCatalogCount"></div>
+      <div class="admin-products-grid" id="fcCatalogGrid"></div>
     </div>`;
 
-  const searchInput = document.getElementById('fcSearch');
-  searchInput.addEventListener('input', () => { searchTerm = searchInput.value; renderCatalogSection(); document.getElementById('fcSearch').focus(); });
+  document.getElementById('fcSearch').addEventListener('input', (e) => { searchTerm = e.target.value; renderCatalogGrid(); });
+  document.getElementById('fcRegionFilter').addEventListener('change', (e) => { activeRegionFilter = e.target.value; renderCatalogGrid(); });
   document.querySelectorAll('#fcCatalogSection .section-pill').forEach(btn => {
-    btn.addEventListener('click', () => { activeCategoryFilter = btn.dataset.cat; renderCatalogSection(); });
+    btn.addEventListener('click', () => {
+      activeCategoryFilter = btn.dataset.cat;
+      document.querySelectorAll('#fcCatalogSection .section-pill').forEach(b => b.classList.toggle('on', b === btn));
+      renderCatalogGrid();
+    });
   });
+
+  renderCatalogGrid();
+}
+
+function renderCatalogGrid() {
+  const grid = document.getElementById('fcCatalogGrid');
+  const list = filteredProducts();
+  document.getElementById('fcCatalogCount').textContent = list.length + ' producto(s)';
+  grid.innerHTML = list.length ? list.map(renderProductCard).join('') : emptyState({ icon: 'fas fa-box-open', title: 'Sin productos', text: 'Corré "Sincronizar catálogo" para traer productos de FazerCards.' });
 }
 
 function renderProductCard(p) {
   const margin = effectiveMargin(p);
-  const marginSource = p.custom_margin != null ? 'propio' : ((settings.category_margins || {})[p.category] != null || (settings.category_margins || {})[p.subcategory] != null ? 'categoría' : 'defecto');
+  const marginSource = p.custom_margin != null ? 'propio' : ((settings.category_margins || {})[p.subcategory] != null || (settings.category_margins || {})[p.category] != null ? 'categoría' : 'defecto');
   const priceArs = Number(p.price_ars) || 0;
   const costArs = Number(p.price_usd) * Number(settings.exchange_rate || 0);
   const profit = priceArs - costArs;
+  const region = p.fazercards_region || p.region;
 
   return `
     <div class="admin-product-card" style="--cat-color:#8b5cf6">
       <div class="ap-thumb">${p.image_url ? `<img src="${escAttr(p.image_url)}" alt="" style="width:100%;height:100%;object-fit:cover;">` : '<i class="fas fa-gamepad" style="font-size:28px;color:#8b5cf6;"></i>'}</div>
       <div class="ap-body">
         <div class="ap-top">
-          <span class="ap-cat">${escapeHtml(CATEGORY_LABELS[p.category] || p.category)}${p.subcategory ? ' · ' + escapeHtml(p.subcategory) : ''}</span>
+          <span class="ap-cat">${escapeHtml(CATEGORY_LABELS[p.category] || p.category)}${p.subcategory ? ' · ' + escapeHtml(p.subcategory) : ''}${region ? ' · ' + escapeHtml(region) : ''}</span>
           ${p.is_active ? '<span class="ap-state st-active">Activado</span>' : '<span class="ap-state st-hidden">Desactivado</span>'}
         </div>
         <h4 class="ap-name">${escapeHtml(p.name)}</h4>
-        <div class="ap-meta">Mayorista: USD ${money(p.price_usd)} · Margen (${marginSource}): +${margin}%${p.promo_discount ? ' · Promo: ' + p.promo_discount + '%' : ''}</div>
-        <div class="ap-meta" style="color:var(--admin-orange);font-weight:700;">Precio final: $${money(priceArs)} ARS</div>
-        <div class="ap-meta" style="color:#10c46a;">Ganancia: $${money(profit)} ARS</div>
+        <div class="ap-meta" style="color:#777;font-size:11px;">Costo mayorista (referencia interna): USD ${money(p.price_usd)} · Margen (${marginSource}): +${margin}%${p.promo_discount ? ' · Promo: ' + p.promo_discount + '%' : ''}</div>
+        <div class="ap-meta" style="color:var(--admin-orange);font-weight:800;font-size:18px;">$${money(priceArs)} ARS</div>
+        <div class="ap-meta" style="color:#10c46a;">Ganancia estimada: $${money(profit)} ARS</div>
       </div>
       <div class="ap-actions">
         <button title="${p.is_active ? 'Desactivar' : 'Activar'}" onclick="window.__toggleProductActive('${p.id}')"><i class="fas ${p.is_active ? 'fa-toggle-on' : 'fa-toggle-off'}"></i></button>
@@ -509,10 +531,9 @@ window.__syncCatalog = async function () {
   try {
     const { data, error } = await supabase.functions.invoke('fazercards-sync');
     if (error) throw error;
-    toast(`Sincronizado: ${data.totals.upserted} producto(s) actualizados (de ${data.totals.matched} en tu región)`, 'ok');
+    toast(`Sincronizado: ${data.totals.upserted} producto(s) (AR + LATAM + Global). Precios recalculados: ${data.recalculated ?? '—'}`, 'ok');
     if (data.totals.errors) toast(`${data.totals.errors} categoría(s) tuvieron error al sincronizar — revisá la consola`, 'err');
     console.log('fazercards-sync resultado completo:', data);
-    await recalcPrices();
     await loadAll();
   } catch (e) { toast('Error al sincronizar: ' + e.message, 'err'); }
   finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-rotate"></i> Sincronizar catálogo'; }
