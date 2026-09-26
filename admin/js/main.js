@@ -26,6 +26,7 @@ import { paymentFeesView, paymentFeesViewOnMount } from './views/payment-fees.js
 import { shippingView, shippingViewOnMount } from './views/shipping.js?v=cb24';
 import { gamingView, gamingViewOnMount } from './views/gaming.js?v=cb24';
 import { fazercardsView, fazercardsViewOnMount } from './views/fazercards.js?v=cb24';
+import { calc3dView, calc3dViewOnMount } from './views/calc3d.js?v=cb24';
 import { notFoundView, notFoundViewOnMount } from './views/not-found.js?v=cb22';
 
 function showError(msg){
@@ -77,6 +78,7 @@ try {
     '/shipping':   { component: shippingView,   onMount: shippingViewOnMount,   beforeEnter: auth },
     '/gaming':     { component: gamingView,     onMount: gamingViewOnMount,     beforeEnter: auth },
     '/fazercards': { component: fazercardsView, onMount: fazercardsViewOnMount, beforeEnter: auth },
+    '/calc3d':     { component: calc3dView,     onMount: calc3dViewOnMount,     beforeEnter: auth },
     '/404':        { component: notFoundView,   onMount: notFoundViewOnMount,   beforeEnter: auth },
   };
 
